@@ -14,14 +14,10 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import {
-	computed,
-	reaction,
-	observable,
-	action,
-} from 'mobx';
+import { action, computed, observable, reaction, } from 'mobx';
 import { BoxEntity } from '../models/Box';
 import { intersection } from '../helpers/array';
+import LinksDefinition from '../models/LinksDefinition';
 
 export default class RootStore {
 	constructor() {
@@ -40,7 +36,11 @@ export default class RootStore {
 	@observable
 	public groups: Array<string> = [];
 
+	@observable
+	public links: Array<[string, string]> = [];
+
 	@computed
+	// todo: unused
 	public get connectionChain() {
 		if (!this.activeBox) return [];
 		const activeBoxConnections = this.activeBox.spec.pins.map(pin => pin['connection-type']);
@@ -75,6 +75,15 @@ export default class RootStore {
 		return [...previousBoxes, this.activeBox, ...nextBoxes];
 	}
 
+	@computed
+	public get activeLink(): [string, string] | null {
+		if (this.activeBox == null) {
+			return null;
+		}
+
+		return this.links.find(link => link.includes(this.activeBox!.metadata.name)) ?? null;
+	}
+
 	@action
 	public addBox = (box: BoxEntity) => {
 		this.boxes.push(box);
@@ -84,4 +93,14 @@ export default class RootStore {
 	public setActiveBox = (box: BoxEntity | null) => {
 		this.activeBox = box;
 	};
+
+	@action
+	public setLinks = (links: LinksDefinition) => {
+		this.links = [
+			...links.spec['links-definition']['router-mq']
+				.map<[string, string]>(mqLink => [mqLink.from.box, mqLink.to.box]),
+			...links.spec['links-definition']['router-grpc']
+				.map<[string, string]>(grpcLink => [grpcLink.from.box, grpcLink.to.box]),
+		];
+	}
 }

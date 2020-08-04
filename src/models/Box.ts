@@ -13,16 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
+import FileBase from './FileBase';
 
-export interface BoxEntity {
-	apiVersion: string;
-	kind: string;
-	metadata: {
-		name: string;
-	};
+export interface BoxEntity extends FileBase {
 	spec: {
 		pins: Array<Pin>;
-		params: Array<{ name: string; value: string | number | boolean }>;
+		params: Array<{
+			name: string;
+			value: string | number | boolean;
+		}>;
 	};
 }
 

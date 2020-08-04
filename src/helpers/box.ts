@@ -15,15 +15,12 @@
  ***************************************************************************** */
 
 import { BoxEntity } from '../models/Box';
+import FileBase from '../models/FileBase';
 
-export const isValidBox = (box: unknown): box is BoxEntity => {
+export const isValidBox = (box: FileBase): box is BoxEntity => {
 	try {
-		if (typeof box !== 'object' || box === null) return false;
 		const b = box as BoxEntity;
 		return [
-			typeof b.apiVersion === 'string',
-			typeof b.kind === 'string',
-			typeof b.metadata.name === 'string',
 			Array.isArray(b.spec.pins),
 		].every(Boolean);
 	} catch (error) {

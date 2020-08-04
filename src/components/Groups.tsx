@@ -23,6 +23,8 @@ import Group from './Group';
 import { isValidBox } from '../helpers/box';
 import { useRootStore } from '../hooks/useRootStore';
 import '../styles/group.scss';
+import { isFileBase } from '../models/FileBase';
+import { isLinksDefinition } from '../models/LinksDefinition';
 
 const Groups = () => {
 	const store = useRootStore();
@@ -35,8 +37,16 @@ const Groups = () => {
 			try {
 				const fileDataURL = await readFileAsText(file);
 				const parsedYamlFile = yaml.safeLoad(fileDataURL);
+				if (!isFileBase(parsedYamlFile)) {
+					return;
+				}
+
 				if (isValidBox(parsedYamlFile)) {
 					store.addBox(parsedYamlFile);
+				}
+
+				if (isLinksDefinition(parsedYamlFile)) {
+					store.setLinks(parsedYamlFile);
 				}
 			} catch (error) {
 				console.log('error');
@@ -47,7 +57,6 @@ const Groups = () => {
 	const { getRootProps, getInputProps } = useDropzone({
 		onDrop,
 		noClick: true,
-		accept: 'application/x-yaml',
 	});
 
 	return (

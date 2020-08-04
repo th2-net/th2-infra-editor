@@ -30,8 +30,7 @@ const Box = ({ box }: Props) => {
 	const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
 	const rootClassName = createStyleSelector(
 		'box',
-		store.activeBox !== null
-		&& store.connectionChain.includes(box) ? 'active' : null,
+		store.activeLink?.includes(box.metadata.name) ? 'active' : null,
 	);
 
 	const settingsIconClassName = createBemElement(
@@ -57,7 +56,7 @@ const Box = ({ box }: Props) => {
 				</span>
 				<button className="box__settings-button"
 					onClick={() => setIsSettingsOpen(!isSettingsOpen)}>
-					<i className={settingsIconClassName}></i>
+					<i className={settingsIconClassName}/>
 				</button>
 			</div>
 			<div
