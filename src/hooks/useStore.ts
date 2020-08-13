@@ -15,8 +15,14 @@
  ***************************************************************************** */
 
 import React from 'react';
-import RootStore from '../store/RootStore';
+import StoresContext from '../contexts/storesContext';
 
-const RootStoreContext = React.createContext<RootStore | null>(null);
+export default function useStore() {
+	const rootStore = React.useContext(StoresContext);
 
-export default RootStoreContext;
+	if (!rootStore) {
+		throw new Error('useRootStore should be used inside of RootStoreContextProvider');
+	}
+
+	return rootStore;
+}

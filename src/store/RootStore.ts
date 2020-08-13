@@ -14,18 +14,25 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction, } from 'mobx';
+import {
+	action, computed, observable, reaction,
+} from 'mobx';
 import { BoxEntity } from '../models/Box';
 import { intersection } from '../helpers/array';
-import LinksDefinition from '../models/LinksDefinition';
+import LinksDefinition, { isLinksDefinition } from '../models/LinksDefinition';
+import Api from '../api/api';
+import { isValidBox } from '../helpers/box';
 
 export default class RootStore {
-	constructor() {
+	constructor(private api: Api) {
 		reaction(
 			() => this.boxes.map(box => box.kind),
 			groups => this.groups = [...new Set(groups)],
 		);
 	}
+
+	@observable
+	public schemas: string[] = [];
 
 	@observable
 	public activeBox: BoxEntity | null = null;
@@ -81,7 +88,7 @@ export default class RootStore {
 			return null;
 		}
 
-		return this.links.find(link => link.includes(this.activeBox!.metadata.name)) ?? null;
+		return this.links.find(link => link.includes(this.activeBox!.name)) ?? null;
 	}
 
 	@action
@@ -95,12 +102,31 @@ export default class RootStore {
 	};
 
 	@action
-	public setLinks = (links: LinksDefinition) => {
-		this.links = [
-			...links.spec['links-definition']['router-mq']
+	public setLinks = (links: LinksDefinition[]) => {
+		this.links = links.flatMap(link => ([
+			...link.spec['links-definition']['router-mq']
 				.map<[string, string]>(mqLink => [mqLink.from.box, mqLink.to.box]),
-			...links.spec['links-definition']['router-grpc']
+			...link.spec['links-definition']['router-grpc']
 				.map<[string, string]>(grpcLink => [grpcLink.from.box, grpcLink.to.box]),
-		];
+		]));
+	};
+
+	@action
+	public async fetchSchemas() {
+		this.schemas = await this.api.fetchSchemasList();
+	}
+
+	@action
+	public async fetchSchemaState(schemaName: string) {
+		const result = await this.api.fetchSchemaState(schemaName);
+		this.boxes = result.filter(resItem => isValidBox(resItem)) as BoxEntity[];
+		const links = result.filter(resItem => isLinksDefinition(resItem)) as LinksDefinition[];
+		this.setLinks(links);
+	}
+
+	async init() {
+		await this.fetchSchemas();
+		// todo: replace with schema name, selected by user
+		await this.fetchSchemaState('master');
 	}
 }

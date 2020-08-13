@@ -38,7 +38,7 @@ const Group = (props: Props) => {
 					{
 						boxes.map((box, index) =>
 							<Box
-								key={`${box.metadata.name}-${box.apiVersion}-${index}`}
+								key={`${box.name}-${box.apiVersion}-${index}`}
 								box={box} />)
 					}
 				</div>

@@ -13,24 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
+
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { createBemElement, createStyleSelector } from '../helpers/styleCreators';
 import { BoxEntity } from '../models/Box';
-import { useRootStore } from '../hooks/useRootStore';
-import { intersection } from '../helpers/array';
 import '../styles/box.scss';
+import useStore from '../hooks/useStore';
 
 interface Props {
 	box: BoxEntity;
 }
 
 const Box = ({ box }: Props) => {
-	const store = useRootStore();
+	const { rootStore } = useStore();
 	const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
 	const rootClassName = createStyleSelector(
 		'box',
-		store.activeLink?.includes(box.metadata.name) ? 'active' : null,
+		rootStore.activeLink?.includes(box.name) ? 'active' : null,
 	);
 
 	const settingsIconClassName = createBemElement(
@@ -48,13 +48,14 @@ const Box = ({ box }: Props) => {
 	return (
 		<div
 			className={rootClassName}
-			onMouseEnter={() => store.setActiveBox(box)}
-			onMouseLeave={() => store.setActiveBox(null)}>
+			onMouseEnter={() => rootStore.setActiveBox(box)}
+			onMouseLeave={() => rootStore.setActiveBox(null)}>
 			<div className={headerClassname}>
 				<span className="box__title">
-					{box.metadata.name}
+					{box.name}
 				</span>
-				<button className="box__settings-button"
+				<button
+					className="box__settings-button"
 					onClick={() => setIsSettingsOpen(!isSettingsOpen)}>
 					<i className={settingsIconClassName}/>
 				</button>

@@ -21,13 +21,13 @@ import yaml from 'js-yaml';
 import { readFileAsText } from '../helpers/files';
 import Group from './Group';
 import { isValidBox } from '../helpers/box';
-import { useRootStore } from '../hooks/useRootStore';
 import '../styles/group.scss';
 import { isFileBase } from '../models/FileBase';
 import { isLinksDefinition } from '../models/LinksDefinition';
+import useStore from '../hooks/useStore';
 
 const Groups = () => {
-	const store = useRootStore();
+	const { rootStore } = useStore();
 	const onDrop = React.useCallback(acceptedFiles => {
 		parseYamlFiles(acceptedFiles);
 	}, []);
@@ -42,11 +42,11 @@ const Groups = () => {
 				}
 
 				if (isValidBox(parsedYamlFile)) {
-					store.addBox(parsedYamlFile);
+					rootStore.addBox(parsedYamlFile);
 				}
 
 				if (isLinksDefinition(parsedYamlFile)) {
-					store.setLinks(parsedYamlFile);
+					rootStore.setLinks([parsedYamlFile]);
 				}
 			} catch (error) {
 				console.log('error');
@@ -65,14 +65,14 @@ const Groups = () => {
 			<div
 				className="groups__list"
 				style={{
-					gridTemplateColumns: `repeat(${Math.max(store.groups.length, 6)}, 1fr)`,
+					gridTemplateColumns: `repeat(${Math.max(rootStore.groups.length, 6)}, 1fr)`,
 				}}>
 				{
-					store.groups.map(group =>
+					rootStore.groups.map(group =>
 						<Group
 							title={group}
 							key={group}
-							boxes={store.boxes.filter(box => box.kind === group)}/>)
+							boxes={rootStore.boxes.filter(box => box.kind === group)}/>)
 				}
 			</div>
 		</div>

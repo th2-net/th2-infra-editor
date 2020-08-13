@@ -32,6 +32,18 @@ module.exports = webpackMerge(commonConfig, {
         port: 9001,
         host: "0.0.0.0",
         historyApiFallback: true,
+        proxy: {
+            '/schemas': {
+                target: 'http://kos215:8080',
+                changeOrigin: true,
+                secure: false,
+            },
+            '/schema': {
+                target: 'http://kos215:8080',
+                changeOrigin: true,
+                secure: false,
+            }
+        }
     },
     module: {
         rules: [
@@ -61,11 +73,11 @@ module.exports = webpackMerge(commonConfig, {
             },
         ]
     },
-    // plugins: [
-    //     new ForkTsCheckerWebpackPlugin({
-    //         eslint: {
-    //             files: './src/**/*{ts,tsx,js,jsx}'
-    //         }
-    //     })
-    // ]
+    plugins: [
+        new ForkTsCheckerWebpackPlugin({
+            eslint: {
+                files: './src/**/*{ts,tsx,js,jsx}'
+            }
+        })
+    ]
 });

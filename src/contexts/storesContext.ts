@@ -15,14 +15,18 @@
  ***************************************************************************** */
 
 import React from 'react';
-import RootStoreContext from '../contexts/rootStoreContext';
+import RootStore from '../store/RootStore';
+import Api from '../api/api';
 
-export const useRootStore = () => {
-	const rootStore = React.useContext(RootStoreContext);
+function createStores() {
+	const api = new Api();
+	const rootStore = new RootStore(api);
 
-	if (!rootStore) {
-		throw new Error('useRootStore should be used inside of RootStoreContextProvider');
-	}
+	return {
+		rootStore,
+	};
+}
 
-	return rootStore;
-};
+const StoresContext = React.createContext(createStores());
+
+export default StoresContext;

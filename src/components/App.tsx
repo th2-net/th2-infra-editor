@@ -15,13 +15,23 @@
  ***************************************************************************** */
 
 import React from 'react';
+import { observer } from 'mobx-react-lite';
 import Groups from './Groups';
 import '../styles/root.scss';
+import useStore from '../hooks/useStore';
 
-const App = () => (
-	<div className="root">
-		<Groups />
-	</div>
-);
+function App() {
+	const { rootStore } = useStore();
 
-export default App;
+	React.useEffect(() => {
+		rootStore.init();
+	}, []);
+
+	return (
+		<div className="root">
+			<Groups />
+		</div>
+	);
+}
+
+export default observer(App);

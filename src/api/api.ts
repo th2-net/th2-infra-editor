@@ -14,24 +14,30 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-export default interface FileBase {
-	apiVersion: string;
-	kind: string;
-	name: string;
-	spec: unknown;
-}
+import { BoxEntity } from '../models/Box';
+import LinksDefinition from '../models/LinksDefinition';
+import FileBase from '../models/FileBase';
 
-export function isFileBase(file: unknown): file is FileBase {
-	try {
-		if (typeof file !== 'object' || file === null) return false;
-		const f = file as FileBase;
-		return [
-			typeof f.apiVersion === 'string',
-			typeof f.kind === 'string',
-			typeof f.name === 'string',
-			typeof f.spec === 'object',
-		].every(Boolean);
-	} catch (error) {
-		return false;
+export default class Api {
+	async fetchSchemasList(): Promise<string[]> {
+		const res = await fetch('schemas');
+
+		if (!res.ok) {
+			console.error(`Can't fetch schemas list - ${res.statusText}`);
+			return [];
+		}
+
+		return res.json();
+	}
+
+	async fetchSchemaState(schemaName: string): Promise<FileBase[]> {
+		const res = await fetch(`schema/${schemaName}`);
+
+		if (!res.ok) {
+			console.error(`Can't fetch schema state - ${res.statusText}`);
+			return [];
+		}
+
+		return res.json();
 	}
 }

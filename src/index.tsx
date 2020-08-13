@@ -22,16 +22,10 @@ import 'core-js/features/array/flat-map';
 import 'core-js/features/array/flat';
 import App from './components/App';
 import ErrorBoundary from './components/ErrorBoundary';
-import RootStoreContext, {} from './contexts/rootStoreContext';
-import RootStore from './store/RootStore';
-
-const store = new RootStore();
 
 ReactDOM.render(
 	<ErrorBoundary>
-		<RootStoreContext.Provider value={store}>
-			<App/>
-		</RootStoreContext.Provider>
+		<App/>
 	</ErrorBoundary>,
 	document.getElementById('index'),
 );
