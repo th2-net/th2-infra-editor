@@ -16,9 +16,11 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import Groups from './Groups';
+import Groups from './groups/Groups';
 import '../styles/root.scss';
 import useStore from '../hooks/useStore';
+import Header from './Header';
+import SvgLayout from './SvgLayout';
 
 function App() {
 	const { rootStore } = useStore();
@@ -29,7 +31,24 @@ function App() {
 
 	return (
 		<div className="root">
-			<Groups />
+			<Header
+				schemaList={rootStore.schemas}
+				selectedSchema={rootStore.selectedSchema}
+				createSchema={rootStore.createNewSchema}
+				saveChanges={rootStore.saveChanges}
+			/>
+			<Groups
+				addNewProp={rootStore.addNewProp}
+				createNewBox={rootStore.createNewBox}
+				addCoords={rootStore.addCoords}
+				connectableBoxes={rootStore.connectableBoxes}
+				setConnection={rootStore.setConnection}
+				changeCustomConfig={rootStore.changeCustomConfig}
+				deleteParam={rootStore.deleteParam}
+			/>
+			<SvgLayout
+				connections={rootStore.connections}
+			/>
 		</div>
 	);
 }

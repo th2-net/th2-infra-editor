@@ -13,47 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-import FileBase from './FileBase';
 
-export interface BoxEntity extends FileBase {
-	spec: {
-		['custom-config']?: {
-			[prop: string]: string;
-		};
-		pins: Array<Pin>;
-		params: Array<{
-			name: string;
-			value: string | number | boolean;
-		}>;
-		['image-name']: string;
-		['image-version']: string;
-		['node-port']: number;
-	};
+import React from 'react';
+import useStore from '../hooks/useStore';
+
+interface SchemaSelectorProps {
+	schemaList: string[];
+	selectedSchema: string;
 }
 
-export interface Pin {
-	attributes: Array<string>;
-	['connection-type']: string;
-	filters: Array<any>;
-	name: string;
-}
+const SchemaSelector = ({
+	schemaList,
+	selectedSchema,
+}: SchemaSelectorProps) => {
+	const { rootStore } = useStore();
 
-export interface BoxConnections {
-	leftConnection: Connection;
-	rightConnection: Connection;
-}
+	return (
+		<select
+			className='select'
+			onChange={e => rootStore.setSelectedSchema(e.target.value)}
+			value={selectedSchema}
+		>
+			{
+				schemaList.map(schema => (
+					<option
+						key={schema}
+						value={schema}>
+						{schema}
+					</option>
+				))
+			}
+		</select>
+	);
+};
 
-export interface Connection {
-	left: number;
-	top: number;
-}
-
-export interface ConnectionArrow {
-	start: Connection;
-	end: Connection;
-}
-
-export interface BoxEntityWrapper {
-	connection: 'left' | 'right';
-	box: BoxEntity;
-}
+export default SchemaSelector;

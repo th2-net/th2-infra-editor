@@ -15,36 +15,30 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { observer } from 'mobx-react-lite';
-import Box from './Box';
-import { BoxEntity } from '../models/Box';
-import '../styles/group.scss';
 
-interface Props {
-	title: string;
-	boxes: Array<BoxEntity>;
+interface BoxImageInfoProps {
+	spec: {
+		['image-name']: string;
+		['image-version']: string;
+		['node-port']: number;
+	};
 }
 
-const Group = (props: Props) => {
-	const { title, boxes } = props;
-
-	return (
-		<div className="group">
-			<h1 className="group__title">
-				{title}
-			</h1>
-			<div className="group__items">
-				<div className="group__items-scroller">
-					{
-						boxes.map((box, index) =>
-							<Box
-								key={`${box.name}-${box.apiVersion}-${index}`}
-								box={box} />)
-					}
+const BoxImageInfo = ({
+	spec,
+}: BoxImageInfoProps) => (
+	<div className="box-settings__image-info">
+		{
+			Object.entries(spec).map(([key, value]) => (
+				value
+				&& <div
+					key={key}
+					className="box-settings__image-info-item">
+					<div className='box-settings__label'>{key}</div>
+					<div className='box-settings__image-info-value'>{value}</div>
 				</div>
-			</div>
-		</div>
-	);
-};
+			))
+		}
+	</div>);
 
-export default observer(Group);
+export default BoxImageInfo;

@@ -14,9 +14,7 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import { BoxEntity } from '../models/Box';
-import LinksDefinition from '../models/LinksDefinition';
-import FileBase from '../models/FileBase';
+import FileBase, { RequestModel } from '../models/FileBase';
 
 export default class Api {
 	async fetchSchemasList(): Promise<string[]> {
@@ -30,8 +28,8 @@ export default class Api {
 		return res.json();
 	}
 
-	async fetchSchemaState(schemaName: string): Promise<FileBase[]> {
-		const res = await fetch(`schema/${schemaName}`);
+	async fetchSchemaState(schemaName: string, abortSignal: AbortSignal): Promise<FileBase[]> {
+		const res = await fetch(`schema/${schemaName}`, { signal: abortSignal });
 
 		if (!res.ok) {
 			console.error(`Can't fetch schema state - ${res.statusText}`);
@@ -39,5 +37,34 @@ export default class Api {
 		}
 
 		return res.json();
+	}
+
+	async createNewSchema(schemaName: string): Promise<FileBase[]> {
+		const res = await fetch(`schema/${schemaName}`, {
+			method: 'PUT',
+		});
+
+		if (res.ok) {
+			return res.json();
+		}
+
+		console.error(res);
+		return [];
+	}
+
+	async sendSchemaRequest(schemaName: string, schema: RequestModel[]): Promise<boolean> {
+		const res = await fetch(`schema/${schemaName}`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify(schema),
+		});
+
+		if (!res.ok) {
+			console.error(res);
+		}
+
+		return res.ok;
 	}
 }

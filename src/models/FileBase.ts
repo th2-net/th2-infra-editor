@@ -15,10 +15,15 @@
  ***************************************************************************** */
 
 export default interface FileBase {
-	apiVersion: string;
+	apiVersion?: string;
 	kind: string;
 	name: string;
 	spec: unknown;
+}
+
+export interface RequestModel {
+    operation: 'add' | 'remove' | 'update';
+    payload: FileBase;
 }
 
 export function isFileBase(file: unknown): file is FileBase {

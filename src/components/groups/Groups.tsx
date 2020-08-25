@@ -18,15 +18,37 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useDropzone } from 'react-dropzone';
 import yaml from 'js-yaml';
-import { readFileAsText } from '../helpers/files';
+import { readFileAsText } from '../../helpers/files';
 import Group from './Group';
-import { isValidBox } from '../helpers/box';
-import '../styles/group.scss';
-import { isFileBase } from '../models/FileBase';
-import { isLinksDefinition } from '../models/LinksDefinition';
-import useStore from '../hooks/useStore';
+import { isValidBox } from '../../helpers/box';
+import '../../styles/group.scss';
+import { isFileBase } from '../../models/FileBase';
+import { isLinksDefinition } from '../../models/LinksDefinition';
+import useStore from '../../hooks/useStore';
+import { BoxEntity, BoxConnections, BoxEntityWrapper } from '../../models/Box';
 
-const Groups = () => {
+interface GroupsProps {
+	createNewBox: (box: BoxEntity) => void;
+	addNewProp: (prop: {
+		name: string;
+		value: string;
+	}, boxName: string) => void;
+	addCoords: (box: BoxEntity, connections: BoxConnections) => void;
+	connectableBoxes: BoxEntityWrapper[];
+	setConnection: (box: BoxEntity) => void;
+	changeCustomConfig: (config: {[prop: string]: string}, boxName: string) => void;
+	deleteParam: (paramName: string, boxName: string) => void;
+}
+
+const Groups = ({
+	createNewBox,
+	addNewProp,
+	addCoords,
+	connectableBoxes,
+	setConnection,
+	changeCustomConfig,
+	deleteParam,
+}: GroupsProps) => {
 	const { rootStore } = useStore();
 	const onDrop = React.useCallback(acceptedFiles => {
 		parseYamlFiles(acceptedFiles);
@@ -49,7 +71,7 @@ const Groups = () => {
 					rootStore.setLinks([parsedYamlFile]);
 				}
 			} catch (error) {
-				console.log('error');
+				console.error('error');
 			}
 		});
 	};
@@ -72,7 +94,15 @@ const Groups = () => {
 						<Group
 							title={group}
 							key={group}
-							boxes={rootStore.boxes.filter(box => box.kind === group)}/>)
+							boxes={rootStore.boxes.filter(box => box.kind === group)}
+							onParamBlur={rootStore.setBoxParamValue}
+							createNewBox={createNewBox}
+							addNewProp={addNewProp}
+							addCoords={addCoords}
+							connectableBoxes={connectableBoxes}
+							setConnection={setConnection}
+							changeCustomConfig={changeCustomConfig}
+							deleteParam={deleteParam}/>)
 				}
 			</div>
 		</div>
