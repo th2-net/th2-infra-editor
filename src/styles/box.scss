@@ -26,7 +26,7 @@
 	margin: 20px 0;
 	transition: 0.3s;
 	flex-shrink: 0;
-	overflow: hidden;
+	cursor: pointer;
 
 	&:first-child {
 		margin-top: 0;
@@ -36,7 +36,7 @@
 		margin-bottom: 0;
 	}
 
-	&.active {
+	&:hover {
 		background-color: #FFF;
 		box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.25);
 		border: 1px solid $boxBoderColor;
@@ -48,12 +48,8 @@
 		align-items: center;
 		height: 50px;
 		padding: 0 15px 0 20px;
-		border-bottom: 1px solid transparent;
 		transition: 0.2s;
-
-		&.active {
-			border-bottom: 1px solid $primaryColor;
-		}	
+		position: relative;
 	}
 
 	&__title {
@@ -76,6 +72,26 @@
 
 		}
 	}
+
+	&__connection {
+		width: 14px;
+		height: 14px;
+		border-radius: 50%;
+		border: 4px solid #00997F;
+		position: absolute;
+		top: 50%;
+		transform: translateY(-50%);
+		background-color: white;
+
+
+		&.left {
+			left: -7px;
+		}
+
+		&.right {
+			right: -7px;
+		}
+	}
 }
 
 .box-settings {
@@ -91,14 +107,28 @@
 		margin-bottom: 10px;
 	}
 
-	&__input {
+	&__input, &__textarea {
 		width: 100%;
-		height: 36px;
 		background-color: #fff;
 		border: 1px solid $secondaryTextColor;
 		border-radius: 6px;
 		padding: 0 10px;
 		outline-color: $primaryColor;
+
+		&.invalid {
+			outline-color: red;
+		}
+	}
+
+	&__input {
+		height: 36px;
+	}
+
+	&__textarea {
+		@include scrollbar;
+
+		resize: none;
+		height: 250px;
 	}
 
 	&__label {
@@ -108,10 +138,82 @@
 		margin-bottom: 7px;
 	}
 
+	&__image-info {		
+		&-item {
+			display: flex;
+			flex-direction: column;
+			margin-bottom: 10px;
+
+		}
+
+		&-value {
+			// @include scrollbar;
+			// height: 36px;
+			font-size: 14px;
+			display: flex;
+			align-items: center;
+			background-color: #fff;
+			border: 1px solid #808080;
+			overflow-x: auto;
+			border-radius: 6px;
+			padding: 7px 10px;
+			word-wrap: break-word;
+		}
+	}
+}
+
+.box-modal {
+	width: 700px;
+	height: 600px;
+	display: flex;
+	flex-direction: column;
+	background-color: white;
+	border-radius: 6px;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -75%);
+	z-index: 3;
+	padding: 25px 0 25px 25px;
+	box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 
+	0px 8px 10px 1px rgba(0, 0, 0, 0.14), 
+	0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+
+	&__name {
+		font-size: 22px;
+		margin-bottom: 15px;
+	}
+
+	&__box-settings {
+		display: flex;
+		width: 100%;
+	}
+
+	&__image-info {
+		@include scrollbar;
+
+		border-right: 1px solid #ccc;
+		width: 50%;
+		padding-right: 25px;
+		overflow-y: auto;
+		display: flex;
+		flex-direction: column;
+	}
+
+	&__props-list {
+		@include scrollbar;
+
+		width: 50%;
+		max-height: 450px;
+		padding: 0 25px;
+		overflow-y: scroll;
+	}
+
 	&__buttons {
 		display: flex;
-		justify-content: space-between;
-		margin-top: 25px;
+		justify-content: flex-end;
+		margin-top: auto;
+		padding: 0 15px;
 	}
 
 	&__button {
@@ -125,9 +227,33 @@
 		cursor: pointer;
 		transition: color 0.2s;
 		padding: 0;
+		margin-left: 10px;
 
 		&:hover {
 			color: $primaryColor;
 		}
+	}
+
+	&__add-form {
+		margin-top: 10px;
+	}
+
+	&__wrapper {
+		display: flex;
+		justify-content: space-between;
+	}
+
+	&__delete-button {
+		@include icon(url(../../resources/icons/trash.svg), 16px, 16px);
+
+		width: 16px;
+		height: 16px;
+		background-color: transparent;
+		margin: 0;
+		padding: 5px;
+		border: none;
+		margin-bottom: 7px;
+		cursor: pointer;
+		outline: none;
 	}
 }
