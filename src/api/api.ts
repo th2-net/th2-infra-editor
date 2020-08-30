@@ -14,7 +14,8 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import FileBase, { RequestModel } from '../models/FileBase';
+import { RequestModel } from '../models/FileBase';
+import Schema from '../models/Schema';
 
 export default class Api {
 	async fetchSchemasList(): Promise<string[]> {
@@ -28,18 +29,18 @@ export default class Api {
 		return res.json();
 	}
 
-	async fetchSchemaState(schemaName: string, abortSignal: AbortSignal): Promise<FileBase[]> {
+	async fetchSchemaState(schemaName: string, abortSignal: AbortSignal): Promise<Schema> {
 		const res = await fetch(`schema/${schemaName}`, { signal: abortSignal });
 
 		if (!res.ok) {
 			console.error(`Can't fetch schema state - ${res.statusText}`);
-			return [];
+			return {} as Schema;
 		}
 
 		return res.json();
 	}
 
-	async createNewSchema(schemaName: string): Promise<FileBase[]> {
+	async createNewSchema(schemaName: string): Promise<Schema> {
 		const res = await fetch(`schema/${schemaName}`, {
 			method: 'PUT',
 		});
@@ -49,7 +50,7 @@ export default class Api {
 		}
 
 		console.error(res);
-		return [];
+		return {} as Schema;
 	}
 
 	async sendSchemaRequest(schemaName: string, schema: RequestModel[]): Promise<boolean> {

@@ -64,7 +64,7 @@ export default class RootStore {
 	public links: Array<[string, string]> = [];
 
 	@observable
-	public selectedSchema = 'master';
+	public selectedSchema = 'first-project';
 
 	@observable
 	public changedBoxes: FileBase[] = [];
@@ -136,15 +136,22 @@ export default class RootStore {
 	};
 
 	@action
-	public createNewBox = (box: BoxEntity) => {
-		this.api.sendSchemaRequest(this.selectedSchema, [{
-			operation: 'add',
-			payload: box,
-		}]).then(res => {
-			if (res) {
-				this.addBox(box);
-			}
-		});
+	public createNewBox = (newBox: BoxEntity) => {
+		if (!this.boxes
+			.filter(box => box.kind === newBox.kind)
+			.some(box => box.name === newBox.name)) {
+			this.api.sendSchemaRequest(this.selectedSchema, [{
+				operation: 'add',
+				payload: newBox,
+			}]).then(res => {
+				if (res) {
+					this.addBox(newBox);
+				}
+			});
+		} else {
+			// eslint-disable-next-line no-alert
+			alert(`Box "${newBox.name}" already exists`);
+		}
 	};
 
 	@action setSelectedBox = (box: BoxEntity | null) => {
@@ -186,8 +193,8 @@ export default class RootStore {
 		}
 		this.schemaAbortConroller = new AbortController();
 		const result = await this.api.fetchSchemaState(schemaName, this.schemaAbortConroller.signal);
-		this.boxes = result.filter(resItem => isValidBox(resItem)) as BoxEntity[];
-		const links = result.filter(resItem => isLinksDefinition(resItem)) as LinksDefinition[];
+		this.boxes = result.resources.filter(resItem => isValidBox(resItem)) as BoxEntity[];
+		const links = result.resources.filter(resItem => isLinksDefinition(resItem)) as LinksDefinition[];
 		this.linkBox = links[0];
 		this.setLinks(links);
 	}
@@ -199,12 +206,18 @@ export default class RootStore {
 
 	@action
 	public setBoxParamValue = async (boxName: string, paramName: string, value: string) => {
-		const boxIndex = this.boxes.findIndex(box => box.name === boxName);
-		const paramIndex = this.boxes[boxIndex].spec.params.findIndex(param => param.name === paramName);
-		this.boxes[boxIndex].spec.params[paramIndex].value = value;
+		const changedBox = this.boxes.find(box => box.name === boxName);
 
-		if (!this.changedBoxes.includes(this.boxes[boxIndex])) {
-			this.changedBoxes.push(this.boxes[boxIndex]);
+		if (changedBox) {
+			const paramIndex = changedBox.spec.params?.findIndex(param => param.name === paramName);
+
+			if (paramIndex && changedBox.spec.params) {
+				changedBox.spec.params[paramIndex].value = value;
+			}
+
+			if (!this.changedBoxes.includes(changedBox)) {
+				this.changedBoxes.push(changedBox);
+			}
 		}
 	};
 
@@ -221,13 +234,13 @@ export default class RootStore {
 	};
 
 	@action
-	public async createNewSchema(schemaName: string) {
+	public createNewSchema = async (schemaName: string) => {
 		await this.api.createNewSchema(schemaName)
 			.then(() => {
 				this.schemas.push(schemaName);
 				this.selectedSchema = schemaName;
 			});
-	}
+	};
 
 	@action
 	public addNewProp = (prop: {
@@ -235,10 +248,12 @@ export default class RootStore {
 		value: string;
 	}, boxName: string) => {
 		const changedBox = this.boxes.find(box => box.name === boxName);
-		changedBox?.spec.params.push(prop);
+		if (changedBox?.spec.params) {
+			changedBox?.spec.params.push(prop);
 
-		if (changedBox && !this.changedBoxes.includes(changedBox)) {
-			this.changedBoxes.push(changedBox);
+			if (changedBox && !this.changedBoxes.includes(changedBox)) {
+				this.changedBoxes.push(changedBox);
+			}
 		}
 	};
 
@@ -293,13 +308,9 @@ export default class RootStore {
 					name: uuidv4(),
 					from: {
 						box: this.selectedBox.name,
-						pin: '',
-						strategy: '',
 					},
 					to: {
 						box: box.name,
-						pin: '',
-						strategy: '',
 					},
 				});
 			}
@@ -337,7 +348,7 @@ export default class RootStore {
 	@action
 	public deleteParam = (paramName: string, boxName: string) => {
 		const changedBox = this.boxes.find(box => box.name === boxName);
-		if (changedBox) {
+		if (changedBox && changedBox.spec.params) {
 			const paramIndex = changedBox?.spec.params.findIndex(param => param.name === paramName);
 
 			if (paramIndex >= 0) {
@@ -359,6 +370,36 @@ export default class RootStore {
 				}
 			}
 		}
+	};
+
+	@action
+	public setImageInfo = (imageProp: {
+		name: 'image-name' | 'image-version' | 'node-port';
+		value: string;
+	}, boxName: string) => {
+		const boxIndex = this.boxes.findIndex(box => box.name === boxName);
+
+		if (boxIndex >= 0) {
+			this.boxes[boxIndex].spec[imageProp.name] = (imageProp.name === 'node-port'
+				? parseInt(imageProp.value) : imageProp.value) as never;
+
+			if (!this.changedBoxes.includes(this.boxes[boxIndex])) {
+				this.changedBoxes.push(this.boxes[boxIndex]);
+			}
+		}
+	};
+
+	@action
+	public deleteBox = (boxName: string) => {
+		const removableBoxIndex = this.boxes.findIndex(box => box.name === boxName);
+		this.api.sendSchemaRequest(this.selectedSchema, [{
+			operation: 'remove',
+			payload: this.boxes[removableBoxIndex],
+		}]).then(isAccess => {
+			if (isAccess) {
+				this.boxes.splice(removableBoxIndex, 1);
+			}
+		});
 	};
 
 	async init() {

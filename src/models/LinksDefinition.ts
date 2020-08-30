@@ -42,8 +42,8 @@ export interface MqConnection {
 
 export interface GrpcConnection {
 	box: string;
-	pin: string;
-	strategy: string;
+	pin?: string;
+	strategy?: string;
 	['service-class']?: string;
 }
 

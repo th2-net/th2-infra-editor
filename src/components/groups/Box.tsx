@@ -1,3 +1,4 @@
+/* eslint-disable no-alert */
 /** ****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
@@ -36,6 +37,13 @@ interface Props {
 	setConnection: (box: BoxEntity) => void;
 	changeCustomConfig: (config: {[prop: string]: string}, boxName: string) => void;
 	deleteParam: (paramName: string, boxName: string) => void;
+	setImageInfo: (imageProp: {
+		name: 'image-name' | 'image-version' | 'node-port';
+		value: string;
+	}, boxName: string) => void;
+	groupsTopOffset?: number;
+	titleHeight?: number;
+	deleteBox: (boxName: string) => void;
 }
 
 export interface BoxMethods {
@@ -52,6 +60,10 @@ const Box = ({
 	setConnection,
 	changeCustomConfig,
 	deleteParam,
+	setImageInfo,
+	groupsTopOffset,
+	titleHeight,
+	deleteBox,
 }: Props, ref: React.Ref<BoxMethods>) => {
 	const { rootStore } = useStore();
 	const [isModalOpen, setIsModalOpen] = React.useState(false);
@@ -71,24 +83,28 @@ const Box = ({
 				sendCoords();
 			},
 			kind: box.kind,
-		}), [],
+		}), [groupsTopOffset],
 	);
 
 	const sendCoords = () => {
-		const clientRect = boxRef.current?.getBoundingClientRect();
-		if (clientRect) {
-			const leftConnection = {
-				left: clientRect?.left,
-				top: clientRect?.top + (clientRect?.height / 2),
-			};
-			const rightConnection = {
-				left: clientRect?.left + clientRect.width,
-				top: clientRect?.top + (clientRect?.height / 2),
-			};
-			addCoords(box, {
-				leftConnection,
-				rightConnection,
-			});
+		if (groupsTopOffset && titleHeight) {
+			const clientRect = boxRef.current?.getBoundingClientRect();
+			if (clientRect) {
+				const leftConnection = {
+					left: clientRect?.left,
+					top: clientRect?.top + (clientRect?.height / 2)
+					- groupsTopOffset - titleHeight,
+				};
+				const rightConnection = {
+					left: clientRect?.left + clientRect.width,
+					top: clientRect?.top + (clientRect?.height / 2)
+					- groupsTopOffset - titleHeight,
+				};
+				addCoords(box, {
+					leftConnection,
+					rightConnection,
+				});
+			}
 		}
 	};
 
@@ -97,6 +113,14 @@ const Box = ({
 		'settings-icon',
 		isModalOpen ? 'active' : null,
 	);
+
+	const deleteBoxHandler = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+		e.stopPropagation();
+		// eslint-disable-next-line no-restricted-globals
+		if (confirm(`Are you sure you want to delete box "${box.name}"`)) {
+			deleteBox(box.name);
+		}
+	};
 
 	return (
 		<>
@@ -110,39 +134,44 @@ const Box = ({
 						rootStore.setSelectedBox(null);
 					}
 				}}>
-				<div className="box__header">
-					<span className="box__title">
-						{box.name}
-					</span>
+				<span className="box__title">
+					{box.name}
+				</span>
+				<div className="box__buttons-wrapper">
 					<button
-						className="box__settings-button"
+						className="box__button"
 						onClick={e => {
 							e.stopPropagation();
 							setIsModalOpen(!isModalOpen);
 						}}>
 						<i className={settingsIconClassName}/>
 					</button>
-					{
-						connectionDirection === 'left'
-							? (
-								<div
-									className="box__connection left"
-									onClick={e => {
-										e.stopPropagation();
-										setConnection(box);
-									}}
-								></div>
-							) : connectionDirection === 'right' ? (
-								<div
-									className="box__connection right"
-									onClick={e => {
-										e.stopPropagation();
-										setConnection(box);
-									}}
-								></div>
-							) : null
-					}
+					<button
+						className="box__button"
+						onClick={deleteBoxHandler}>
+						<i className='box__remove-icon'/>
+					</button>
 				</div>
+				{
+					connectionDirection === 'left'
+						? (
+							<div
+								className="box__connection left"
+								onClick={e => {
+									e.stopPropagation();
+									setConnection(box);
+								}}
+							></div>
+						) : connectionDirection === 'right' ? (
+							<div
+								className="box__connection right"
+								onClick={e => {
+									e.stopPropagation();
+									setConnection(box);
+								}}
+							></div>
+						) : null
+				}
 			</div>
 			<ModalPortal isOpen={isModalOpen}>
 				<BoxModal
@@ -152,6 +181,7 @@ const Box = ({
 					addNewProp={addNewProp}
 					changeCustomConfig={changeCustomConfig}
 					deleteParam={deleteParam}
+					setImageInfo={setImageInfo}
 				/>
 			</ModalPortal>
 		</>
