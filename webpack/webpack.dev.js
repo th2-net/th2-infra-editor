@@ -34,12 +34,14 @@ module.exports = webpackMerge(commonConfig, {
         historyApiFallback: true,
         proxy: {
             '/schemas': {
-                target: 'http://kos215:8080',
+                // target: 'http://kos215:8080',
+                target: 'http://localhost:8080',
                 changeOrigin: true,
                 secure: false,
             },
             '/schema': {
-                target: 'http://kos215:8080',
+                // target: 'http://kos215:8080',
+                target: 'http://localhost:8080',
                 changeOrigin: true,
                 secure: false,
             }

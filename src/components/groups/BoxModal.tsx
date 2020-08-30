@@ -31,6 +31,10 @@ interface BoxModalProps {
 	}, boxName: string) => void;
 	changeCustomConfig: (config: {[prop: string]: string}, boxName: string) => void;
 	deleteParam: (paramName: string, boxName: string) => void;
+	setImageInfo: (imageProp: {
+		name: 'image-name' | 'image-version' | 'node-port';
+		value: string;
+	}, boxName: string) => void;
 }
 
 const BoxModal = ({
@@ -40,6 +44,7 @@ const BoxModal = ({
 	addNewProp,
 	changeCustomConfig,
 	deleteParam,
+	setImageInfo,
 }: BoxModalProps) => {
 	const modalRef = React.useRef<HTMLDivElement>(null);
 
@@ -60,11 +65,14 @@ const BoxModal = ({
 			<h3 className="box-modal__name">{box.name}</h3>
 			<div className="box-modal__box-settings">
 				<div className="box-modal__image-info">
-					<BoxImageInfo spec={{
-						'image-name': box.spec['image-name'],
-						'image-version': box.spec['image-version'],
-						'node-port': box.spec['node-port'],
-					}} />
+					<BoxImageInfo
+						setImageInfo={setImageInfo}
+						spec={{
+							'image-name': box.spec['image-name'],
+							'image-version': box.spec['image-version'],
+							'node-port': box.spec['node-port'],
+						}}
+						boxName={box.name}/>
 					<ConfigEditor
 						config={box.spec['custom-config']}
 						changeCustomConfig={changeCustomConfig}
@@ -101,7 +109,7 @@ const BoxModal = ({
 						&& <BoxAddForm
 							addNewProp={addNewProp}
 							boxName={box.name}
-							isFirstElement={box.spec.params.length === 0}
+							isFirstElement={box.spec.params?.length === 0}
 							closeAddForm={() => isShowAddForm(false)}/>
 					}
 				</div>

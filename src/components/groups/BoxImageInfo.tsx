@@ -15,30 +15,119 @@
  ***************************************************************************** */
 
 import React from 'react';
+import { createBemElement } from '../../helpers/styleCreators';
+
+interface ImagePropProps {
+	name: string;
+	value: string | number;
+	validationFunc: (value: string) => boolean;
+	setImageProp: (propName: string, value: string) => void;
+}
+
+const ImageProp = ({
+	name,
+	value,
+	validationFunc,
+	setImageProp,
+}: ImagePropProps) => {
+	const [propValue, setPropsValue] = React.useState(() => (value ? value.toString() : ''));
+	const [isValid, setIsValid] = React.useState(true);
+
+	React.useEffect(() => () => {
+		if (isValid) {
+			setImageProp(name, propValue);
+		}
+	});
+
+	const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		if (validationFunc(e.target.value)) {
+			setIsValid(true);
+		} else {
+			setIsValid(false);
+		}
+		setPropsValue(e.target.value);
+	};
+
+	const onBlur = () => {
+		if (isValid) {
+			setImageProp(name, propValue);
+		}
+	};
+
+	const inputClass = createBemElement(
+		'box-settings',
+		'input',
+		!isValid ? 'invalid' : '',
+	);
+
+	return (
+		<div
+			className="box-settings__group">
+			<label
+				htmlFor={name}
+				className="box-settings__label">
+				{name}
+			</label>
+			<input
+				id={name}
+				type="text"
+				className={inputClass}
+				defaultValue={propValue}
+				name={name}
+				onChange={onChange}
+				onBlur={onBlur}
+			/>
+		</div>
+	);
+};
 
 interface BoxImageInfoProps {
 	spec: {
 		['image-name']: string;
 		['image-version']: string;
-		['node-port']: number;
+		['node-port']?: number;
 	};
+	setImageInfo: (imageProp: {
+		name: 'image-name' | 'image-version' | 'node-port';
+		value: string;
+	}, boxName: string) => void;
+	boxName: string;
 }
 
 const BoxImageInfo = ({
 	spec,
-}: BoxImageInfoProps) => (
-	<div className="box-settings__image-info">
-		{
-			Object.entries(spec).map(([key, value]) => (
-				value
-				&& <div
-					key={key}
-					className="box-settings__image-info-item">
-					<div className='box-settings__label'>{key}</div>
-					<div className='box-settings__image-info-value'>{value}</div>
-				</div>
-			))
-		}
-	</div>);
+	setImageInfo,
+	boxName,
+}: BoxImageInfoProps) => {
+	const config = new Map([
+		['image-name', () => true],
+		['image-version', (value: string) => value.split('.').every(number => /^\d+$/.test(number))],
+		['node-port', (value: string) => /^\d+$/.test(value)],
+	]);
+
+	const setImageProp = (propName: string, value: string) => {
+		setImageInfo({
+			name: propName as 'image-name' | 'image-version' | 'node-port',
+			value,
+		}, boxName);
+	};
+
+	return (
+		<div className="box-settings__image-info">
+			{
+				Object.entries(spec).map(([key, value]) => (
+					<ImageProp
+						key={key}
+						name={key}
+						value={value ?? ''}
+						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+						validationFunc={config.get(key)!}
+						setImageProp={setImageProp}
+					/>
+				))
+			}
+		</div>
+	);
+};
 
 export default BoxImageInfo;

@@ -15,7 +15,6 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { observer } from 'mobx-react-lite';
 import { useDropzone } from 'react-dropzone';
 import yaml from 'js-yaml';
 import { readFileAsText } from '../../helpers/files';
@@ -23,12 +22,16 @@ import Group from './Group';
 import { isValidBox } from '../../helpers/box';
 import '../../styles/group.scss';
 import { isFileBase } from '../../models/FileBase';
-import { isLinksDefinition } from '../../models/LinksDefinition';
-import useStore from '../../hooks/useStore';
-import { BoxEntity, BoxConnections, BoxEntityWrapper } from '../../models/Box';
+import LinksDefinition, { isLinksDefinition } from '../../models/LinksDefinition';
+import {
+	BoxEntity,
+	BoxConnections,
+	BoxEntityWrapper,
+	ConnectionArrow,
+} from '../../models/Box';
+import SvgLayout from '../SvgLayout';
 
 interface GroupsProps {
-	createNewBox: (box: BoxEntity) => void;
 	addNewProp: (prop: {
 		name: string;
 		value: string;
@@ -38,18 +41,37 @@ interface GroupsProps {
 	setConnection: (box: BoxEntity) => void;
 	changeCustomConfig: (config: {[prop: string]: string}, boxName: string) => void;
 	deleteParam: (paramName: string, boxName: string) => void;
+	setImageInfo: (imageProp: {
+		name: 'image-name' | 'image-version' | 'node-port';
+		value: string;
+	}, boxName: string) => void;
+	connections: ConnectionArrow[];
+	addBox: (box: BoxEntity) => void;
+	setLinks: (links: LinksDefinition[]) => void;
+	groups: string[];
+	boxes: BoxEntity[];
+	onParamBlur: (boxName: string, paramName: string, value: string) => void;
+	deleteBox: (boxName: string) => void;
 }
 
 const Groups = ({
-	createNewBox,
 	addNewProp,
 	addCoords,
 	connectableBoxes,
 	setConnection,
 	changeCustomConfig,
 	deleteParam,
+	setImageInfo,
+	connections,
+	addBox,
+	setLinks,
+	groups,
+	boxes,
+	onParamBlur,
+	deleteBox,
 }: GroupsProps) => {
-	const { rootStore } = useStore();
+	const groupsRef = React.useRef<HTMLDivElement>(null);
+
 	const onDrop = React.useCallback(acceptedFiles => {
 		parseYamlFiles(acceptedFiles);
 	}, []);
@@ -64,11 +86,11 @@ const Groups = ({
 				}
 
 				if (isValidBox(parsedYamlFile)) {
-					rootStore.addBox(parsedYamlFile);
+					addBox(parsedYamlFile);
 				}
 
 				if (isLinksDefinition(parsedYamlFile)) {
-					rootStore.setLinks([parsedYamlFile]);
+					setLinks([parsedYamlFile]);
 				}
 			} catch (error) {
 				console.error('error');
@@ -82,31 +104,40 @@ const Groups = ({
 	});
 
 	return (
-		<div {...getRootProps()} className="groups">
-			<input {...getInputProps()}/>
+		<div
+			{...getRootProps()}
+			className="groups__wrapper">
 			<div
-				className="groups__list"
-				style={{
-					gridTemplateColumns: `repeat(${Math.max(rootStore.groups.length, 6)}, 1fr)`,
-				}}>
-				{
-					rootStore.groups.map(group =>
-						<Group
-							title={group}
-							key={group}
-							boxes={rootStore.boxes.filter(box => box.kind === group)}
-							onParamBlur={rootStore.setBoxParamValue}
-							createNewBox={createNewBox}
-							addNewProp={addNewProp}
-							addCoords={addCoords}
-							connectableBoxes={connectableBoxes}
-							setConnection={setConnection}
-							changeCustomConfig={changeCustomConfig}
-							deleteParam={deleteParam}/>)
-				}
+				ref={groupsRef}
+				className="groups">
+				<input {...getInputProps()}/>
+				<div
+					className="groups__list"
+					style={{
+						gridTemplateColumns: `repeat(${Math.max(groups.length, 6)}, 1fr)`,
+					}}>
+					{
+						groups.map(group =>
+							<Group
+								title={group}
+								key={group}
+								boxes={boxes.filter(box => box.kind === group)}
+								onParamBlur={onParamBlur}
+								addNewProp={addNewProp}
+								addCoords={addCoords}
+								connectableBoxes={connectableBoxes}
+								setConnection={setConnection}
+								changeCustomConfig={changeCustomConfig}
+								deleteParam={deleteParam}
+								setImageInfo={setImageInfo}
+								groupsTopOffset={groupsRef.current?.getBoundingClientRect().top}
+								deleteBox={deleteBox}/>)
+					}
+				</div>
 			</div>
+			<SvgLayout connections={connections}/>
 		</div>
 	);
 };
 
-export default observer(Groups);
+export default Groups;

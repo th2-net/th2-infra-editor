@@ -13,47 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-import FileBase from './FileBase';
 
-export interface BoxEntity extends FileBase {
-	spec: {
-		['custom-config']?: {
-			[prop: string]: string;
-		};
-		pins: Array<Pin>;
-		params?: Array<{
-			name: string;
-			value: string | number | boolean;
-		}>;
-		['image-name']: string;
-		['image-version']: string;
-		['node-port']: number;
-	};
-}
+import { BoxEntity } from './Box';
 
-export interface Pin {
-	attributes: Array<string>;
-	['connection-type']: string;
-	filters: Array<any>;
-	name: string;
-}
-
-export interface BoxConnections {
-	leftConnection: Connection;
-	rightConnection: Connection;
-}
-
-export interface Connection {
-	left: number;
-	top: number;
-}
-
-export interface ConnectionArrow {
-	start: Connection;
-	end: Connection;
-}
-
-export interface BoxEntityWrapper {
-	connection: 'left' | 'right';
-	box: BoxEntity;
+export default interface Schema {
+    commitRef: string;
+    resources: BoxEntity[];
 }

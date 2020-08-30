@@ -16,12 +16,16 @@
 
 import React from 'react';
 import SchemaSelector from './SchemaSelector';
+import { BoxEntity } from '../models/Box';
+import CreateBoxModal from './groups/CreateBoxModal';
+import { ModalPortal } from './Portal';
 
 interface HeaderProps {
 	schemaList: string[];
 	selectedSchema: string;
 	createSchema: (schemaName: string) => void;
 	saveChanges: () => void;
+	createNewBox: (box: BoxEntity) => void;
 }
 
 const Header = ({
@@ -29,11 +33,22 @@ const Header = ({
 	selectedSchema,
 	createSchema,
 	saveChanges,
+	createNewBox,
 }: HeaderProps) => {
+	const [isCreateBoxModalOpen, setIsCreateBoxModalOpen] = React.useState(false);
+
 	const createNewSchema = () => {
 		// eslint-disable-next-line no-alert
 		const schemaName = prompt('Schema name');
-		if (schemaName?.trim() && !schemaName.includes(' ')) {
+		if (schemaName === null) {
+			return;
+		}
+		if (schemaName?.trim()
+			&& !schemaName.includes(' ')
+			&& !schemaName.includes('_')
+			&& !schemaName
+				.split('')
+				.every(char => char.charCodeAt(0) < 65 && char.charCodeAt(0) > 90)) {
 			createSchema(schemaName);
 		} else {
 			// eslint-disable-next-line no-alert
@@ -42,20 +57,32 @@ const Header = ({
 	};
 
 	return (
-		<div className='header'>
-			<SchemaSelector
-				schemaList={schemaList}
-				selectedSchema={selectedSchema}
-			/>
-			<button
-				className='button'
-				onClick={createNewSchema}
-			>Create new</button>
-			<button
-				className='button'
-				onClick={saveChanges}
-			>Save changes</button>
-		</div>
+		<>
+			<div className='header'>
+				<SchemaSelector
+					schemaList={schemaList}
+					selectedSchema={selectedSchema}
+				/>
+				<button
+					className='button'
+					onClick={() => setIsCreateBoxModalOpen(!isCreateBoxModalOpen)}
+				>Create new box</button>
+				<button
+					className='button'
+					onClick={createNewSchema}
+				>Create new schema</button>
+				<button
+					className='button'
+					onClick={saveChanges}
+				>Save changes</button>
+			</div>
+			<ModalPortal isOpen={isCreateBoxModalOpen}>
+				<CreateBoxModal
+					createNewBox={createNewBox}
+					onClose={() => setIsCreateBoxModalOpen(false)}
+				/>
+			</ModalPortal>
+		</>
 	);
 };
 

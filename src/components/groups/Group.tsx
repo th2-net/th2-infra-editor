@@ -23,7 +23,6 @@ interface Props {
 	title: string;
 	boxes: Array<BoxEntity>;
 	onParamBlur: (boxName: string, paramName: string, value: string) => void;
-	createNewBox: (box: BoxEntity) => void;
 	addNewProp: (prop: {
 		name: string;
 		value: string;
@@ -33,58 +32,36 @@ interface Props {
 	setConnection: (box: BoxEntity) => void;
 	changeCustomConfig: (config: {[prop: string]: string}, boxName: string) => void;
 	deleteParam: (paramName: string, boxName: string) => void;
+	setImageInfo: (imageProp: {
+		name: 'image-name' | 'image-version' | 'node-port';
+		value: string;
+	}, boxName: string) => void;
+	groupsTopOffset?: number;
+	deleteBox: (boxName: string) => void;
 }
 const Group = ({
 	title,
 	boxes,
 	onParamBlur,
-	createNewBox,
 	addNewProp,
 	addCoords,
 	connectableBoxes,
 	setConnection,
 	changeCustomConfig,
 	deleteParam,
+	setImageInfo,
+	groupsTopOffset,
+	deleteBox,
 }: Props) => {
 	const arrLength = boxes.length;
 	const [boxRefs, setBoxRefs] = React.useState<React.RefObject<BoxMethods>[]>([]);
+	const titleRef = React.useRef<HTMLHeadingElement>(null);
 
 	React.useEffect(() => {
 		setBoxRefs(boxRef => (
 		  Array(arrLength).fill('').map((_, i) => boxRef[i] || React.createRef())
 		));
 	  }, [arrLength]);
-
-	const addBox = () => {
-		// eslint-disable-next-line no-alert
-		const boxName = prompt('Box name');
-		// eslint-disable-next-line no-alert
-		const imageName = prompt('Image name');
-		// eslint-disable-next-line no-alert
-		const imageVersion = prompt('Image version');
-		// eslint-disable-next-line no-alert
-		const nodePort = prompt('Node port');
-		if (boxName
-			&& imageName?.trim()
-			&& imageVersion?.trim()
-			&& nodePort?.trim()
-			&& parseInt(nodePort.trim())) {
-			createNewBox({
-				name: boxName,
-				kind: title,
-				spec: {
-					pins: [],
-					params: [],
-					'image-name': imageName,
-					'image-version': imageVersion,
-					'node-port': parseInt(nodePort),
-				},
-			});
-		} else {
-			// eslint-disable-next-line no-alert
-			alert('Invalid box info');
-		}
-	};
 
 	const onScroll = () => {
 		boxRefs
@@ -94,7 +71,9 @@ const Group = ({
 
 	return (
 		<div className="group">
-			<h1 className="group__title">
+			<h1
+				ref={titleRef}
+				className="group__title">
 				{title}
 			</h1>
 			<div className="group__items">
@@ -115,14 +94,16 @@ const Group = ({
 								setConnection={setConnection}
 								changeCustomConfig={changeCustomConfig}
 								deleteParam={deleteParam}
-							/>)
+								setImageInfo={setImageInfo}
+								groupsTopOffset={groupsTopOffset}
+								titleHeight={titleRef.current
+									? (titleRef.current?.clientHeight
+										+ parseInt(window.getComputedStyle(titleRef.current).marginBottom))
+									: undefined}
+								deleteBox={deleteBox}/>)
 					}
 				</div>
 			</div>
-			<button
-				className='group__add-button'
-				onClick={addBox}
-			>+</button>
 		</div>
 	);
 };
