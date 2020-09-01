@@ -16,10 +16,10 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import Groups from './groups/Groups';
-import '../styles/root.scss';
-import useStore from '../hooks/useStore';
 import Header from './Header';
+import Groups from './groups/Groups';
+import useStore from '../hooks/useStore';
+import '../styles/root.scss';
 
 function App() {
 	const { rootStore } = useStore();
@@ -30,29 +30,8 @@ function App() {
 
 	return (
 		<div className="root">
-			<Header
-				schemaList={rootStore.schemas}
-				selectedSchema={rootStore.selectedSchema}
-				createSchema={rootStore.createNewSchema}
-				saveChanges={rootStore.saveChanges}
-				createNewBox={rootStore.createNewBox}
-			/>
-			<Groups
-				addNewProp={rootStore.addNewProp}
-				addCoords={rootStore.addCoords}
-				connectableBoxes={rootStore.connectableBoxes}
-				setConnection={rootStore.setConnection}
-				changeCustomConfig={rootStore.changeCustomConfig}
-				deleteParam={rootStore.deleteParam}
-				setImageInfo={rootStore.setImageInfo}
-				connections={rootStore.connections}
-				addBox={rootStore.addBox}
-				setLinks={rootStore.setLinks}
-				groups={rootStore.groups}
-				boxes={rootStore.boxes}
-				onParamBlur={rootStore.setBoxParamValue}
-				deleteBox={rootStore.deleteBox}
-			/>
+			<Header />
+			<Groups />
 		</div>
 	);
 }

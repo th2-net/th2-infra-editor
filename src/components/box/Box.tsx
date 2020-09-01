@@ -18,32 +18,18 @@
 import React, { useImperativeHandle } from 'react';
 import { observer } from 'mobx-react-lite';
 import { createBemElement } from '../../helpers/styleCreators';
-import { BoxEntity, BoxConnections } from '../../models/Box';
-import '../../styles/box.scss';
+import { BoxEntity } from '../../models/Box';
 import useStore from '../../hooks/useStore';
-import { ModalPortal } from '../Portal';
-import BoxModal from './BoxModal';
+import { ModalPortal } from '../util/Portal';
+import BoxSettings from './BoxSettings';
 import useWindowSize from '../../hooks/useWindowSize';
+import '../../styles/box.scss';
 
 interface Props {
 	box: BoxEntity;
-	onParamValueChange: (boxName: string, paramName: string, value: string) => void;
-	addNewProp: (prop: {
-		name: string;
-		value: string;
-	}, boxName: string) => void;
-	addCoords: (box: BoxEntity, connections: BoxConnections) => void;
-	connectionDirection?: string;
-	setConnection: (box: BoxEntity) => void;
-	changeCustomConfig: (config: {[prop: string]: string}, boxName: string) => void;
-	deleteParam: (paramName: string, boxName: string) => void;
-	setImageInfo: (imageProp: {
-		name: 'image-name' | 'image-version' | 'node-port';
-		value: string;
-	}, boxName: string) => void;
 	groupsTopOffset?: number;
 	titleHeight?: number;
-	deleteBox: (boxName: string) => void;
+	connectionDirection?: 'left' | 'right';
 }
 
 export interface BoxMethods {
@@ -53,17 +39,9 @@ export interface BoxMethods {
 
 const Box = ({
 	box,
-	onParamValueChange,
-	addNewProp,
-	addCoords,
-	connectionDirection,
-	setConnection,
-	changeCustomConfig,
-	deleteParam,
-	setImageInfo,
 	groupsTopOffset,
 	titleHeight,
-	deleteBox,
+	connectionDirection,
 }: Props, ref: React.Ref<BoxMethods>) => {
 	const { rootStore } = useStore();
 	const [isModalOpen, setIsModalOpen] = React.useState(false);
@@ -100,7 +78,7 @@ const Box = ({
 					top: clientRect?.top + (clientRect?.height / 2)
 					- groupsTopOffset - titleHeight,
 				};
-				addCoords(box, {
+				rootStore.addCoords(box, {
 					leftConnection,
 					rightConnection,
 				});
@@ -114,77 +92,68 @@ const Box = ({
 		isModalOpen ? 'active' : null,
 	);
 
+	const boxConectionClassName = createBemElement(
+		'box',
+		'connection',
+		connectionDirection || null,
+	);
+
 	const deleteBoxHandler = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 		e.stopPropagation();
-		// eslint-disable-next-line no-restricted-globals
-		if (confirm(`Are you sure you want to delete box "${box.name}"`)) {
-			deleteBox(box.name);
+		if (window.confirm(`Are you sure you want to delete box "${box.name}"`)) {
+			rootStore.deleteBox(box.name);
 		}
 	};
 
+	const onSelectBox = () => {
+		rootStore.setSelectedBox(rootStore.selectedBox === box ? null : box);
+	};
+
 	return (
-		<>
-			<div
-				ref={boxRef}
-				className="box"
-				onClick={() => {
-					if (!rootStore.selectedBox) {
-						rootStore.setSelectedBox(box);
-					} else {
-						rootStore.setSelectedBox(null);
-					}
-				}}>
-				<span className="box__title">
-					{box.name}
-				</span>
-				<div className="box__buttons-wrapper">
-					<button
-						className="box__button"
-						onClick={e => {
-							e.stopPropagation();
-							setIsModalOpen(!isModalOpen);
-						}}>
-						<i className={settingsIconClassName}/>
-					</button>
-					<button
-						className="box__button"
-						onClick={deleteBoxHandler}>
-						<i className='box__remove-icon'/>
-					</button>
-				</div>
-				{
-					connectionDirection === 'left'
-						? (
-							<div
-								className="box__connection left"
-								onClick={e => {
-									e.stopPropagation();
-									setConnection(box);
-								}}
-							></div>
-						) : connectionDirection === 'right' ? (
-							<div
-								className="box__connection right"
-								onClick={e => {
-									e.stopPropagation();
-									setConnection(box);
-								}}
-							></div>
-						) : null
-				}
+		<div
+			ref={boxRef}
+			className="box"
+			onClick={onSelectBox}>
+			<span className="box__title">
+				{box.name}
+			</span>
+			<div className="box__buttons-wrapper">
+				<button
+					className="box__button"
+					onClick={e => {
+						e.stopPropagation();
+						setIsModalOpen(!isModalOpen);
+					}}>
+					<i className={settingsIconClassName}/>
+				</button>
+				<button
+					className="box__button"
+					onClick={deleteBoxHandler}>
+					<i className='box__remove-icon'/>
+				</button>
 			</div>
+			{
+				connectionDirection
+				&& 	<div
+					className={boxConectionClassName}
+					onClick={e => {
+						e.stopPropagation();
+						rootStore.setConnection(box);
+					}}
+				/>
+			}
 			<ModalPortal isOpen={isModalOpen}>
-				<BoxModal
+				<BoxSettings
 					box={box}
-					onParamValueChange={onParamValueChange}
+					onParamValueChange={rootStore.setBoxParamValue}
 					onClose={() => setIsModalOpen(false)}
-					addNewProp={addNewProp}
-					changeCustomConfig={changeCustomConfig}
-					deleteParam={deleteParam}
-					setImageInfo={setImageInfo}
+					addDictionaryRelation={rootStore.addDictionaryRelation}
+					changeCustomConfig={rootStore.changeCustomConfig}
+					deleteParam={rootStore.deleteParam}
+					setImageInfo={rootStore.setImageInfo}
 				/>
 			</ModalPortal>
-		</>
+		</div>
 	);
 };
 

@@ -14,54 +14,34 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { RefObject } from 'react';
-import Box, { BoxMethods } from './Box';
-import { BoxEntity, BoxConnections, BoxEntityWrapper } from '../../models/Box';
+import React from 'react';
+import Box, { BoxMethods } from '../box/Box';
+import { BoxEntity } from '../../models/Box';
+import useStore from '../../hooks/useStore';
 import '../../styles/group.scss';
 
 interface Props {
 	title: string;
 	boxes: Array<BoxEntity>;
-	onParamBlur: (boxName: string, paramName: string, value: string) => void;
-	addNewProp: (prop: {
-		name: string;
-		value: string;
-	}, boxName: string) => void;
-	addCoords: (box: BoxEntity, connections: BoxConnections) => void;
-	connectableBoxes: BoxEntityWrapper[];
-	setConnection: (box: BoxEntity) => void;
-	changeCustomConfig: (config: {[prop: string]: string}, boxName: string) => void;
-	deleteParam: (paramName: string, boxName: string) => void;
-	setImageInfo: (imageProp: {
-		name: 'image-name' | 'image-version' | 'node-port';
-		value: string;
-	}, boxName: string) => void;
 	groupsTopOffset?: number;
-	deleteBox: (boxName: string) => void;
 }
+
 const Group = ({
 	title,
 	boxes,
-	onParamBlur,
-	addNewProp,
-	addCoords,
-	connectableBoxes,
-	setConnection,
-	changeCustomConfig,
-	deleteParam,
-	setImageInfo,
 	groupsTopOffset,
-	deleteBox,
 }: Props) => {
-	const arrLength = boxes.length;
+	const { rootStore } = useStore();
 	const [boxRefs, setBoxRefs] = React.useState<React.RefObject<BoxMethods>[]>([]);
 	const titleRef = React.useRef<HTMLHeadingElement>(null);
+
+	const arrLength = boxes.length;
 
 	React.useEffect(() => {
 		setBoxRefs(boxRef => (
 		  Array(arrLength).fill('').map((_, i) => boxRef[i] || React.createRef())
 		));
-	  }, [arrLength]);
+	  }, [boxes]);
 
 	const onScroll = () => {
 		boxRefs
@@ -71,36 +51,24 @@ const Group = ({
 
 	return (
 		<div className="group">
-			<h1
-				ref={titleRef}
-				className="group__title">
+			<h1 ref={titleRef} className="group__title">
 				{title}
 			</h1>
 			<div className="group__items">
-				<div
-					onScroll={onScroll}
-					className="group__items-scroller">
+				<div onScroll={onScroll} className="group__items-scroller">
 					{
 						boxes.map((box, index) =>
 							<Box
 								key={`${box.name}-${index}`}
 								box={box}
 								ref={boxRefs[index]}
-								onParamValueChange={onParamBlur}
-								addNewProp={addNewProp}
-								addCoords={addCoords}
-								connectionDirection={connectableBoxes
+								connectionDirection={rootStore.connectableBoxes
 									.find(wrapper => wrapper.box.name === box.name)?.connection}
-								setConnection={setConnection}
-								changeCustomConfig={changeCustomConfig}
-								deleteParam={deleteParam}
-								setImageInfo={setImageInfo}
 								groupsTopOffset={groupsTopOffset}
 								titleHeight={titleRef.current
 									? (titleRef.current?.clientHeight
 										+ parseInt(window.getComputedStyle(titleRef.current).marginBottom))
-									: undefined}
-								deleteBox={deleteBox}/>)
+									: undefined} />)
 					}
 				</div>
 			</div>

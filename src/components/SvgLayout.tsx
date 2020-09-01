@@ -15,8 +15,8 @@
  ***************************************************************************** */
 
 import React from 'react';
-import '../styles/svg-layout.scss';
 import { ConnectionArrow } from '../models/Box';
+import '../styles/svg-layout.scss';
 
 interface SvgLayoutProps {
 	connections: ConnectionArrow[];

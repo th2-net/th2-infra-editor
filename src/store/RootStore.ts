@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import {
-	action, computed, observable, reaction,
+	action, computed, observable, reaction, set,
 } from 'mobx';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -23,6 +23,7 @@ import {
 	BoxConnections,
 	ConnectionArrow,
 	BoxEntityWrapper,
+	DictionaryRelation,
 } from '../models/Box';
 import { intersection } from '../helpers/array';
 import LinksDefinition, { isLinksDefinition } from '../models/LinksDefinition';
@@ -39,7 +40,12 @@ export default class RootStore {
 
 		reaction(
 			() => this.selectedSchema,
-			selectedSchema => this.fetchSchemaState(selectedSchema),
+			selectedSchema => {
+				this.connectionCoords.clear();
+				if (selectedSchema) {
+					this.fetchSchemaState(selectedSchema);
+				}
+			},
 		);
 
 		reaction(
@@ -52,10 +58,13 @@ export default class RootStore {
 	public schemas: string[] = [];
 
 	@observable
-	public selectedBox: BoxEntity | null = null;
+	public selectedSchema: string | null = null;
 
 	@observable
 	public boxes: Array<BoxEntity> = [];
+
+	@observable
+	public selectedBox: BoxEntity | null = null;
 
 	@observable
 	public groups: Array<string> = [];
@@ -64,21 +73,16 @@ export default class RootStore {
 	public links: Array<[string, string]> = [];
 
 	@observable
-	public selectedSchema = 'first-project';
+	private linkBox: LinksDefinition | null = null;
 
 	@observable
 	public changedBoxes: FileBase[] = [];
 
 	@observable
-	public connectionCoords: Map<BoxEntity, BoxConnections> = new Map();
+	public connectionCoords: Map<string, BoxConnections> = new Map();
 
 	@observable
 	public connectableBoxes: BoxEntityWrapper[] = [];
-
-	@observable
-	private linkBox: LinksDefinition | null = null;
-
-	schemaAbortConroller: AbortController | null = null;
 
 	@computed
 	public get connectionChain(): BoxEntityWrapper[] {
@@ -88,9 +92,9 @@ export default class RootStore {
 		const previousBoxes: Array<BoxEntity> = [];
 
 		const groupIndex = this.groups.indexOf(this.selectedBox.kind);
+
 		for (let i = groupIndex + 1; i < this.groups.length; i++) {
 			const nextGroup = this.groups[i];
-
 			const nextGroupBoxes = this.boxes
 				.filter(box => box.kind === nextGroup)
 				.filter(box => intersection(
@@ -137,21 +141,22 @@ export default class RootStore {
 
 	@action
 	public createNewBox = (newBox: BoxEntity) => {
-		if (!this.boxes
-			.filter(box => box.kind === newBox.kind)
-			.some(box => box.name === newBox.name)) {
-			this.api.sendSchemaRequest(this.selectedSchema, [{
-				operation: 'add',
-				payload: newBox,
-			}]).then(res => {
-				if (res) {
-					this.addBox(newBox);
-				}
-			});
-		} else {
+		if (!this.selectedSchema) return;
+
+		if (this.boxes.find(box => box.kind === newBox.kind && box.name === newBox.name)) {
 			// eslint-disable-next-line no-alert
 			alert(`Box "${newBox.name}" already exists`);
+			return;
 		}
+
+		this.api.sendSchemaRequest(this.selectedSchema, [{
+			operation: 'add',
+			payload: newBox,
+		}]).then(res => {
+			if (res) {
+				this.addBox(newBox);
+			}
+		});
 	};
 
 	@action setSelectedBox = (box: BoxEntity | null) => {
@@ -186,14 +191,16 @@ export default class RootStore {
 		this.schemas = await this.api.fetchSchemasList();
 	}
 
+	schemaAbortController: AbortController | null = null;
+
 	@action
 	public async fetchSchemaState(schemaName: string) {
-		if (this.schemaAbortConroller) {
-			this.schemaAbortConroller.abort();
+		if (this.schemaAbortController) {
+			this.schemaAbortController.abort();
 		}
-		this.schemaAbortConroller = new AbortController();
-		const result = await this.api.fetchSchemaState(schemaName, this.schemaAbortConroller.signal);
-		this.boxes = result.resources.filter(resItem => isValidBox(resItem)) as BoxEntity[];
+		this.schemaAbortController = new AbortController();
+		const result = await this.api.fetchSchemaState(schemaName, this.schemaAbortController.signal);
+		this.boxes = result.resources.filter(resItem => isValidBox(resItem));
 		const links = result.resources.filter(resItem => isLinksDefinition(resItem)) as LinksDefinition[];
 		this.linkBox = links[0];
 		this.setLinks(links);
@@ -214,52 +221,51 @@ export default class RootStore {
 			if (paramIndex && changedBox.spec.params) {
 				changedBox.spec.params[paramIndex].value = value;
 			}
-
-			if (!this.changedBoxes.includes(changedBox)) {
-				this.changedBoxes.push(changedBox);
-			}
+			this.saveBoxChanges(changedBox);
 		}
 	};
 
 	@action
-	public saveChanges = () => {
-		this.api.sendSchemaRequest(
-			this.selectedSchema,
-			this.changedBoxes.map(box => ({
-				operation: 'update',
-				payload: box,
-			})),
-		// eslint-disable-next-line no-alert
-		).then(() => alert('Changes saved'));
+	public saveChanges = async () => {
+		if (!this.selectedSchema) return;
+		try {
+			await this.api.sendSchemaRequest(
+				this.selectedSchema,
+				this.changedBoxes.map(box => ({
+					operation: 'update',
+					payload: box,
+				})),
+			);
+			// eslint-disable-next-line no-alert
+			alert('Changes saved');
+		} catch (error) {
+			// eslint-disable-next-line no-alert
+			alert('Could\'nt save changes');
+		}
 	};
 
 	@action
 	public createNewSchema = async (schemaName: string) => {
-		await this.api.createNewSchema(schemaName)
-			.then(() => {
-				this.schemas.push(schemaName);
-				this.selectedSchema = schemaName;
-			});
+		await this.api.createNewSchema(schemaName);
+		this.schemas.push(schemaName);
+		this.selectedSchema = schemaName;
 	};
 
 	@action
-	public addNewProp = (prop: {
-		name: string;
-		value: string;
-	}, boxName: string) => {
-		const changedBox = this.boxes.find(box => box.name === boxName);
-		if (changedBox?.spec.params) {
-			changedBox?.spec.params.push(prop);
-
-			if (changedBox && !this.changedBoxes.includes(changedBox)) {
-				this.changedBoxes.push(changedBox);
-			}
+	public addDictionaryRelation = (dictionaryRelation: DictionaryRelation) => {
+		const targetBox = this.boxes.find(box => box.name === dictionaryRelation.box);
+		if (!targetBox) return;
+		if (!targetBox.spec) set(targetBox, 'spec', {});
+		if (!targetBox.spec['dictionaries-relation']) {
+			set(targetBox.spec, 'dictionaries-relation', [dictionaryRelation]);
+			return;
 		}
+		targetBox.spec['dictionaries-relation'].push(dictionaryRelation);
 	};
 
 	@action
 	public addCoords = (box: BoxEntity, connections: BoxConnections) => {
-		this.connectionCoords.set(box, connections);
+		this.connectionCoords.set(box.name, connections);
 	};
 
 	@computed
@@ -277,8 +283,8 @@ export default class RootStore {
 				const startBox = this.boxes.find(box => box.name === link[0]);
 				const endBox = this.boxes.find(box => box.name === link[1]);
 				if (startBox && endBox) {
-					const startBoxCoords = this.connectionCoords.get(startBox);
-					const endBoxCoords = this.connectionCoords.get(endBox);
+					const startBoxCoords = this.connectionCoords.get(startBox.name);
+					const endBoxCoords = this.connectionCoords.get(endBox.name);
 					if (startBoxCoords && endBoxCoords) {
 						const startBoxGroupIndex = this.groups.findIndex(group => startBox?.kind === group);
 						const endBoxGroupIndex = this.groups.findIndex(group => endBox?.kind === group);
@@ -301,40 +307,40 @@ export default class RootStore {
 
 	@action
 	public setConnection = async (box: BoxEntity) => {
-		if (this.selectedBox && this.linkBox) {
-			this.links.push([this.selectedBox?.name, box.name]);
-			if (this.linkBox?.spec['links-definition']) {
-				this.linkBox?.spec['links-definition']['router-grpc'].push({
-					name: uuidv4(),
-					from: {
-						box: this.selectedBox.name,
-					},
-					to: {
-						box: box.name,
-					},
-				});
-			}
-			if (this.linkBox?.spec['boxes-relation']) {
-				this.linkBox?.spec['boxes-relation']['router-grpc'].push({
-					name: uuidv4(),
-					from: {
-						box: this.selectedBox.name,
-						pin: '',
-						strategy: '',
-					},
-					to: {
-						box: box.name,
-						pin: '',
-						strategy: '',
-					},
-				});
-			}
-			await this.api.sendSchemaRequest(this.selectedSchema, [{
-				operation: 'update',
-				payload: this.linkBox,
-			}]);
-			this.selectedBox = null;
+		if (!this.selectedSchema || !this.selectedBox || !this.linkBox) return;
+
+		this.links.push([this.selectedBox?.name, box.name]);
+		if (this.linkBox?.spec['links-definition']) {
+			this.linkBox?.spec['links-definition']['router-grpc'].push({
+				name: uuidv4(),
+				from: {
+					box: this.selectedBox.name,
+				},
+				to: {
+					box: box.name,
+				},
+			});
 		}
+		if (this.linkBox?.spec['boxes-relation']) {
+			this.linkBox?.spec['boxes-relation']['router-grpc'].push({
+				name: uuidv4(),
+				from: {
+					box: this.selectedBox.name,
+					pin: '',
+					strategy: '',
+				},
+				to: {
+					box: box.name,
+					pin: '',
+					strategy: '',
+				},
+			});
+		}
+		await this.api.sendSchemaRequest(this.selectedSchema, [{
+			operation: 'update',
+			payload: this.linkBox,
+		}]);
+		this.selectedBox = null;
 	};
 
 	@action
@@ -365,9 +371,7 @@ export default class RootStore {
 					},
 				};
 
-				if (!this.changedBoxes.includes(changedBox)) {
-					this.changedBoxes.push(changedBox);
-				}
+				this.saveBoxChanges(changedBox);
 			}
 		}
 	};
@@ -383,27 +387,35 @@ export default class RootStore {
 			this.boxes[boxIndex].spec[imageProp.name] = (imageProp.name === 'node-port'
 				? parseInt(imageProp.value) : imageProp.value) as never;
 
-			if (!this.changedBoxes.includes(this.boxes[boxIndex])) {
-				this.changedBoxes.push(this.boxes[boxIndex]);
-			}
+			this.saveBoxChanges(this.boxes[boxIndex]);
 		}
 	};
 
 	@action
-	public deleteBox = (boxName: string) => {
+	public deleteBox = async (boxName: string) => {
+		if (!this.selectedSchema) return;
 		const removableBoxIndex = this.boxes.findIndex(box => box.name === boxName);
-		this.api.sendSchemaRequest(this.selectedSchema, [{
+		const isAccess = await this.api.sendSchemaRequest(this.selectedSchema, [{
 			operation: 'remove',
 			payload: this.boxes[removableBoxIndex],
-		}]).then(isAccess => {
-			if (isAccess) {
-				this.boxes.splice(removableBoxIndex, 1);
-			}
-		});
+		}]);
+		if (isAccess) {
+			this.boxes.splice(removableBoxIndex, 1);
+		}
 	};
 
 	async init() {
 		await this.fetchSchemas();
-		await this.fetchSchemaState(this.selectedSchema);
+		if (this.schemas.length) {
+			this.setSelectedSchema(this.schemas[0]);
+			await this.fetchSchemaState(this.schemas[0]);
+		}
 	}
+
+	@action
+	private saveBoxChanges = (updatedBox: BoxEntity) => {
+		if (!this.changedBoxes.includes(updatedBox)) {
+			this.changedBoxes.push(updatedBox);
+		}
+	};
 }

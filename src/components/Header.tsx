@@ -15,26 +15,15 @@
  ***************************************************************************** */
 
 import React from 'react';
-import SchemaSelector from './SchemaSelector';
-import { BoxEntity } from '../models/Box';
-import CreateBoxModal from './groups/CreateBoxModal';
-import { ModalPortal } from './Portal';
+import { observer } from 'mobx-react-lite';
+import CreateBoxModal from './box/CreateBoxModal';
+import { ModalPortal } from './util/Portal';
+import useStore from '../hooks/useStore';
+import '../styles/header.scss';
 
-interface HeaderProps {
-	schemaList: string[];
-	selectedSchema: string;
-	createSchema: (schemaName: string) => void;
-	saveChanges: () => void;
-	createNewBox: (box: BoxEntity) => void;
-}
+const Header = () => {
+	const { rootStore } = useStore();
 
-const Header = ({
-	schemaList,
-	selectedSchema,
-	createSchema,
-	saveChanges,
-	createNewBox,
-}: HeaderProps) => {
 	const [isCreateBoxModalOpen, setIsCreateBoxModalOpen] = React.useState(false);
 
 	const createNewSchema = () => {
@@ -43,13 +32,14 @@ const Header = ({
 		if (schemaName === null) {
 			return;
 		}
-		if (schemaName?.trim()
-			&& !schemaName.includes(' ')
-			&& !schemaName.includes('_')
-			&& !schemaName
-				.split('')
-				.every(char => char.charCodeAt(0) < 65 && char.charCodeAt(0) > 90)) {
-			createSchema(schemaName);
+		const trimmedValue = schemaName?.trim();
+		if (
+			trimmedValue
+			&& !trimmedValue.includes(' ')
+			&& !trimmedValue.includes('_')
+			&& !/[A-Z]/g.test(trimmedValue)
+		) {
+			rootStore.createNewSchema(schemaName);
 		} else {
 			// eslint-disable-next-line no-alert
 			alert('Invalid schema name');
@@ -57,33 +47,39 @@ const Header = ({
 	};
 
 	return (
-		<>
-			<div className='header'>
-				<SchemaSelector
-					schemaList={schemaList}
-					selectedSchema={selectedSchema}
-				/>
-				<button
-					className='button'
-					onClick={() => setIsCreateBoxModalOpen(!isCreateBoxModalOpen)}
-				>Create new box</button>
-				<button
-					className='button'
-					onClick={createNewSchema}
-				>Create new schema</button>
-				<button
-					className='button'
-					onClick={saveChanges}
-				>Save changes</button>
-			</div>
+		<div className="header">
+			<select
+				className="header__select"
+				onChange={e => rootStore.setSelectedSchema(e.target.value)}
+				value={rootStore.selectedSchema || undefined}
+			>
+				{
+					rootStore.schemas.map(schema => (
+						<option key={schema} value={schema}>
+							{schema}
+						</option>
+					))
+				}
+			</select>
+			<button
+				className="header__button"
+				onClick={() => setIsCreateBoxModalOpen(!isCreateBoxModalOpen)}>
+				Create new box
+			</button>
+			<button className="header__button" onClick={createNewSchema}>
+				Create new schema
+			</button>
+			<button className="header__button" onClick={rootStore.saveChanges}>
+				Save changes
+			</button>
 			<ModalPortal isOpen={isCreateBoxModalOpen}>
 				<CreateBoxModal
-					createNewBox={createNewBox}
+					createNewBox={rootStore.createNewBox}
 					onClose={() => setIsCreateBoxModalOpen(false)}
 				/>
 			</ModalPortal>
-		</>
+		</div>
 	);
 };
 
-export default Header;
+export default observer(Header);
