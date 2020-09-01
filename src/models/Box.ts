@@ -28,6 +28,7 @@ export interface BoxEntity extends FileBase {
 		['image-name']: string;
 		['image-version']: string;
 		['node-port']: number;
+		['dictionaries-relation']?: Array<DictionaryRelation>;
 	};
 }
 
@@ -56,4 +57,13 @@ export interface ConnectionArrow {
 export interface BoxEntityWrapper {
 	connection: 'left' | 'right';
 	box: BoxEntity;
+}
+
+export interface DictionaryRelation {
+	name: string;
+	box: string;
+	dictionary: {
+		name: string;
+		type: string;
+	};
 }

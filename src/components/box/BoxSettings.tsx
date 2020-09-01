@@ -15,20 +15,17 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { BoxEntity } from '../../models/Box';
+import { BoxEntity, DictionaryRelation } from '../../models/Box';
 import BoxImageInfo from './BoxImageInfo';
 import useOutsideClickListener from '../../hooks/useOutsideClickListener';
-import BoxAddForm from './BoxAddForm';
+import BoxDictionaryConfigurator from './BoxDictionaryConfigurator';
 import ConfigEditor from './ConfigEditor';
 
-interface BoxModalProps {
+interface BoxSettingsProps {
 	box: BoxEntity;
 	onParamValueChange: (boxName: string, paramName: string, value: string) => void;
 	onClose: () => void;
-	addNewProp: (prop: {
-		name: string;
-		value: string;
-	}, boxName: string) => void;
+	addDictionaryRelation: (dictionaryRelation: DictionaryRelation) => void;
 	changeCustomConfig: (config: {[prop: string]: string}, boxName: string) => void;
 	deleteParam: (paramName: string, boxName: string) => void;
 	setImageInfo: (imageProp: {
@@ -37,18 +34,18 @@ interface BoxModalProps {
 	}, boxName: string) => void;
 }
 
-const BoxModal = ({
+const BoxSettings = ({
 	box,
 	onParamValueChange,
 	onClose,
-	addNewProp,
+	addDictionaryRelation,
 	changeCustomConfig,
 	deleteParam,
 	setImageInfo,
-}: BoxModalProps) => {
+}: BoxSettingsProps) => {
 	const modalRef = React.useRef<HTMLDivElement>(null);
 
-	const [showAddForm, isShowAddForm] = React.useState(false);
+	const [showDictionaryConfigurator, isShowAddForm] = React.useState(false);
 
 	const onBlur = (e: React.FocusEvent<HTMLInputElement>) => {
 		onParamValueChange(box.name, e.target.name, e.target.value);
@@ -59,10 +56,10 @@ const BoxModal = ({
 	});
 
 	return (
-		<div
-			ref={modalRef}
-			className="box-modal">
-			<h3 className="box-modal__name">{box.name}</h3>
+		<div ref={modalRef} className="box-modal">
+			<h3 className="box-modal__name">
+				{box.name}
+			</h3>
 			<div className="box-modal__box-settings">
 				<div className="box-modal__image-info">
 					<BoxImageInfo
@@ -72,7 +69,8 @@ const BoxModal = ({
 							'image-version': box.spec['image-version'],
 							'node-port': box.spec['node-port'],
 						}}
-						boxName={box.name}/>
+						boxName={box.name}
+					/>
 					<ConfigEditor
 						config={box.spec['custom-config']}
 						changeCustomConfig={changeCustomConfig}
@@ -85,14 +83,12 @@ const BoxModal = ({
 						&& box.spec.params.map(param => (
 							<div className="box-settings__group" key={param.name}>
 								<div className="box-modal__wrapper">
-									<label
-										htmlFor={param.name}
-										className="box-settings__label">
+									<label htmlFor={param.name} className="box-settings__label">
 										{param.name}
 									</label>
 									<button
 										onClick={() => deleteParam(param.name, box.name)}
-										className="box-modal__delete-button"></button>
+										className="box-modal__delete-button" />
 								</div>
 								<input
 									id={param.name}
@@ -105,28 +101,27 @@ const BoxModal = ({
 						))
 					}
 					{
-						showAddForm
-						&& <BoxAddForm
-							addNewProp={addNewProp}
+						showDictionaryConfigurator
+						&& <BoxDictionaryConfigurator
+							addDictionaryRelation={addDictionaryRelation}
 							boxName={box.name}
-							isFirstElement={box.spec.params?.length === 0}
 							closeAddForm={() => isShowAddForm(false)}/>
 					}
 				</div>
 			</div>
 			<div className="box-modal__buttons">
 				{
-					!showAddForm
-					&& <button
-						className="box-modal__button"
-						onClick={() => isShowAddForm(true)}>Add Props</button>
+					!showDictionaryConfigurator
+					&& <button className="box-modal__button" onClick={() => isShowAddForm(true)}>
+						Add Dictionary
+					</button>
 				}
-				<button
-					onClick={() => onClose()}
-					className="box-modal__button">Close</button>
+				<button onClick={onClose} className="box-modal__button">
+					Close
+				</button>
 			</div>
 		</div>
 	);
 };
 
-export default BoxModal;
+export default BoxSettings;

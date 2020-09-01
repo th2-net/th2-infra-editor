@@ -16,6 +16,7 @@
 
 import React from 'react';
 import { createBemElement } from '../../helpers/styleCreators';
+import { useInput } from '../../hooks/useInput';
 
 interface ConfigEditor {
 	config?: {[prop: string]: string};
@@ -28,49 +29,43 @@ const ConfigEditor = ({
 	changeCustomConfig,
 	boxName,
 }: ConfigEditor) => {
-	const [value, setValue] = React.useState(() => JSON.stringify(config, null, 4));
-	const [isValid, setIsValid] = React.useState(true);
+	const configInput = useInput({
+		initialValue: JSON.stringify(config, null, 4),
+		validate: value => {
+			try {
+				JSON.parse(value);
+				return true;
+			} catch {
+				return false;
+			}
+		},
+		name: 'config',
+		id: 'config',
+	});
 
 	const textAreaClass = createBemElement(
 		'box-settings',
 		'textarea',
-		!isValid ? 'invalid' : '',
+		!configInput.isValid ? 'invalid' : '',
 	);
 
-	const validateValue = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-		setIsValid(true);
-		try {
-			JSON.parse(e.target.value);
-		} catch {
-			setIsValid(false);
-		}
-		setValue(e.target.value);
-	};
-
 	const onBlur = () => {
-		if (isValid) {
-			changeCustomConfig(
-				JSON.parse(value),
-				boxName,
-			);
+		if (configInput.isValid) {
+			changeCustomConfig(JSON.parse(configInput.value), boxName);
 		}
 	};
 
 	return (
 		<div className="box-settings__group">
-			<label
-				htmlFor="config"
-				className="box-settings__label">
+			<label htmlFor={configInput.bind.name} className="box-settings__label">
 				Config
 			</label>
 			<textarea
-				id="config"
-				value={value}
-				onChange={validateValue}
 				className={textAreaClass}
 				onBlur={onBlur}
-				name="config"/>
-		</div>);
+				{...configInput.bind}/>
+		</div>
+	);
 };
 
 export default ConfigEditor;
