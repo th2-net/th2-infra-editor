@@ -17,19 +17,20 @@
 
 import React, { useImperativeHandle } from 'react';
 import { observer } from 'mobx-react-lite';
-import { createBemElement } from '../../helpers/styleCreators';
+import { createBemElement, createBemBlock } from '../../helpers/styleCreators';
 import { BoxEntity } from '../../models/Box';
 import useStore from '../../hooks/useStore';
 import { ModalPortal } from '../util/Portal';
 import BoxSettings from './BoxSettings';
 import useWindowSize from '../../hooks/useWindowSize';
 import '../../styles/box.scss';
+import BoxPin from './BoxPin';
+import useOutsideClickListener from '../../hooks/useOutsideClickListener';
 
 interface Props {
 	box: BoxEntity;
 	groupsTopOffset?: number;
 	titleHeight?: number;
-	connectionDirection?: 'left' | 'right';
 }
 
 export interface BoxMethods {
@@ -41,18 +42,32 @@ const Box = ({
 	box,
 	groupsTopOffset,
 	titleHeight,
-	connectionDirection,
 }: Props, ref: React.Ref<BoxMethods>) => {
 	const { rootStore } = useStore();
 	const [isModalOpen, setIsModalOpen] = React.useState(false);
+	const [isBoxActive, setIsBoxActive] = React.useState(false);
+	const [isContextMenuOpen, setIsContextMenuOpen] = React.useState(false);
+	const [isPinEditorOpen, setIsPinEditorOpen] = React.useState(false);
 
 	const boxRef = React.useRef<HTMLDivElement>(null);
+	const pinsListRef = React.useRef<HTMLDivElement>(null);
+
+	const isBoxConnectable = React.useMemo(() => Boolean(rootStore.connectionChain
+		.find(connectableBox => connectableBox.name === box.name)), [rootStore.selectedPin]);
 
 	const windowSize = useWindowSize();
 
 	React.useEffect(() => {
 		sendCoords();
 	}, [windowSize]);
+
+	useOutsideClickListener(boxRef, (e: MouseEvent) => {
+		if (!e.composedPath().some(elem => (elem as HTMLElement).className === 'pin__dot'
+		|| (elem as HTMLElement).className === 'pin__context-menu')) {
+			rootStore.setSelectedBox(null);
+		}
+		setIsBoxActive(false);
+	});
 
 	useImperativeHandle(
 		ref,
@@ -65,26 +80,43 @@ const Box = ({
 	);
 
 	const sendCoords = () => {
-		if (groupsTopOffset && titleHeight) {
-			const clientRect = boxRef.current?.getBoundingClientRect();
-			if (clientRect) {
+		if (groupsTopOffset && titleHeight && pinsListRef.current) {
+			const clientRect = pinsListRef.current?.getBoundingClientRect();
+			box.spec.pins.forEach((pin, index) => {
 				const leftConnection = {
-					left: clientRect?.left,
-					top: clientRect?.top + (clientRect?.height / 2)
-					- groupsTopOffset - titleHeight,
+					connectionOwner: {
+						box: box.name,
+						pin: pin.name,
+						connectionType: pin['connection-type'],
+					},
+					left: clientRect.left,
+					// Half of pin's height + height of pin's height * index
+					top: clientRect.top + 12.5 + (25 * index)
+						- groupsTopOffset - titleHeight,
 				};
 				const rightConnection = {
-					left: clientRect?.left + clientRect.width,
-					top: clientRect?.top + (clientRect?.height / 2)
-					- groupsTopOffset - titleHeight,
+					connectionOwner: {
+						box: box.name,
+						pin: pin.name,
+						connectionType: pin['connection-type'],
+					},
+					left: clientRect.left + clientRect.width,
+					// Half of pin's height + height of pin's height * index
+					top: clientRect.top + 12.5 + (25 * (index))
+						- groupsTopOffset - titleHeight,
 				};
-				rootStore.addCoords(box, {
+				rootStore.addCoords(box.name, pin.name, {
 					leftConnection,
 					rightConnection,
 				});
-			}
+			});
 		}
 	};
+
+	const boxClass = createBemBlock(
+		'box',
+		isBoxActive ? 'active' : null,
+	);
 
 	const settingsIconClassName = createBemElement(
 		'box',
@@ -92,56 +124,83 @@ const Box = ({
 		isModalOpen ? 'active' : null,
 	);
 
-	const boxConectionClassName = createBemElement(
-		'box',
-		'connection',
-		connectionDirection || null,
-	);
-
 	const deleteBoxHandler = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 		e.stopPropagation();
-		if (window.confirm(`Are you sure you want to delete box "${box.name}"`)) {
+		if (window.confirm(`Are you sure you want to delete resource "${box.name}"`)) {
 			rootStore.deleteBox(box.name);
 		}
-	};
-
-	const onSelectBox = () => {
-		rootStore.setSelectedBox(rootStore.selectedBox === box ? null : box);
 	};
 
 	return (
 		<div
 			ref={boxRef}
-			className="box"
-			onClick={onSelectBox}>
-			<span className="box__title">
-				{box.name}
-			</span>
-			<div className="box__buttons-wrapper">
-				<button
-					className="box__button"
-					onClick={e => {
-						e.stopPropagation();
-						setIsModalOpen(!isModalOpen);
-					}}>
-					<i className={settingsIconClassName}/>
-				</button>
-				<button
-					className="box__button"
-					onClick={deleteBoxHandler}>
-					<i className='box__remove-icon'/>
-				</button>
+			className={boxClass}
+			onMouseOver={() => {
+				if (!rootStore.selectedBox) {
+					setIsBoxActive(true);
+				}
+			}}
+			onMouseLeave={() => {
+				if (!isContextMenuOpen && !isPinEditorOpen) {
+					setIsBoxActive(false);
+				}
+			}}>
+			<div className="box__header">
+				<span className="box__title">
+					{box.name}
+				</span>
+				<div className="box__buttons-wrapper">
+					<button
+						className="box__button"
+						onClick={e => {
+							e.stopPropagation();
+							setIsModalOpen(!isModalOpen);
+						}}>
+						<i className={settingsIconClassName}/>
+					</button>
+					<button
+						className="box__button"
+						onClick={deleteBoxHandler}>
+						<i className='box__remove-icon'/>
+					</button>
+				</div>
 			</div>
-			{
-				connectionDirection
-				&& 	<div
-					className={boxConectionClassName}
-					onClick={e => {
-						e.stopPropagation();
-						rootStore.setConnection(box);
-					}}
-				/>
-			}
+			<div className="box__info-list">
+				<div className="box__info">
+					<div className="box__info-name">Kind</div>
+					<div className="box__info-value">{box.kind}</div>
+				</div>
+				<div className="box__info">
+					<div className="box__info-name">Image name</div>
+					<div className="box__info-value">{box.spec['image-name']}</div>
+				</div>
+			</div>
+			<div
+				ref={pinsListRef}
+				className="box__pins">
+				{
+					box.spec.pins.map(pin => (
+						<BoxPin
+							key={pin.name}
+							pin={pin}
+							box={box}
+							configuratePin={rootStore.configuratePin}
+							deletePinConnections={rootStore.deletePinConnections}
+							selectBox={rootStore.setSelectedBox}
+							selectPin={rootStore.setSelectedPin}
+							isConnectable={
+								isBoxConnectable
+									? pin['connection-type'] === rootStore.selectedPin?.['connection-type']
+									: false
+							}
+							setConnection={rootStore.setConnection}
+							onContextMenuStateChange={setIsContextMenuOpen}
+							onPinEditorStateChange={setIsPinEditorOpen}
+							selectedBox={rootStore.selectedBox}
+						/>
+					))
+				}
+			</div>
 			<ModalPortal isOpen={isModalOpen}>
 				<BoxSettings
 					box={box}
@@ -151,6 +210,8 @@ const Box = ({
 					changeCustomConfig={rootStore.changeCustomConfig}
 					deleteParam={rootStore.deleteParam}
 					setImageInfo={rootStore.setImageInfo}
+					addPinToBox={rootStore.addPinToBox}
+					removePinFromBox={rootStore.removePinFromBox}
 				/>
 			</ModalPortal>
 		</div>

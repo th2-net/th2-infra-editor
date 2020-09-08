@@ -11,25 +11,31 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- *  limitations under the License.
+ * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
+import {
+	Router,
+	MqConnection,
+	GrpcConnection,
+	Link,
+} from '../models/LinksDefinition';
 
-export default function useOutsideClickListener(
-	ref: React.MutableRefObject<HTMLElement | SVGElement | null>, handler: (e: MouseEvent) => void,
-) {
-	const onOutsideClick = (e: MouseEvent) => {
-		if (!ref.current?.contains(e.target as Element)) {
-			handler(e);
-		}
-	};
-
-	React.useEffect(() => {
-		document.addEventListener('mousedown', onOutsideClick);
-
-		return () => {
-			document.removeEventListener('mousedown', onOutsideClick);
-		};
-	}, []);
+export function convertLinks(
+	connections: Router<MqConnection | GrpcConnection>[],
+	connectionType: 'mq' | 'grpc',
+): Link[] {
+	return connections.map(mqLink => ({
+		name: mqLink.name,
+		from: {
+			box: mqLink.from.box,
+			pin: mqLink.from.pin,
+			connectionType,
+		},
+		to: {
+			box: mqLink.to.box,
+			pin: mqLink.to.pin,
+			connectionType,
+		},
+	}));
 }

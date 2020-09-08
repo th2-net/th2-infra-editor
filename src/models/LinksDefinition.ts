@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import FileBase from './FileBase';
+import { ConnectionOwner } from './Box';
 
 export default interface LinksDefinition extends FileBase {
 	spec: {
@@ -42,9 +43,15 @@ export interface MqConnection {
 
 export interface GrpcConnection {
 	box: string;
-	pin?: string;
+	pin: string;
 	strategy?: string;
 	['service-class']?: string;
+}
+
+export interface Link {
+	name: string;
+	from: ConnectionOwner;
+	to: ConnectionOwner;
 }
 
 export function isLinksDefinition(file: FileBase): file is LinksDefinition {

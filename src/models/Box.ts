@@ -45,18 +45,21 @@ export interface BoxConnections {
 }
 
 export interface Connection {
+	connectionOwner: ConnectionOwner;
 	left: number;
 	top: number;
 }
 
-export interface ConnectionArrow {
-	start: Connection;
-	end: Connection;
+export interface ConnectionOwner {
+	box: string;
+	pin: string;
+	connectionType: string;
 }
 
-export interface BoxEntityWrapper {
-	connection: 'left' | 'right';
-	box: BoxEntity;
+export interface ConnectionArrow {
+	name: string;
+	start: Connection;
+	end: Connection;
 }
 
 export interface DictionaryRelation {

@@ -34,14 +34,14 @@ module.exports = webpackMerge(commonConfig, {
         historyApiFallback: true,
         proxy: {
             '/schemas': {
-                target: 'http://th2-kuber-node03:31566',
-                // target: 'http://localhost:8080',
+                // target: 'http://th2-kuber-node03:31566',
+                target: 'http://localhost:8080',
                 changeOrigin: true,
                 secure: false,
             },
             '/schema': {
-                target: 'http://th2-kuber-node03:31566',
-                // target: 'http://localhost:8080',
+                // target: 'http://th2-kuber-node03:31566',
+                target: 'http://localhost:8080',
                 changeOrigin: true,
                 secure: false,
             }

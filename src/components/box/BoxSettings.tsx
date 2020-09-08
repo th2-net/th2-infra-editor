@@ -15,11 +15,12 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { BoxEntity, DictionaryRelation } from '../../models/Box';
+import { BoxEntity, DictionaryRelation, Pin } from '../../models/Box';
 import BoxImageInfo from './BoxImageInfo';
 import useOutsideClickListener from '../../hooks/useOutsideClickListener';
 import BoxDictionaryConfigurator from './BoxDictionaryConfigurator';
 import ConfigEditor from './ConfigEditor';
+import PinsList from './PinsList';
 
 interface BoxSettingsProps {
 	box: BoxEntity;
@@ -32,6 +33,8 @@ interface BoxSettingsProps {
 		name: 'image-name' | 'image-version' | 'node-port';
 		value: string;
 	}, boxName: string) => void;
+	addPinToBox: (pin: Pin, boxName: string) => void;
+	removePinFromBox: (pin: Pin, boxName: string) => void;
 }
 
 const BoxSettings = ({
@@ -42,6 +45,8 @@ const BoxSettings = ({
 	changeCustomConfig,
 	deleteParam,
 	setImageInfo,
+	addPinToBox,
+	removePinFromBox,
 }: BoxSettingsProps) => {
 	const modalRef = React.useRef<HTMLDivElement>(null);
 
@@ -75,6 +80,12 @@ const BoxSettings = ({
 						config={box.spec['custom-config']}
 						changeCustomConfig={changeCustomConfig}
 						boxName={box.name}
+					/>
+					<PinsList
+						pins={box.spec.pins}
+						boxName={box.name}
+						addPinToBox={addPinToBox}
+						removePinFromBox={removePinFromBox}
 					/>
 				</div>
 				<div className="box-modal__props-list">

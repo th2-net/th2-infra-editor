@@ -11,25 +11,41 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- *  limitations under the License.
+ * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
+import React from 'react';
 
-export default function useOutsideClickListener(
-	ref: React.MutableRefObject<HTMLElement | SVGElement | null>, handler: (e: MouseEvent) => void,
-) {
-	const onOutsideClick = (e: MouseEvent) => {
-		if (!ref.current?.contains(e.target as Element)) {
-			handler(e);
-		}
-	};
-
-	React.useEffect(() => {
-		document.addEventListener('mousedown', onOutsideClick);
-
-		return () => {
-			document.removeEventListener('mousedown', onOutsideClick);
-		};
-	}, []);
+interface ContextMenu {
+	togglePinEditor: () => void;
+	closeContextMenu: () => void;
+	deletePinConnections: () => void;
 }
+
+const ContextMenu = ({
+	togglePinEditor,
+	closeContextMenu,
+	deletePinConnections,
+}: ContextMenu) => (<div
+	className="pin__context-menu">
+	<button
+		onClick={() => {
+			togglePinEditor();
+			closeContextMenu();
+		}}
+		className="pin__menu-button"
+	>
+		<i className='pin__menu-button-icon edit'/>
+	</button>
+	<div className="pin__menu-separator"/>
+	<button
+		onClick={() => {
+			deletePinConnections();
+			closeContextMenu();
+		}}
+		className="pin__menu-button">
+		<i className='pin__menu-button-icon delete'/>
+	</button>
+</div>);
+
+export default ContextMenu;

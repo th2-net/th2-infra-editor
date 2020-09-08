@@ -77,11 +77,14 @@ const Groups = () => {
 								title={group}
 								key={group}
 								boxes={rootStore.boxes.filter(box => box.kind === group)}
-								groupsTopOffset={groupsRef.current?.getBoundingClientRect().top} />)
+								groupsTopOffset={groupsRef.current?.getBoundingClientRect().top}/>)
 					}
 				</div>
 			</div>
-			<SvgLayout connections={rootStore.connections}/>
+			<SvgLayout
+				connections={rootStore.connections}
+				deleteConnection={rootStore.deleteConnection}
+			/>
 		</div>
 	);
 };
