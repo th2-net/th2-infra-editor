@@ -17,56 +17,143 @@
 import React from 'react';
 import { ConnectionArrow } from '../models/Box';
 import '../styles/svg-layout.scss';
+import useOutsideClickListener from '../hooks/useOutsideClickListener';
+
+interface ArrowProps {
+	connection: ConnectionArrow;
+	deleteConnection: (connection: ConnectionArrow) => void;
+}
+
+const Arrow = ({
+	connection,
+	deleteConnection,
+}: ArrowProps) => {
+	const [showRemoveButton, setShowRemoveButton] = React.useState(false);
+	const arrowRef = React.useRef<SVGGElement>(null);
+
+	useOutsideClickListener(arrowRef, () => setShowRemoveButton(false));
+
+	return (
+		<>
+			<g
+				ref={arrowRef}
+				className="arrow"
+				pointerEvents="all"
+			>
+				<path
+					d={
+						`M ${connection.start.left},${connection.start.top} 
+						C ${connection.end.left - ((connection.end.left - connection.start.left) / 5)},
+						${connection.start.top} 
+						${connection.start.left + ((connection.end.left - connection.start.left) / 5)},
+						${connection.end.top} 
+						${connection.end.left},${connection.end.top}`
+					}
+					stroke="#00997F"
+					strokeWidth="2"
+					fill="none"
+					className="arrow__part"
+				/>
+				<path
+					d={
+						`M ${connection.start.left},${connection.start.top} 
+						C ${connection.end.left - ((connection.end.left - connection.start.left) / 5)},
+						${connection.start.top} 
+						${connection.start.left + ((connection.end.left - connection.start.left) / 5)},
+						${connection.end.top} 
+						${connection.end.left},${connection.end.top}`
+					}
+					stroke="none"
+					strokeWidth="10"
+					fill="none"
+					onClick={() => setShowRemoveButton(!showRemoveButton)}
+					className="arrow__part"
+				/>
+				<polygon
+					points={
+						`${connection.end.left},${connection.end.top}
+						${connection.end.left - (connection.end.left > connection.start.left ? 7 : -7)},
+						${connection.end.top - 5}
+						${connection.end.left - (connection.end.left > connection.start.left ? 7 : -7)},
+						${connection.end.top + 5}`
+					}
+					fill="#00997F"
+					className="arrow__part"
+				/>
+			</g>
+			{
+				showRemoveButton
+				&& <g
+					onClick={() => {
+						deleteConnection(connection);
+					}}
+					ref={arrowRef}
+				>
+					<circle
+						r="8"
+						cx={
+							(connection.start.left + connection.end.left) / 2
+						}
+						cy={
+							(connection.start.top + connection.end.top) / 2
+						}
+						stroke="#777"
+						strokeWidth="1"
+						fill="#fff"
+						cursor="pointer"
+						className="arrow__delete-button"
+					/>
+					<line
+						x1={((connection.start.left + connection.end.left) / 2) - 4}
+						y1={((connection.start.top + connection.end.top) / 2) - 4}
+						x2={((connection.start.left + connection.end.left) / 2) + 4}
+						y2={((connection.start.top + connection.end.top) / 2) + 4}
+						stroke="#777"
+						strokeWidth="2"
+						cursor="pointer"
+						className="arrow__delete-button"
+
+					/>
+					<line
+						x1={((connection.start.left + connection.end.left) / 2) + 4}
+						y1={((connection.start.top + connection.end.top) / 2) - 4}
+						x2={((connection.start.left + connection.end.left) / 2) - 4}
+						y2={((connection.start.top + connection.end.top) / 2) + 4}
+						stroke="#777"
+						strokeWidth="2"
+						cursor="pointer"
+						className="arrow__delete-button"
+					/>
+				</g>
+			}
+		</>
+	);
+};
 
 interface SvgLayoutProps {
 	connections: ConnectionArrow[];
+	deleteConnection: (connection: ConnectionArrow) => void;
 }
 
 const SvgLayout = ({
 	connections,
-}: SvgLayoutProps) => (
-	<svg
-		preserveAspectRatio="none"
-		xmlns="http://www.w3.org/2000/svg"
-		className='svg-layout'>
-		{
-			connections.map(connection => (
-				<>
-					<path
-						key={
-							`${connection.start.left}${connection.start.top}
-							${connection.end.left}${connection.end.top}arrow`
-						}
-						d={
-							`M ${connection.start.left},${connection.start.top} 
-							C ${connection.end.left - ((connection.end.left - connection.start.left) / 5)},
-							${connection.start.top} 
-							${connection.start.left + ((connection.end.left - connection.start.left) / 5)},
-							${connection.end.top} 
-							${connection.end.left},${connection.end.top}`
-						}
-						stroke='#00997F'
-						strokeWidth='2'
-						fill='none'
-					/>
-					<polygon
-						key={
-							`${connection.start.left}${connection.start.top}
-							${connection.end.left}${connection.end.top}poligon`
-						}
-						points={
-							`${connection.end.left},${connection.end.top}
-							 ${connection.end.left - (connection.end.left > connection.start.left ? 7 : -7)},
-							 ${connection.end.top - 5}
-							 ${connection.end.left - (connection.end.left > connection.start.left ? 7 : -7)},
-							 ${connection.end.top + 5}`
-						}
-						fill='#00997F'
-					/>
-				</>
-			))
-		}
-	</svg>
-);
+	deleteConnection,
+}: SvgLayoutProps) => <svg
+	preserveAspectRatio="none"
+	xmlns="http://www.w3.org/2000/svg"
+	id="svg-layout">
+	{
+		connections.map(connection => (
+			<Arrow
+				key={
+					`${connection.start.left}${connection.start.top}
+					${connection.end.left}${connection.end.top}`
+				}
+				connection={connection}
+				deleteConnection={deleteConnection}
+			/>
+		))
+	}
+</svg>;
 
 export default SvgLayout;

@@ -64,7 +64,7 @@ const Header = () => {
 			<button
 				className="header__button"
 				onClick={() => setIsCreateBoxModalOpen(!isCreateBoxModalOpen)}>
-				Create new box
+				Create new resource
 			</button>
 			<button className="header__button" onClick={createNewSchema}>
 				Create new schema

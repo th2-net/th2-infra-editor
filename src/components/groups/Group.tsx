@@ -17,7 +17,6 @@
 import React from 'react';
 import Box, { BoxMethods } from '../box/Box';
 import { BoxEntity } from '../../models/Box';
-import useStore from '../../hooks/useStore';
 import '../../styles/group.scss';
 
 interface Props {
@@ -26,12 +25,11 @@ interface Props {
 	groupsTopOffset?: number;
 }
 
-const Group = ({
+const Group = React.memo(({
 	title,
 	boxes,
 	groupsTopOffset,
 }: Props) => {
-	const { rootStore } = useStore();
 	const [boxRefs, setBoxRefs] = React.useState<React.RefObject<BoxMethods>[]>([]);
 	const titleRef = React.useRef<HTMLHeadingElement>(null);
 
@@ -62,18 +60,18 @@ const Group = ({
 								key={`${box.name}-${index}`}
 								box={box}
 								ref={boxRefs[index]}
-								connectionDirection={rootStore.connectableBoxes
-									.find(wrapper => wrapper.box.name === box.name)?.connection}
 								groupsTopOffset={groupsTopOffset}
 								titleHeight={titleRef.current
 									? (titleRef.current?.clientHeight
 										+ parseInt(window.getComputedStyle(titleRef.current).marginBottom))
-									: undefined} />)
+									: undefined}/>)
 					}
 				</div>
 			</div>
 		</div>
 	);
-};
+});
+
+Group.displayName = 'Group';
 
 export default Group;

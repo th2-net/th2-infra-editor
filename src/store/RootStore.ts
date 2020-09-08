@@ -17,19 +17,19 @@
 import {
 	action, computed, observable, reaction, set,
 } from 'mobx';
-import { v4 as uuidv4 } from 'uuid';
 import {
 	BoxEntity,
 	BoxConnections,
 	ConnectionArrow,
-	BoxEntityWrapper,
 	DictionaryRelation,
+	Pin,
 } from '../models/Box';
 import { intersection } from '../helpers/array';
-import LinksDefinition, { isLinksDefinition } from '../models/LinksDefinition';
+import LinksDefinition, { isLinksDefinition, Link } from '../models/LinksDefinition';
 import Api from '../api/api';
 import { isValidBox } from '../helpers/box';
 import FileBase from '../models/FileBase';
+import { convertLinks } from '../helpers/link';
 
 export default class RootStore {
 	constructor(private api: Api) {
@@ -41,16 +41,13 @@ export default class RootStore {
 		reaction(
 			() => this.selectedSchema,
 			selectedSchema => {
-				this.connectionCoords.clear();
+				this.connectionCoords = [];
+				this.selectedBox = null;
+				this.selectedPin = null;
 				if (selectedSchema) {
 					this.fetchSchemaState(selectedSchema);
 				}
 			},
-		);
-
-		reaction(
-			() => this.selectedBox,
-			() => this.connectableBoxes = this.connectionChain,
 		);
 	}
 
@@ -67,10 +64,13 @@ export default class RootStore {
 	public selectedBox: BoxEntity | null = null;
 
 	@observable
+	public selectedPin: Pin | null = null;
+
+	@observable
 	public groups: Array<string> = [];
 
 	@observable
-	public links: Array<[string, string]> = [];
+	public links: Array<Link> = [];
 
 	@observable
 	private linkBox: LinksDefinition | null = null;
@@ -79,15 +79,11 @@ export default class RootStore {
 	public changedBoxes: FileBase[] = [];
 
 	@observable
-	public connectionCoords: Map<string, BoxConnections> = new Map();
-
-	@observable
-	public connectableBoxes: BoxEntityWrapper[] = [];
+	public connectionCoords: Array<[[string, string], BoxConnections]> = [];
 
 	@computed
-	public get connectionChain(): BoxEntityWrapper[] {
+	public get connectionChain(): BoxEntity[] {
 		if (!this.selectedBox) return [];
-		const selectedBoxConnections = this.selectedBox.spec.pins.map(pin => pin['connection-type']);
 		const nextBoxes: Array<BoxEntity> = [];
 		const previousBoxes: Array<BoxEntity> = [];
 
@@ -99,7 +95,11 @@ export default class RootStore {
 				.filter(box => box.kind === nextGroup)
 				.filter(box => intersection(
 					box.spec.pins.map(pin => pin['connection-type']),
-					selectedBoxConnections,
+					this.selectedPin
+						? [this.selectedPin?.['connection-type']]
+						: this.selectedBox
+							? this.selectedBox.spec.pins.map(pin => pin['connection-type'])
+							: [],
 				).length !== 0);
 			if (!nextGroupBoxes.length) break;
 			nextBoxes.push(...nextGroupBoxes);
@@ -110,28 +110,31 @@ export default class RootStore {
 				.filter(box => box.kind === prevGroup)
 				.filter(box => intersection(
 					box.spec.pins.map(pin => pin['connection-type']),
-					selectedBoxConnections,
+					this.selectedPin
+						? [this.selectedPin?.['connection-type']]
+						: this.selectedBox
+							? this.selectedBox.spec.pins.map(pin => pin['connection-type'])
+							: [],
 				).length !== 0);
 			if (!prevGroupBoxes.length) break;
 			previousBoxes.unshift(...prevGroupBoxes);
 		}
 
-		return [
-			...previousBoxes.map(box => ({
-				connection: 'right',
-				box,
-			} as BoxEntityWrapper)),
-			...nextBoxes.map(box => ({
-				connection: 'left',
-				box,
-			} as BoxEntityWrapper)),
-		].filter(wrapper => {
-			if (this.selectedBox?.name) {
-				return !this.links.some(link => (link[0] === this.selectedBox?.name && link[1] === wrapper.box.name)
-					|| (link[1] === this.selectedBox?.name && link[0] === wrapper.box.name));
-			}
-			return false;
-		});
+		const chain = [
+			...previousBoxes,
+			...nextBoxes,
+		];
+		if (this.selectedPin) {
+			return chain.filter(box => {
+				if (this.selectedBox?.name) {
+					return !this.links
+						.some(link => (link.from.box === this.selectedBox?.name && link.to.box === box.name)
+						|| (link.to.box === this.selectedBox?.name && link.from.box === box.name));
+				}
+				return false;
+			});
+		}
+		return chain;
 	}
 
 	@action
@@ -163,23 +166,23 @@ export default class RootStore {
 		this.selectedBox = box;
 	};
 
+	@action setSelectedPin = (pin: Pin | null) => {
+		this.selectedPin = pin;
+	};
+
 	@action
 	public setLinks = (links: LinksDefinition[]) => {
 		this.links = links.flatMap(link => {
 			if (link.spec['links-definition']) {
 				return [
-					...link.spec['links-definition']['router-mq']
-						.map<[string, string]>(mqLink => [mqLink.from.box, mqLink.to.box]),
-					...link.spec['links-definition']['router-grpc']
-						.map<[string, string]>(grpcLink => [grpcLink.from.box, grpcLink.to.box]),
+					...convertLinks(link.spec['links-definition']['router-mq'], 'mq'),
+					...convertLinks(link.spec['links-definition']['router-grpc'], 'grpc'),
 				];
 			}
 			if (link.spec['boxes-relation']) {
 				return [
-					...link.spec['boxes-relation']['router-mq']
-						.map<[string, string]>(mqLink => [mqLink.from.box, mqLink.to.box]),
-					...link.spec['boxes-relation']['router-grpc']
-						.map<[string, string]>(grpcLink => [grpcLink.from.box, grpcLink.to.box]),
+					...convertLinks(link.spec['boxes-relation']['router-mq'], 'mq'),
+					...convertLinks(link.spec['boxes-relation']['router-grpc'], 'grpc'),
 				];
 			}
 			return [];
@@ -264,38 +267,46 @@ export default class RootStore {
 	};
 
 	@action
-	public addCoords = (box: BoxEntity, connections: BoxConnections) => {
-		this.connectionCoords.set(box.name, connections);
+	public addCoords = (box: string, pin: string, connections: BoxConnections) => {
+		const coordIndex = this.connectionCoords.findIndex(coord => coord[0][0] === box && coord[0][1] === pin);
+		if (coordIndex === -1) {
+			this.connectionCoords.push([[box, pin], connections]);
+		} else {
+			this.connectionCoords.splice(coordIndex, 1, [[box, pin], connections]);
+		}
 	};
 
 	@computed
 	public get connections(): ConnectionArrow[] {
 		const links = this.links.filter(
 			link => this.boxes.find(
-				box => box.name === link[0],
+				box => box.name === link.from.box,
 			)
 			&& this.boxes.find(
-				box => box.name === link[1],
+				box => box.name === link.from.box,
 			),
 		);
 		if (links.length > 0) {
 			return links.map(link => {
-				const startBox = this.boxes.find(box => box.name === link[0]);
-				const endBox = this.boxes.find(box => box.name === link[1]);
+				const startBox = this.boxes.find(box => box.name === link.from.box);
+				const endBox = this.boxes.find(box => box.name === link.to.box);
 				if (startBox && endBox) {
-					const startBoxCoords = this.connectionCoords.get(startBox.name);
-					const endBoxCoords = this.connectionCoords.get(endBox.name);
+					const startBoxCoords = this.connectionCoords.find(coords => coords[0][0] === startBox.name
+						&& coords[0][1] === link.from.pin);
+					const endBoxCoords = this.connectionCoords.find(coords => coords[0][0] === endBox.name
+						&& coords[0][1] === link.to.pin);
 					if (startBoxCoords && endBoxCoords) {
 						const startBoxGroupIndex = this.groups.findIndex(group => startBox?.kind === group);
 						const endBoxGroupIndex = this.groups.findIndex(group => endBox?.kind === group);
 
 						return {
+							name: link.name,
 							start: startBoxGroupIndex < endBoxGroupIndex
-								? startBoxCoords.rightConnection
-								: startBoxCoords.leftConnection,
+								? startBoxCoords[1].rightConnection
+								: startBoxCoords[1].leftConnection,
 							end: startBoxGroupIndex < endBoxGroupIndex
-								? endBoxCoords.leftConnection
-								: endBoxCoords.rightConnection,
+								? endBoxCoords[1].leftConnection
+								: endBoxCoords[1].rightConnection,
 						};
 					}
 				}
@@ -306,41 +317,43 @@ export default class RootStore {
 	}
 
 	@action
-	public setConnection = async (box: BoxEntity) => {
-		if (!this.selectedSchema || !this.selectedBox || !this.linkBox) return;
-
-		this.links.push([this.selectedBox?.name, box.name]);
-		if (this.linkBox?.spec['links-definition']) {
-			this.linkBox?.spec['links-definition']['router-grpc'].push({
-				name: uuidv4(),
-				from: {
-					box: this.selectedBox.name,
-				},
-				to: {
-					box: box.name,
-				},
-			});
+	public setConnection = async (connectionName: string, pin: Pin, box: BoxEntity) => {
+		if (!this.selectedSchema || !this.selectedBox || !this.selectedPin || !this.linkBox) return;
+		this.links.push({
+			name: connectionName,
+			from: {
+				box: this.selectedBox.name,
+				pin: this.selectedPin.name,
+				connectionType: pin['connection-type'],
+			},
+			to: {
+				box: box.name,
+				pin: pin.name,
+				connectionType: pin['connection-type'],
+			},
+		});
+		const newConnection = {
+			name: connectionName,
+			from: {
+				box: this.selectedBox.name,
+				pin: this.selectedPin.name,
+			},
+			to: {
+				box: box.name,
+				pin: pin.name,
+			},
+		};
+		if (this.linkBox.spec['links-definition']) {
+			this.linkBox.spec['links-definition'][(`router-${pin['connection-type']}` as 'router-mq' | 'router-grpc')]
+				.push(newConnection);
 		}
-		if (this.linkBox?.spec['boxes-relation']) {
-			this.linkBox?.spec['boxes-relation']['router-grpc'].push({
-				name: uuidv4(),
-				from: {
-					box: this.selectedBox.name,
-					pin: '',
-					strategy: '',
-				},
-				to: {
-					box: box.name,
-					pin: '',
-					strategy: '',
-				},
-			});
+		if (this.linkBox.spec['boxes-relation']) {
+			this.linkBox.spec['boxes-relation'][(`router-${pin['connection-type']}` as 'router-mq' | 'router-grpc')]
+				.push(newConnection);
 		}
-		await this.api.sendSchemaRequest(this.selectedSchema, [{
-			operation: 'update',
-			payload: this.linkBox,
-		}]);
+		this.saveBoxChanges(this.linkBox);
 		this.selectedBox = null;
+		this.selectedPin = null;
 	};
 
 	@action
@@ -395,12 +408,123 @@ export default class RootStore {
 	public deleteBox = async (boxName: string) => {
 		if (!this.selectedSchema) return;
 		const removableBoxIndex = this.boxes.findIndex(box => box.name === boxName);
-		const isAccess = await this.api.sendSchemaRequest(this.selectedSchema, [{
+		const isSuccess = await this.api.sendSchemaRequest(this.selectedSchema, [{
 			operation: 'remove',
 			payload: this.boxes[removableBoxIndex],
 		}]);
-		if (isAccess) {
+		if (isSuccess) {
+			this.boxes[removableBoxIndex].spec.pins.forEach(pin => this.removeConnectionsFromLinkBox(pin, boxName));
 			this.boxes.splice(removableBoxIndex, 1);
+		}
+	};
+
+	@action
+	private saveBoxChanges = (updatedBox: BoxEntity | LinksDefinition) => {
+		if (!this.changedBoxes.includes(updatedBox)) {
+			this.changedBoxes.push(updatedBox);
+		}
+	};
+
+	@action
+	public configuratePin = (pin: Pin, boxName: string) => {
+		const changedBox = this.boxes.find(box => box.name === boxName);
+
+		if (changedBox) {
+			changedBox.spec.pins = [...changedBox.spec.pins
+				.filter(changeBoxPin => changeBoxPin.name !== pin.name), pin];
+			this.saveBoxChanges(changedBox);
+		}
+	};
+
+	@action
+	public addPinToBox = (pin: Pin, boxName: string) => {
+		const changedBox = this.boxes.find(box => box.name === boxName);
+
+		if (changedBox) {
+			changedBox.spec.pins = [...changedBox.spec.pins, pin];
+			this.saveBoxChanges(changedBox);
+		}
+	};
+
+	@action
+	public removePinFromBox = (pin: Pin, boxName: string) => {
+		const changedBox = this.boxes.find(box => box.name === boxName);
+
+		if (changedBox) {
+			changedBox.spec.pins = [...changedBox.spec.pins.filter(boxPin => boxPin.name !== pin.name)];
+			this.removeConnectionsFromLinkBox(pin, boxName);
+			this.saveBoxChanges(changedBox);
+		}
+	};
+
+	@action
+	private removeConnectionsFromLinkBox = (pin: Pin, boxName: string) => {
+		this.links = [...this.links.filter(connection => (connection.from.box !== boxName
+			&& connection.from.pin !== pin.name)
+			&& (connection.to.box !== boxName
+				&& connection.to.pin !== pin.name))];
+		if (this.linkBox?.spec['links-definition']) {
+			this.linkBox
+				// eslint-disable-next-line max-len
+				.spec['links-definition'][(`router-${pin['connection-type']}` as 'router-mq' | 'router-grpc')] = [...this.linkBox
+					.spec['links-definition'][(`router-${pin['connection-type']}` as 'router-mq' | 'router-grpc')]
+					.filter(connection =>
+						connection.from.pin !== pin.name
+						&& connection.from.box !== boxName)];
+		}
+		if (this.linkBox?.spec['boxes-relation']) {
+			this.linkBox
+				// eslint-disable-next-line max-len
+				.spec['boxes-relation'][(`router-${pin['connection-type']}` as 'router-mq' | 'router-grpc')] = [...this.linkBox
+					.spec['boxes-relation'][(`router-${pin['connection-type']}` as 'router-mq' | 'router-grpc')]
+					.filter(connection =>
+						connection.from.pin !== pin.name
+						&& connection.from.box !== boxName)];
+		}
+	};
+
+	@action
+	public deletePinConnections = async (pin: Pin, boxName: string) => {
+		if (this.selectedSchema && this.linkBox) {
+			this.removeConnectionsFromLinkBox(pin, boxName);
+
+			await this.api.sendSchemaRequest(this.selectedSchema, [{
+				operation: 'update',
+				payload: this.linkBox,
+			}]);
+		}
+	};
+
+	@action
+	public deleteConnection = async (connection: ConnectionArrow) => {
+		if (this.selectedSchema && this.linkBox) {
+			this.links = [...this.links.filter(link => link.from.box !== connection.start.connectionOwner.box
+				&& link.to.box !== connection.end.connectionOwner.box
+				&& link.from.pin !== connection.start.connectionOwner.pin
+				&& link.to.pin !== connection.end.connectionOwner.pin),
+			];
+			if (this.linkBox?.spec['links-definition']) {
+				const linkIndex = this.linkBox
+					.spec['links-definition'][`router-${connection
+						.start.connectionOwner.connectionType}` as 'router-mq' | 'router-grpc']
+					.findIndex(link => link.name === connection.name);
+				this.linkBox
+					.spec['links-definition'][`router-${connection
+						.start.connectionOwner.connectionType}` as 'router-mq' | 'router-grpc']
+					.splice(linkIndex, 1);
+			}
+			if (this.linkBox?.spec['boxes-relation']) {
+				const linkIndex = this.linkBox
+					.spec['boxes-relation'][`router-${connection
+						.start.connectionOwner.connectionType}` as 'router-mq' | 'router-grpc']
+					.findIndex(link => link.name === connection.name);
+				this.linkBox
+					.spec['boxes-relation'][`router-${connection
+						.start.connectionOwner.connectionType}` as 'router-mq' | 'router-grpc']
+					.splice(linkIndex, 1);
+			}
+
+			this.saveBoxChanges(this.linkBox);
 		}
 	};
 
@@ -411,11 +535,4 @@ export default class RootStore {
 			await this.fetchSchemaState(this.schemas[0]);
 		}
 	}
-
-	@action
-	private saveBoxChanges = (updatedBox: BoxEntity) => {
-		if (!this.changedBoxes.includes(updatedBox)) {
-			this.changedBoxes.push(updatedBox);
-		}
-	};
 }

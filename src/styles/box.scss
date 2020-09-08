@@ -1,18 +1,18 @@
 /******************************************************************************
- * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- ******************************************************************************/
+* Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+******************************************************************************/
 
 @import './common/vars';
 
@@ -20,21 +20,49 @@
 	background-color:  #ECF4F9;
 	border: 1px solid #C0D1DA;
 	width: 100%;
-	height: 50px;
 	max-width: 300px;
 	border-radius: 10px;
 	margin: 20px 0;
 	transition: 0.3s;
 	flex-shrink: 0;
-	cursor: pointer;
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	align-content: center;
-	justify-content: space-between;
-	padding: 0 20px;
 	transition: 0.2s;
 	position: relative;
+	z-index: 3;
+	overflow-wrap: break-word;
+	border-color: #00997F;
+	padding-bottom: 10px;
+
+	&__header {
+		height: 50px;
+		width: 100%;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		align-content: center;
+		justify-content: space-between;
+		border-bottom: 1px solid #C0D1DA;
+		padding: 0 20px;
+	}
+
+	&__info {
+		margin-bottom: 10px;
+
+		&-list {
+			padding: 10px 20px 0 20px;
+		}
+
+		&-name, &-value {
+			font-size: 12px;
+			// display: inline-block;
+		}
+
+		&-name {
+			min-width: 100px;
+			margin-right: 10px;
+			font-weight: 600;
+			margin-bottom: 5px;
+		}
+	}
 
 	&:first-child {
 		margin-top: 0;
@@ -44,7 +72,7 @@
 		margin-bottom: 0;
 	}
 
-	&:hover {
+	&.active {
 		background-color: #FFF;
 		box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.25);
 		border: 1px solid $boxBoderColor;
@@ -76,23 +104,109 @@
 		display: inline-block;
 	}
 
-	&__connection {
-		width: 14px;
-		height: 14px;
-		border-radius: 50%;
-		border: 4px solid #00997F;
-		position: absolute;
-		top: 50%;
-		transform: translateY(-50%);
-		background-color: white;
+	&__pins {
+		padding: 0 20px;
+	}
 
+	.pin {
+		height: 25px;
+		display: flex;
+		align-items: center;
+		position: relative;
 
-		&.left {
-			left: -7px;
+		&.active {
+			.pin__dot {
+				border-color: #00997F;
+			}
+		}
+		
+		&__dot {
+			width: 14px;
+			height: 14px;
+			border-radius: 50%;
+			border: 4px solid #757575;
+			background-color: white;
+			cursor: pointer;
+			margin-right: 10px;
+			flex-shrink: 0;
+
+			&:hover {
+				border-color: #00997F;
+			}
 		}
 
-		&.right {
-			right: -7px;
+		&__name {
+			margin-right: 10px;
+		}
+
+		&__context-menu {
+			display: flex;
+			justify-content: space-between;
+			position: absolute;
+			top: 50%;
+			left: 24px;
+			transform: translateY(-50%);
+			background-color: white;
+			border-radius: 6px;
+			padding: 7px 10px;
+			z-index: 3;
+			box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 
+			0px 8px 10px 1px rgba(0, 0, 0, 0.14),
+			0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+
+			&:before {
+				content: '';
+				width: 0; 
+				height: 0; 
+				position: absolute;
+				top: 50%;
+				transform: translateY(-50%);
+				border-top: 10px solid transparent;
+				border-bottom: 10px solid transparent;
+				border-right: 10px solid white;
+				left: -10px;
+			}
+		}
+
+		&__menu-button {
+			border: none;
+			margin: 0;
+			padding: 0;
+			width: 30px;
+			height: 30px;
+			background-color: transparent;
+			outline: none;
+			cursor: pointer;
+			border-radius: 4px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+
+			&:hover {
+				background-color: rgb(207, 207, 207);
+			}
+
+			&-icon {
+				width: 25px;
+				height: 25px;
+				flex-shrink: 0;
+
+				&.edit {
+					@include icon(url(../../resources/icons/settings.svg), 16px, 16px);
+				}
+				
+				&.delete {
+					@include icon(url(../../resources/icons/trash-grey.svg), 16px, 16px);
+				}
+			}
+		}
+
+		&__menu-separator {
+			height: 25px;
+			width: 2px;
+			border-radius: 5px;
+			background-color: rgb(230, 230, 230);
+			margin: 0 10px;
 		}
 	}
 
@@ -150,6 +264,8 @@
 		line-height: 16px;
 		margin-bottom: 7px;
 	}
+
+
 }
 
 .box-modal {
@@ -185,9 +301,10 @@
 		border-right: 1px solid #ccc;
 		width: 50%;
 		padding-right: 25px;
-		overflow-y: auto;
 		display: flex;
 		flex-direction: column;
+		max-height: 490px;
+		overflow: scroll;
 	}
 
 	&__props-list {
@@ -272,5 +389,118 @@
 	
 	&__info-list {
 		margin-bottom: 10px;
+	}
+}
+
+.pin-editor {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -75%);
+	background-color: white;
+	border-radius: 6px;
+	padding: 20px;
+	z-index: 3;
+	box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 
+	0px 8px 10px 1px rgba(0, 0, 0, 0.14), 
+	0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+
+	&__title {
+		margin-bottom: 20px;
+		font-size: 22px;
+		margin-bottom: 15px;
+	}
+
+	&__textarea {
+		@include scrollbar;
+
+		resize: none;
+		width: 350px;
+		height: 400px;
+		margin-bottom: 20px;
+		background-color: #fff;
+		border: 1px solid $secondaryTextColor;
+		border-radius: 6px;
+		padding: 0 10px;
+		outline-color: $primaryColor;
+
+		&.invalid {
+			outline-color: red;
+		}
+	}
+
+	&__buttons {
+		display: flex;
+		justify-content: flex-end;
+		margin-top: auto;
+		padding: 0 15px;
+	}
+
+	&__button {
+		font-size: 12px;
+		line-height: 16px;
+		text-transform: uppercase;
+		background: none;
+		border: none;
+		outline: none;
+		color: $secondaryTextColor;
+		cursor: pointer;
+		transition: color 0.2s;
+		padding: 0;
+		margin-left: 10px;
+
+		&:hover {
+			color: $primaryColor;
+		}
+	}
+}
+
+.pins-list {
+	border: 1px solid #808080;
+	border-radius: 6px;
+	padding: 10px;
+	margin-top: 10px;
+
+	&__pin {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		padding: 10px 5px;
+		margin-bottom: 10px;
+		border-radius: 6px;
+		border: 1px solid #cfcfcf;
+		background-color: white;
+		position: relative;
+
+		&-info {
+			margin-left: 15px;
+
+			&-title {
+				font-size: 12px;
+				font-weight: 600;
+				color: rgb(34, 34, 34);
+			}
+
+			&-value {
+				font-size: 12px;
+				color: rgb(78, 78, 78);
+			}
+		}
+	}
+
+	&__delete-button {
+		@include icon(url(../../resources/icons/trash-grey.svg), 16px, 16px);
+		
+		display: inline-block;
+		position: absolute;
+		top: 50%;
+		transform: translateY(-50%);
+		right: 5%;
+		padding: 0;
+		margin: 0;
+		border: none;
+		background-color: transparent;
+		cursor: pointer;
+		outline: none;
 	}
 }
