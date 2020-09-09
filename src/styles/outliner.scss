@@ -1,0 +1,95 @@
+@import './common/vars';
+
+.outliner {
+    width: 450px;
+    margin: 0 50px;
+
+    &__list {
+        @include scrollbar;
+
+        height: 350px;
+        background-color: #ECF4F9;
+        overflow-y: auto;
+        border-radius: 12px 12px 0 0;
+        border: 1px solid #00997F;
+        padding: 10px 20px;
+
+        &:nth-child(1) {
+            border-radius: 12px 12px 0 0;
+            border-bottom: none;
+        }
+
+        &:nth-child(2) {
+            border-radius: 0 0 12px 12px;
+        }
+
+        &-item {
+            background-color: white;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            border: 1px solid #00997F;
+            padding: 5px 40px 5px 10px;
+            position: relative;
+        }
+
+    }
+    &__item {
+        &-info:not(:last-child) {
+            margin-bottom: 5px;
+        }
+
+        &-subinfo {
+            padding-left: 15px;
+    
+            .outliner__info-key {
+                width: 85px;
+            }
+        }
+
+        &-control-buttons {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            right: 10px;
+        }
+
+        &-button {
+            width: 25px;
+            height: 25px;
+            padding: 0;
+            margin: 0;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            outline: none;
+
+            &:nth-child(1) {
+                margin-bottom: 2px;
+            }
+
+            &:hover {
+				background-color: rgb(207, 207, 207);
+			}
+
+            &-icon {
+                &.edit {
+					@include icon(url(../../resources/icons/settings.svg), 16px, 16px);
+				}
+				
+				&.delete {
+					@include icon(url(../../resources/icons/trash-grey.svg), 16px, 16px);
+				}
+            }
+        }
+    }
+
+    &__info-key {
+        font-weight: 600;
+        display: inline-block;
+        width: 100px;
+    }
+}
