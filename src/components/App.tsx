@@ -20,6 +20,7 @@ import Header from './Header';
 import Groups from './groups/Groups';
 import useStore from '../hooks/useStore';
 import '../styles/root.scss';
+import Outliner from './Outliner';
 
 function App() {
 	const { rootStore } = useStore();
@@ -31,7 +32,10 @@ function App() {
 	return (
 		<div className="root">
 			<Header />
-			<Groups />
+			<div className="main">
+				<Groups />
+				<Outliner />
+			</div>
 		</div>
 	);
 }

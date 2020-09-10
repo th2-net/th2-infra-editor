@@ -84,6 +84,7 @@ const CreateBoxModal = ({
 						'node-port': nodePort,
 					},
 				});
+				onClose();
 			}
 		} else {
 			// eslint-disable-next-line no-alert

@@ -496,31 +496,31 @@ export default class RootStore {
 	};
 
 	@action
-	public deleteConnection = async (connection: ConnectionArrow) => {
+	public deleteConnection = async (connection: Link) => {
 		if (this.selectedSchema && this.linkBox) {
-			this.links = [...this.links.filter(link => link.from.box !== connection.start.connectionOwner.box
-				&& link.to.box !== connection.end.connectionOwner.box
-				&& link.from.pin !== connection.start.connectionOwner.pin
-				&& link.to.pin !== connection.end.connectionOwner.pin),
+			this.links = [...this.links.filter(link => link.from.box !== connection.from.box
+				|| link.to.box !== connection.to.box
+				|| link.from.pin !== connection.from.pin
+				|| link.to.pin !== connection.to.pin),
 			];
 			if (this.linkBox?.spec['links-definition']) {
 				const linkIndex = this.linkBox
 					.spec['links-definition'][`router-${connection
-						.start.connectionOwner.connectionType}` as 'router-mq' | 'router-grpc']
+						.from.connectionType}` as 'router-mq' | 'router-grpc']
 					.findIndex(link => link.name === connection.name);
 				this.linkBox
 					.spec['links-definition'][`router-${connection
-						.start.connectionOwner.connectionType}` as 'router-mq' | 'router-grpc']
+						.from.connectionType}` as 'router-mq' | 'router-grpc']
 					.splice(linkIndex, 1);
 			}
 			if (this.linkBox?.spec['boxes-relation']) {
 				const linkIndex = this.linkBox
 					.spec['boxes-relation'][`router-${connection
-						.start.connectionOwner.connectionType}` as 'router-mq' | 'router-grpc']
+						.from.connectionType}` as 'router-mq' | 'router-grpc']
 					.findIndex(link => link.name === connection.name);
 				this.linkBox
 					.spec['boxes-relation'][`router-${connection
-						.start.connectionOwner.connectionType}` as 'router-mq' | 'router-grpc']
+						.from.connectionType}` as 'router-mq' | 'router-grpc']
 					.splice(linkIndex, 1);
 			}
 

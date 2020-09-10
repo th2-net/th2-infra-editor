@@ -17,12 +17,15 @@
 @import './common/vars';
 
 .groups {
+	
 	width: 100%;
 	position: relative;
-
+	
 	&__wrapper {
-		width: 100%;
+		@include scrollbar;
+
 		position: relative;
+		overflow-x: scroll;
 	}
 
 	&__list {

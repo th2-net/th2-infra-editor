@@ -69,7 +69,7 @@ const Groups = () => {
 				<div
 					className="groups__list"
 					style={{
-						gridTemplateColumns: `repeat(${Math.max(rootStore.groups.length, 6)}, 1fr)`,
+						gridTemplateColumns: `repeat(${Math.max(rootStore.groups.length, 6)}, 250px)`,
 					}}>
 					{
 						rootStore.groups.map(group =>

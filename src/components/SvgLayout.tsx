@@ -18,10 +18,11 @@ import React from 'react';
 import { ConnectionArrow } from '../models/Box';
 import '../styles/svg-layout.scss';
 import useOutsideClickListener from '../hooks/useOutsideClickListener';
+import { Link } from '../models/LinksDefinition';
 
 interface ArrowProps {
 	connection: ConnectionArrow;
-	deleteConnection: (connection: ConnectionArrow) => void;
+	deleteConnection: (connection: Link) => void;
 }
 
 const Arrow = ({
@@ -32,6 +33,22 @@ const Arrow = ({
 	const arrowRef = React.useRef<SVGGElement>(null);
 
 	useOutsideClickListener(arrowRef, () => setShowRemoveButton(false));
+
+	const deleteArrow = () => {
+		deleteConnection({
+			name: connection.name,
+			from: {
+				box: connection.start.connectionOwner.box,
+				pin: connection.start.connectionOwner.pin,
+				connectionType: connection.start.connectionOwner.connectionType,
+			},
+			to: {
+				box: connection.end.connectionOwner.box,
+				pin: connection.end.connectionOwner.pin,
+				connectionType: connection.end.connectionOwner.connectionType,
+			},
+		});
+	};
 
 	return (
 		<>
@@ -84,9 +101,7 @@ const Arrow = ({
 			{
 				showRemoveButton
 				&& <g
-					onClick={() => {
-						deleteConnection(connection);
-					}}
+					onClick={deleteArrow}
 					ref={arrowRef}
 				>
 					<circle
@@ -132,7 +147,7 @@ const Arrow = ({
 
 interface SvgLayoutProps {
 	connections: ConnectionArrow[];
-	deleteConnection: (connection: ConnectionArrow) => void;
+	deleteConnection: (connection: Link) => void;
 }
 
 const SvgLayout = ({
