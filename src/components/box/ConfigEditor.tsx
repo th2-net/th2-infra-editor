@@ -31,6 +31,7 @@ const ConfigEditor = ({
 }: ConfigEditor) => {
 	const configInput = useInput({
 		initialValue: JSON.stringify(config, null, 4),
+		label: 'Config',
 		validate: value => {
 			try {
 				JSON.parse(value);
@@ -58,7 +59,7 @@ const ConfigEditor = ({
 	return (
 		<div className="box-settings__group">
 			<label htmlFor={configInput.bind.name} className="box-settings__label">
-				Config
+				{configInput.label}
 			</label>
 			<textarea
 				className={textAreaClass}

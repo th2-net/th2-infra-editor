@@ -35,8 +35,16 @@ export interface BoxEntity extends FileBase {
 export interface Pin {
 	attributes: Array<string>;
 	['connection-type']: string;
-	filters: Array<any>;
+	filters?: Array<Filter>;
 	name: string;
+}
+
+export interface Filter {
+	metadata: {
+		['field-name']: string;
+		['expected-value']: string;
+		['operation']: string;
+	}[];
 }
 
 export interface BoxConnections {

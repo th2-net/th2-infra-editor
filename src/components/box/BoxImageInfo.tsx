@@ -15,8 +15,8 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { createBemElement } from '../../helpers/styleCreators';
 import { useInput } from '../../hooks/useInput';
+import Input from '../util/Input';
 
 interface BoxImageInfoProps {
 	spec: {
@@ -38,22 +38,25 @@ const BoxImageInfo = ({
 }: BoxImageInfoProps) => {
 	const imageNameInput = useInput({
 		initialValue: spec['image-name'],
+		label: 'image-name',
 		name: 'image-name',
 		id: 'image-name',
 	});
 
 	const imageVersionInput = useInput({
 		initialValue: spec['image-version'],
-		validate: value => value.split('.').every(number => /^\d+$/.test(number)),
+		label: 'image-version',
 		name: 'image-version',
 		id: 'image-version',
+		validate: value => value.split('.').every(number => /^\d+$/.test(number)),
 	});
 
 	const nodePortInput = useInput({
 		initialValue: typeof spec['node-port'] === 'number' ? spec['node-port'].toString() : '',
-		validate: value => /^\d+$/.test(value),
+		label: 'node-port',
 		name: 'node-port',
 		id: 'node-port',
+		validate: value => /^\d+$/.test(value),
 	});
 
 	React.useEffect(() => {
@@ -72,20 +75,9 @@ const BoxImageInfo = ({
 			{
 				[imageNameInput, imageVersionInput, nodePortInput]
 					.map(inputConfig => (
-						<div key={inputConfig.bind.id} className="box-settings__group">
-							<label htmlFor={inputConfig.bind.id} className="box-settings__label">
-								{inputConfig.bind.name}
-							</label>
-							<input
-								type="text"
-								className={createBemElement(
-									'box-settings',
-									'input',
-									!inputConfig.isValid && inputConfig.isDirty ? 'invalid' : '',
-								)}
-								{...inputConfig.bind}
-							/>
-						</div>
+						<Input
+							key={inputConfig.bind.id}
+							inputConfig={inputConfig}/>
 					))
 			}
 		</div>

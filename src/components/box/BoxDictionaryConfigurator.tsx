@@ -15,9 +15,9 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { createBemElement } from '../../helpers/styleCreators';
 import { useInput } from '../../hooks/useInput';
 import { DictionaryRelation } from '../../models/Box';
+import Input from '../util/Input';
 
 interface BoxAddFormProps {
 	addDictionaryRelation: (dictionaryRelation: DictionaryRelation) => void;
@@ -32,15 +32,21 @@ const BoxDictionaryConfigurator = ({
 }: BoxAddFormProps) => {
 	const nameInput = useInput({
 		initialValue: '',
+		label: 'Name',
+		id: 'name',
 		validate: value => value.trim().length !== 0,
 	});
 	const dictionaryNameInput = useInput({
 		initialValue: '',
+		label: 'Dictionary name',
+		id: 'dictionary-name',
 		validate: value => value.trim().length !== 0,
 	});
 
 	const dictionaryTypeInput = useInput({
 		initialValue: '',
+		label: 'Dictionary type',
+		id: 'dictionary-type',
 		validate: value => value.trim().length !== 0,
 	});
 
@@ -67,62 +73,11 @@ const BoxDictionaryConfigurator = ({
 		dictionaryTypeInput.reset();
 	};
 
-	const nameInputClass = createBemElement(
-		'box-settings',
-		'input',
-		!nameInput.isValid && nameInput.isDirty ? 'invalid' : '',
-	);
-
-	const dictionaryNameInputClass = createBemElement(
-		'box-settings',
-		'input',
-		!dictionaryTypeInput.isValid && dictionaryNameInput.isDirty ? 'invalid' : '',
-	);
-
-	const dictionaryTypeInputClass = createBemElement(
-		'box-settings',
-		'input',
-		!dictionaryTypeInput.isValid && dictionaryTypeInput.isDirty ? 'invalid' : '',
-	);
-
 	return (
 		<div className='box-modal__add-form'>
-			<div className="box-settings__group">
-				<label
-					htmlFor="name"
-					className="box-settings__label">
-					Name
-				</label>
-				<input
-					id="name"
-					type="text"
-					className={nameInputClass}
-					{...nameInput.bind}/>
-			</div>
-			<div className="box-settings__group">
-				<label
-					htmlFor="dictionary-name"
-					className="box-settings__label">
-					Dictionary name
-				</label>
-				<input
-					id="prop-value"
-					type="text"
-					className={dictionaryNameInputClass}
-					{...dictionaryNameInput.bind}/>
-			</div>
-			<div className="box-settings__group">
-				<label
-					htmlFor="dictionary-type"
-					className="box-settings__label">
-					Dictionary type
-				</label>
-				<input
-					id="dictionary-type"
-					type="text"
-					className={dictionaryTypeInputClass}
-					{...dictionaryTypeInput.bind}/>
-			</div>
+			<Input inputConfig={nameInput}/>
+			<Input inputConfig={dictionaryNameInput}/>
+			<Input inputConfig={dictionaryTypeInput}/>
 			<div className="box-modal__buttons">
 				<button className='box-modal__button' onClick={addRelation}>
 					Save

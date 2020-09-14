@@ -18,13 +18,15 @@ import React from 'react';
 
 interface UseInputProps {
 	initialValue: string;
-	validate?: (value: string) => boolean;
-	id?: string;
+	label?: string;
+	id: string;
 	name?: string;
+	validate?: (value: string) => boolean;
 }
 
 export interface InputConfig {
 	value: string;
+	label?: string;
 	setValue: (value: string) => void;
 	reset: () => void;
 	isValid: boolean;
@@ -39,6 +41,7 @@ export interface InputConfig {
 
 export const useInput = ({
 	initialValue,
+	label,
 	validate,
 	id,
 	name,
@@ -60,6 +63,7 @@ export const useInput = ({
 
 	return {
 		value,
+		label,
 		setValue: onValueChange,
 		reset: () => setValue(''),
 		isValid,

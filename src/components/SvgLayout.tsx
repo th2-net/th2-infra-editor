@@ -35,19 +35,23 @@ const Arrow = ({
 	useOutsideClickListener(arrowRef, () => setShowRemoveButton(false));
 
 	const deleteArrow = () => {
-		deleteConnection({
-			name: connection.name,
-			from: {
-				box: connection.start.connectionOwner.box,
-				pin: connection.start.connectionOwner.pin,
-				connectionType: connection.start.connectionOwner.connectionType,
-			},
-			to: {
-				box: connection.end.connectionOwner.box,
-				pin: connection.end.connectionOwner.pin,
-				connectionType: connection.end.connectionOwner.connectionType,
-			},
-		});
+		// eslint-disable-next-line no-alert
+		if (window.confirm('Are you sure you want'
+		+ `to delete link "${connection.name}"`)) {
+			deleteConnection({
+				name: connection.name,
+				from: {
+					box: connection.start.connectionOwner.box,
+					pin: connection.start.connectionOwner.pin,
+					connectionType: connection.start.connectionOwner.connectionType,
+				},
+				to: {
+					box: connection.end.connectionOwner.box,
+					pin: connection.end.connectionOwner.pin,
+					connectionType: connection.end.connectionOwner.connectionType,
+				},
+			});
+		}
 	};
 
 	return (

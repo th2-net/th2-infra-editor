@@ -16,7 +16,7 @@
 
 import React from 'react';
 import { ModalPortal } from '../util/Portal';
-import PinEditor from './PinEditor';
+import PinConfigurator from '../pin-configurator/PinConfigurator';
 import { Pin, BoxEntity } from '../../models/Box';
 import useOutsideClickListener from '../../hooks/useOutsideClickListener';
 import ContextMenu from './ContextMenu';
@@ -32,7 +32,7 @@ interface BoxPinProps {
 	isConnectable: boolean;
 	setConnection: (connectionName: string, pin: Pin, box: BoxEntity) => void;
 	onContextMenuStateChange: (isOpen: boolean) => void;
-	onPinEditorStateChange: (isOpen: boolean) => void;
+	onPinConfiguratorStateChange: (isOpen: boolean) => void;
 	selectedBox: BoxEntity | null;
 }
 
@@ -46,10 +46,10 @@ const BoxPin = ({
 	isConnectable,
 	setConnection,
 	onContextMenuStateChange,
-	onPinEditorStateChange,
+	onPinConfiguratorStateChange,
 	selectedBox,
 }: BoxPinProps) => {
-	const [isPinEditorOpen, setIsPinEditorOpen] = React.useState(false);
+	const [isPinConfiguratorOpen, setIsPinConfiguratorOpen] = React.useState(false);
 	const [isContextMenuOpen, setIsContextMenuOpen] = React.useState(false);
 
 	const pinRef = React.useRef<HTMLDivElement>(null);
@@ -101,14 +101,16 @@ const BoxPin = ({
 					ref={pinRef}
 					onClick={clickHandler}
 					className="pin__dot"/>
-				<span className="pin__name">{pin.name}</span>
-				<span className="pin__type">{pin['connection-type']}</span>
+				<div className="pin__info">
+					<span className="pin__name">{pin.name}</span>
+					<span className="pin__type">{pin['connection-type']}</span>
+				</div>
 				{
 					isContextMenuOpen
 					&& <ContextMenu
-						togglePinEditor={() => {
-							setIsPinEditorOpen(!isPinEditorOpen);
-							onPinEditorStateChange(false);
+						togglePinConfigurator={() => {
+							setIsPinConfiguratorOpen(!isPinConfiguratorOpen);
+							onPinConfiguratorStateChange(false);
 						}}
 						closeContextMenu={() => {
 							setIsContextMenuOpen(false);
@@ -118,14 +120,14 @@ const BoxPin = ({
 					/>
 				}
 			</div>
-			<ModalPortal isOpen={isPinEditorOpen}>
-				<PinEditor
+			<ModalPortal isOpen={isPinConfiguratorOpen}>
+				<PinConfigurator
 					pin={pin}
 					configuratePin={configuratePin}
 					boxName={box.name}
 					onClose={() => {
-						setIsPinEditorOpen(false);
-						onPinEditorStateChange(false);
+						setIsPinConfiguratorOpen(false);
+						onPinConfiguratorStateChange(false);
 					}}
 				/>
 			</ModalPortal>

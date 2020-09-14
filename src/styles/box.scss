@@ -27,7 +27,7 @@
 	flex-shrink: 0;
 	transition: 0.2s;
 	position: relative;
-	z-index: 3;
+	z-index: 2;
 	overflow-wrap: break-word;
 	border-color: #00997F;
 	padding-bottom: 10px;
@@ -109,10 +109,13 @@
 	}
 
 	.pin {
-		height: 25px;
 		display: flex;
 		align-items: center;
 		position: relative;
+
+		&:not(:last-child) {
+			margin-bottom: 5px;
+		}
 
 		&.active {
 			.pin__dot {
@@ -135,8 +138,20 @@
 			}
 		}
 
+		&__info {
+			display: flex;
+			flex-wrap: wrap;
+		}
+
 		&__name {
+			max-width: 160px;
+			overflow-wrap: break-word;
 			margin-right: 10px;
+		}
+
+		&__type {
+			max-width: 160px;
+			overflow-wrap: break-word;
 		}
 
 		&__context-menu {
@@ -149,7 +164,7 @@
 			background-color: white;
 			border-radius: 6px;
 			padding: 7px 10px;
-			z-index: 3;
+			z-index: 2;
 			box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 
 			0px 8px 10px 1px rgba(0, 0, 0, 0.14),
 			0px 3px 14px 2px rgba(0, 0, 0, 0.12);
@@ -264,8 +279,6 @@
 		line-height: 16px;
 		margin-bottom: 7px;
 	}
-
-
 }
 
 .box-modal {
@@ -376,7 +389,7 @@
 	background-color: white;
 	border-radius: 6px;
 	padding: 20px;
-	z-index: 2;
+	z-index: 3;
 	box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 
 	0px 8px 10px 1px rgba(0, 0, 0, 0.14), 
 	0px 3px 14px 2px rgba(0, 0, 0, 0.12);
@@ -389,69 +402,6 @@
 	
 	&__info-list {
 		margin-bottom: 10px;
-	}
-}
-
-.pin-editor {
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -75%);
-	background-color: white;
-	border-radius: 6px;
-	padding: 20px;
-	z-index: 3;
-	box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 
-	0px 8px 10px 1px rgba(0, 0, 0, 0.14), 
-	0px 3px 14px 2px rgba(0, 0, 0, 0.12);
-
-	&__title {
-		margin-bottom: 20px;
-		font-size: 22px;
-		margin-bottom: 15px;
-	}
-
-	&__textarea {
-		@include scrollbar;
-
-		resize: none;
-		width: 350px;
-		height: 400px;
-		margin-bottom: 20px;
-		background-color: #fff;
-		border: 1px solid $secondaryTextColor;
-		border-radius: 6px;
-		padding: 0 10px;
-		outline-color: $primaryColor;
-
-		&.invalid {
-			outline-color: red;
-		}
-	}
-
-	&__buttons {
-		display: flex;
-		justify-content: flex-end;
-		margin-top: auto;
-		padding: 0 15px;
-	}
-
-	&__button {
-		font-size: 12px;
-		line-height: 16px;
-		text-transform: uppercase;
-		background: none;
-		border: none;
-		outline: none;
-		color: $secondaryTextColor;
-		cursor: pointer;
-		transition: color 0.2s;
-		padding: 0;
-		margin-left: 10px;
-
-		&:hover {
-			color: $primaryColor;
-		}
 	}
 }
 

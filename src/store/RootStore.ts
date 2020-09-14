@@ -23,6 +23,7 @@ import {
 	ConnectionArrow,
 	DictionaryRelation,
 	Pin,
+	Filter,
 } from '../models/Box';
 import { intersection } from '../helpers/array';
 import LinksDefinition, { isLinksDefinition, Link } from '../models/LinksDefinition';
@@ -58,7 +59,7 @@ export default class RootStore {
 	public selectedSchema: string | null = null;
 
 	@observable
-	public boxes: Array<BoxEntity> = [];
+	public boxes: Array<BoxEntity> = observable([]);
 
 	@observable
 	public selectedBox: BoxEntity | null = null;
@@ -90,32 +91,12 @@ export default class RootStore {
 		const groupIndex = this.groups.indexOf(this.selectedBox.kind);
 
 		for (let i = groupIndex + 1; i < this.groups.length; i++) {
-			const nextGroup = this.groups[i];
-			const nextGroupBoxes = this.boxes
-				.filter(box => box.kind === nextGroup)
-				.filter(box => intersection(
-					box.spec.pins.map(pin => pin['connection-type']),
-					this.selectedPin
-						? [this.selectedPin?.['connection-type']]
-						: this.selectedBox
-							? this.selectedBox.spec.pins.map(pin => pin['connection-type'])
-							: [],
-				).length !== 0);
+			const nextGroupBoxes = this.getConnectableBoxes(i);
 			if (!nextGroupBoxes.length) break;
 			nextBoxes.push(...nextGroupBoxes);
 		}
 		for (let i = groupIndex - 1; i >= 0; i--) {
-			const prevGroup = this.groups[i];
-			const prevGroupBoxes = this.boxes
-				.filter(box => box.kind === prevGroup)
-				.filter(box => intersection(
-					box.spec.pins.map(pin => pin['connection-type']),
-					this.selectedPin
-						? [this.selectedPin?.['connection-type']]
-						: this.selectedBox
-							? this.selectedBox.spec.pins.map(pin => pin['connection-type'])
-							: [],
-				).length !== 0);
+			const prevGroupBoxes = this.getConnectableBoxes(i);
 			if (!prevGroupBoxes.length) break;
 			previousBoxes.unshift(...prevGroupBoxes);
 		}
@@ -135,6 +116,20 @@ export default class RootStore {
 			});
 		}
 		return chain;
+	}
+
+	private getConnectableBoxes(index: number) {
+		const prevGroup = this.groups[index];
+		return this.boxes
+			.filter(box => box.kind === prevGroup)
+			.filter(box => intersection(
+				box.spec.pins.map(pin => pin['connection-type']),
+				this.selectedPin
+					? [this.selectedPin?.['connection-type']]
+					: this.selectedBox
+						? this.selectedBox.spec.pins.map(pin => pin['connection-type'])
+						: [],
+			).length !== 0);
 	}
 
 	@action
@@ -203,7 +198,7 @@ export default class RootStore {
 		}
 		this.schemaAbortController = new AbortController();
 		const result = await this.api.fetchSchemaState(schemaName, this.schemaAbortController.signal);
-		this.boxes = result.resources.filter(resItem => isValidBox(resItem));
+		this.boxes = observable(result.resources.filter(resItem => isValidBox(resItem)));
 		const links = result.resources.filter(resItem => isLinksDefinition(resItem)) as LinksDefinition[];
 		this.linkBox = links[0];
 		this.setLinks(links);
@@ -430,9 +425,16 @@ export default class RootStore {
 		const changedBox = this.boxes.find(box => box.name === boxName);
 
 		if (changedBox) {
-			changedBox.spec.pins = [...changedBox.spec.pins
-				.filter(changeBoxPin => changeBoxPin.name !== pin.name), pin];
-			this.saveBoxChanges(changedBox);
+			const pinIndex = changedBox.spec.pins.findIndex(boxPin => boxPin.name === pin.name);
+
+			if (pinIndex >= 0) {
+				changedBox.spec.pins = [
+					...changedBox.spec.pins.slice(0, pinIndex),
+					pin,
+					...changedBox.spec.pins.slice(pinIndex + 1, changedBox.spec.pins.length),
+				];
+				this.saveBoxChanges(changedBox);
+			}
 		}
 	};
 
@@ -525,6 +527,73 @@ export default class RootStore {
 			}
 
 			this.saveBoxChanges(this.linkBox);
+		}
+	};
+
+	@action
+	public addAttribute = (attribute: string, pinName: string, boxName: string) => {
+		const changedBox = this.boxes.find(box => box.name === boxName);
+
+		if (changedBox) {
+			const changedPin = changedBox.spec.pins.find(pin => pin.name === pinName);
+
+			if (changedPin) {
+				if (!changedPin.attributes) {
+					set(changedPin, { attributes: [attribute] });
+					return;
+				}
+				changedPin.attributes.push(attribute);
+				this.saveBoxChanges(changedBox);
+			}
+		}
+	};
+
+	@action
+	public removeAttribute = (attribute: string, pinName: string, boxName: string) => {
+		const changedBox = this.boxes.find(box => box.name === boxName);
+
+		if (changedBox) {
+			const changedPin = changedBox.spec.pins.find(pin => pin.name === pinName);
+
+			if (changedPin) {
+				changedPin.attributes = [...changedPin.attributes.filter(pinAttibute => pinAttibute !== attribute)];
+				this.saveBoxChanges(changedBox);
+			}
+		}
+	};
+
+	@action
+	public addFilter = (filter: Filter, pinName: string, boxName: string) => {
+		const changedBox = this.boxes.find(box => box.name === boxName);
+
+		if (changedBox) {
+			const changedPin = changedBox.spec.pins.find(pin => pin.name === pinName);
+
+			if (changedPin) {
+				if (!changedPin.filters) {
+					set(changedPin, { filters: [filter] });
+					return;
+				}
+				changedPin.filters.push(filter);
+				this.saveBoxChanges(changedBox);
+			}
+		}
+	};
+
+	@action
+	public removeFilter = (filter: Filter, pinName: string, boxName: string) => {
+		const changedBox = this.boxes.find(box => box.name === boxName);
+
+		if (changedBox) {
+			const changedPin = changedBox.spec.pins.find(pin => pin.name === pinName);
+
+			if (changedPin && changedPin.filters) {
+				changedPin.filters = [...changedPin.filters.filter(pinFilter => pinFilter
+					.metadata[0]['field-name'] !== filter.metadata[0]['field-name']
+					|| pinFilter.metadata[0]['expected-value'] !== filter.metadata[0]['expected-value']
+					|| pinFilter.metadata[0].operation !== filter.metadata[0].operation)];
+				this.saveBoxChanges(changedBox);
+			}
 		}
 	};
 

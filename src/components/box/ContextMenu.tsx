@@ -17,20 +17,20 @@
 import React from 'react';
 
 interface ContextMenu {
-	togglePinEditor: () => void;
+	togglePinConfigurator: () => void;
 	closeContextMenu: () => void;
 	deletePinConnections: () => void;
 }
 
 const ContextMenu = ({
-	togglePinEditor,
+	togglePinConfigurator,
 	closeContextMenu,
 	deletePinConnections,
 }: ContextMenu) => (<div
 	className="pin__context-menu">
 	<button
 		onClick={() => {
-			togglePinEditor();
+			togglePinConfigurator();
 			closeContextMenu();
 		}}
 		className="pin__menu-button"

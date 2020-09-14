@@ -47,7 +47,7 @@ const Box = ({
 	const [isModalOpen, setIsModalOpen] = React.useState(false);
 	const [isBoxActive, setIsBoxActive] = React.useState(false);
 	const [isContextMenuOpen, setIsContextMenuOpen] = React.useState(false);
-	const [isPinEditorOpen, setIsPinEditorOpen] = React.useState(false);
+	const [isPinConfiguratorOpen, setIsPinConfiguratorOpen] = React.useState(false);
 
 	const boxRef = React.useRef<HTMLDivElement>(null);
 	const pinsListRef = React.useRef<HTMLDivElement>(null);
@@ -141,7 +141,7 @@ const Box = ({
 				}
 			}}
 			onMouseLeave={() => {
-				if (!isContextMenuOpen && !isPinEditorOpen) {
+				if (!isContextMenuOpen && !isPinConfiguratorOpen) {
 					setIsBoxActive(false);
 				}
 			}}>
@@ -195,7 +195,7 @@ const Box = ({
 							}
 							setConnection={rootStore.setConnection}
 							onContextMenuStateChange={setIsContextMenuOpen}
-							onPinEditorStateChange={setIsPinEditorOpen}
+							onPinConfiguratorStateChange={setIsPinConfiguratorOpen}
 							selectedBox={rootStore.selectedBox}
 						/>
 					))

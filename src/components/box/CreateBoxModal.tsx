@@ -15,10 +15,10 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { createBemElement } from '../../helpers/styleCreators';
 import useOutsideClickListener from '../../hooks/useOutsideClickListener';
 import { BoxEntity } from '../../models/Box';
 import { useInput } from '../../hooks/useInput';
+import Input from '../util/Input';
 
 interface CreateBoxModalProps {
 	createNewBox: (box: BoxEntity) => void;
@@ -33,27 +33,40 @@ const CreateBoxModal = ({
 
 	const nameInput = useInput({
 		initialValue: '',
+		label: 'Name',
+		id: 'name',
+		name: 'name',
 		validate: (value: string) => !value.includes('_'),
-		id: 'Name',
-		name: 'Name',
 	});
 
-	const kindInput = useInput({ initialValue: '', id: 'Kind', name: 'Kind' });
+	const kindInput = useInput({
+		initialValue: '',
+		label: 'Kind',
+		id: 'kind',
+		name: 'kind',
+	});
 
-	const imageNameInput = useInput({ initialValue: '', id: 'Image-name', name: 'Image-name' });
+	const imageNameInput = useInput({
+		initialValue: '',
+		label: 'Image-name',
+		id: 'image-name',
+		name: 'image-name',
+	});
 
 	const imageVersionInput = useInput({
 		initialValue: '',
+		label: 'Image-version',
+		id: 'image-version',
+		name: 'image-version',
 		validate: value => value.split('.').every(number => /^\d+$/.test(number)),
-		id: 'Image-version',
-		name: 'Image-version',
 	});
 
 	const nodePortInput = useInput({
 		initialValue: '',
+		label: 'Node-port',
+		id: 'node-port',
+		name: 'node-port',
 		validate: (value: string) => /^\d+$/.test(value),
-		id: 'Node-port',
-		name: 'Node-port',
 	});
 
 	useOutsideClickListener(modalRef, () => {
@@ -100,22 +113,10 @@ const CreateBoxModal = ({
 			<div className="create-box-modal__info-list">
 				{
 					inputs.map(inputConfig => (
-						<div className="box-settings__group" key={inputConfig.bind.id}>
-							<label
-								htmlFor={inputConfig.bind.id}
-								className="box-settings__label">
-								{inputConfig.bind.name}
-							</label>
-							<input
-								type="text"
-								className={createBemElement(
-									'box-settings',
-									'input',
-									!inputConfig.isValid && inputConfig.isDirty ? 'invalid' : '',
-								)}
-								{...inputConfig.bind}
-							/>
-						</div>
+						<Input
+							key={inputConfig.bind.id}
+							inputConfig={inputConfig}
+						/>
 					))
 				}
 			</div>
