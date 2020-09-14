@@ -18,11 +18,10 @@
 import React, { useImperativeHandle } from 'react';
 import { observer } from 'mobx-react-lite';
 import { createBemElement, createBemBlock } from '../../helpers/styleCreators';
-import { BoxEntity } from '../../models/Box';
+import { BoxEntity, Pin } from '../../models/Box';
 import useStore from '../../hooks/useStore';
 import { ModalPortal } from '../util/Portal';
 import BoxSettings from './BoxSettings';
-import useWindowSize from '../../hooks/useWindowSize';
 import '../../styles/box.scss';
 import BoxPin from './BoxPin';
 import useOutsideClickListener from '../../hooks/useOutsideClickListener';
@@ -55,11 +54,17 @@ const Box = ({
 	const isBoxConnectable = React.useMemo(() => Boolean(rootStore.connectionChain
 		.find(connectableBox => connectableBox.name === box.name)), [rootStore.selectedPin]);
 
-	const windowSize = useWindowSize();
+	React.useEffect(() => {
+		if (rootStore.selectedBox === box) {
+			setIsBoxActive(true);
+		} else {
+			setIsBoxActive(false);
+		}
+	}, [rootStore.selectedBox]);
 
 	React.useEffect(() => {
 		sendCoords();
-	}, [windowSize]);
+	}, [groupsTopOffset, titleHeight, box]);
 
 	useOutsideClickListener(boxRef, (e: MouseEvent) => {
 		if (!e.composedPath().some(elem => (elem as HTMLElement).className === 'pin__dot'
@@ -82,7 +87,8 @@ const Box = ({
 	const sendCoords = () => {
 		if (groupsTopOffset && titleHeight && pinsListRef.current) {
 			const clientRect = pinsListRef.current?.getBoundingClientRect();
-			box.spec.pins.forEach((pin, index) => {
+
+			rootStore.addCoords(box.name, box.spec.pins.map((pin, index) => {
 				const leftConnection = {
 					connectionOwner: {
 						box: box.name,
@@ -105,11 +111,14 @@ const Box = ({
 					top: clientRect.top + 12.5 + (25 * (index))
 						- groupsTopOffset - titleHeight,
 				};
-				rootStore.addCoords(box.name, pin.name, {
-					leftConnection,
-					rightConnection,
-				});
-			});
+				return {
+					pin: pin.name,
+					connections: {
+						leftConnection,
+						rightConnection,
+					},
+				};
+			}));
 		}
 	};
 
@@ -129,6 +138,17 @@ const Box = ({
 		if (window.confirm(`Are you sure you want to delete resource "${box.name}"`)) {
 			rootStore.deleteBox(box.name);
 		}
+	};
+
+	const isPinConnectable = (pin: Pin) => {
+		if (isBoxConnectable) {
+			return pin['connection-type'] === rootStore.selectedPin?.['connection-type']
+			&& !rootStore.links.some(link => link.from.box === rootStore.selectedBox?.name
+				&& link.from.pin === rootStore.selectedPin?.name
+				&& link.to.box === box.name
+				&& link.to.pin === pin.name);
+		}
+		return false;
 	};
 
 	return (
@@ -188,11 +208,7 @@ const Box = ({
 							deletePinConnections={rootStore.deletePinConnections}
 							selectBox={rootStore.setSelectedBox}
 							selectPin={rootStore.setSelectedPin}
-							isConnectable={
-								isBoxConnectable
-									? pin['connection-type'] === rootStore.selectedPin?.['connection-type']
-									: false
-							}
+							isConnectable={isPinConnectable(pin)}
 							setConnection={rootStore.setConnection}
 							onContextMenuStateChange={setIsContextMenuOpen}
 							onPinConfiguratorStateChange={setIsPinConfiguratorOpen}

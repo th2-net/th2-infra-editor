@@ -20,6 +20,7 @@ import CreateBoxModal from './box/CreateBoxModal';
 import { ModalPortal } from './util/Portal';
 import useStore from '../hooks/useStore';
 import '../styles/header.scss';
+import { createBemElement } from '../helpers/styleCreators';
 
 const Header = () => {
 	const { rootStore } = useStore();
@@ -46,6 +47,12 @@ const Header = () => {
 		}
 	};
 
+	const saveButtonClass = createBemElement(
+		'header',
+		'button',
+		rootStore.changedBoxes.length === 0 ? 'disable' : null,
+	);
+
 	return (
 		<div className="header">
 			<select
@@ -69,7 +76,7 @@ const Header = () => {
 			<button className="header__button" onClick={createNewSchema}>
 				Create new schema
 			</button>
-			<button className="header__button" onClick={rootStore.saveChanges}>
+			<button className={saveButtonClass} onClick={rootStore.saveChanges}>
 				Save changes
 			</button>
 			<ModalPortal isOpen={isCreateBoxModalOpen}>

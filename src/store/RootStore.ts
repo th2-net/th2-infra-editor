@@ -68,6 +68,9 @@ export default class RootStore {
 	public selectedPin: Pin | null = null;
 
 	@observable
+	public selectedLink: string | null = null;
+
+	@observable
 	public groups: Array<string> = [];
 
 	@observable
@@ -101,27 +104,13 @@ export default class RootStore {
 			previousBoxes.unshift(...prevGroupBoxes);
 		}
 
-		const chain = [
-			...previousBoxes,
-			...nextBoxes,
-		];
-		if (this.selectedPin) {
-			return chain.filter(box => {
-				if (this.selectedBox?.name) {
-					return !this.links
-						.some(link => (link.from.box === this.selectedBox?.name && link.to.box === box.name)
-						|| (link.to.box === this.selectedBox?.name && link.from.box === box.name));
-				}
-				return false;
-			});
-		}
-		return chain;
+		return [...previousBoxes, ...nextBoxes];
 	}
 
 	private getConnectableBoxes(index: number) {
-		const prevGroup = this.groups[index];
+		const group = this.groups[index];
 		return this.boxes
-			.filter(box => box.kind === prevGroup)
+			.filter(box => box.kind === group)
 			.filter(box => intersection(
 				box.spec.pins.map(pin => pin['connection-type']),
 				this.selectedPin
@@ -163,6 +152,10 @@ export default class RootStore {
 
 	@action setSelectedPin = (pin: Pin | null) => {
 		this.selectedPin = pin;
+	};
+
+	@action setSelectedLink = (link: string | null) => {
+		this.selectedLink = link;
 	};
 
 	@action
@@ -262,53 +255,46 @@ export default class RootStore {
 	};
 
 	@action
-	public addCoords = (box: string, pin: string, connections: BoxConnections) => {
-		const coordIndex = this.connectionCoords.findIndex(coord => coord[0][0] === box && coord[0][1] === pin);
-		if (coordIndex === -1) {
-			this.connectionCoords.push([[box, pin], connections]);
-		} else {
-			this.connectionCoords.splice(coordIndex, 1, [[box, pin], connections]);
-		}
+	public addCoords = (box: string, pinConnections: {pin: string; connections: BoxConnections}[]) => {
+		pinConnections.forEach(pinConnection => {
+			const coordIndex = this.connectionCoords
+				.findIndex(coord => coord[0][0] === box && coord[0][1] === pinConnection.pin);
+			if (coordIndex === -1) {
+				this.connectionCoords.push([[box, pinConnection.pin], pinConnection.connections]);
+			} else {
+				this.connectionCoords.splice(coordIndex, 1, [[box, pinConnection.pin], pinConnection.connections]);
+			}
+		});
 	};
 
 	@computed
 	public get connections(): ConnectionArrow[] {
-		const links = this.links.filter(
-			link => this.boxes.find(
-				box => box.name === link.from.box,
-			)
-			&& this.boxes.find(
-				box => box.name === link.from.box,
-			),
-		);
-		if (links.length > 0) {
-			return links.map(link => {
-				const startBox = this.boxes.find(box => box.name === link.from.box);
-				const endBox = this.boxes.find(box => box.name === link.to.box);
-				if (startBox && endBox) {
-					const startBoxCoords = this.connectionCoords.find(coords => coords[0][0] === startBox.name
-						&& coords[0][1] === link.from.pin);
-					const endBoxCoords = this.connectionCoords.find(coords => coords[0][0] === endBox.name
-						&& coords[0][1] === link.to.pin);
-					if (startBoxCoords && endBoxCoords) {
-						const startBoxGroupIndex = this.groups.findIndex(group => startBox?.kind === group);
-						const endBoxGroupIndex = this.groups.findIndex(group => endBox?.kind === group);
+		if (!this.connectionCoords.length) return [];
+		return this.links.map(link => {
+			const startBox = this.boxes.find(box => box.name === link.from.box);
+			const endBox = this.boxes.find(box => box.name === link.to.box);
+			if (startBox && endBox) {
+				const startBoxCoords = this.connectionCoords.find(coords => coords[0][0] === startBox.name
+					&& coords[0][1] === link.from.pin);
+				const endBoxCoords = this.connectionCoords.find(coords => coords[0][0] === endBox.name
+					&& coords[0][1] === link.to.pin);
+				if (startBoxCoords && endBoxCoords) {
+					const startBoxGroupIndex = this.groups.findIndex(group => startBox?.kind === group);
+					const endBoxGroupIndex = this.groups.findIndex(group => endBox?.kind === group);
 
-						return {
-							name: link.name,
-							start: startBoxGroupIndex < endBoxGroupIndex
-								? startBoxCoords[1].rightConnection
-								: startBoxCoords[1].leftConnection,
-							end: startBoxGroupIndex < endBoxGroupIndex
-								? endBoxCoords[1].leftConnection
-								: endBoxCoords[1].rightConnection,
-						};
-					}
+					return {
+						name: link.name,
+						start: startBoxGroupIndex < endBoxGroupIndex
+							? startBoxCoords[1].rightConnection
+							: startBoxCoords[1].leftConnection,
+						end: startBoxGroupIndex < endBoxGroupIndex
+							? endBoxCoords[1].leftConnection
+							: endBoxCoords[1].rightConnection,
+					};
 				}
-				return {} as ConnectionArrow;
-			}).filter(arrow => arrow.start && arrow.end);
-		}
-		return [];
+			}
+			return {} as ConnectionArrow;
+		}).filter(arrow => arrow.start && arrow.end);
 	}
 
 	@action
