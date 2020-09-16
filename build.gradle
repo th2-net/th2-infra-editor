@@ -76,3 +76,15 @@ task runTests(type: NpmTask, dependsOn: 'installDependencies') {
     // when using TS const enums
     args = ['run', 'test:ci']
 }
+
+dockerPrepare {
+    dependsOn buildProd
+}
+
+docker {
+    name "${target_docker_repository}/${docker_image_name}:${dockerImageVersion}"
+    tag 'local-version', "${docker_image_name}:${dockerImageVersion}"
+
+    copySpec.from("$buildDir/out")
+}
+
