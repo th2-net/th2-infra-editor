@@ -27,6 +27,7 @@ ext {
     npmDir              = file("${project.buildDir}/nodejs")
 
     downloadNode        = project.hasProperty('download_node')
+    dockerImageVersion  = "${version_major}.${version_minor}.${version_maintenance}.${version_build}"
 }
 
 node {
