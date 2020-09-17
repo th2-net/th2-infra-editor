@@ -75,21 +75,27 @@ const Groups = () => {
 						(rootStore.groups.includes('Th2Connector') || rootStore.groups.includes('Th2Hand'))
 						&& <Group
 							title={'Th2Connector'}
-							boxes={rootStore.boxes.filter(box => box.kind === 'Th2Connector' || box.kind === 'Th2Hand')}
+							boxes={rootStore.boxes
+								.filter(box => box.kind === 'Th2Connector' || box.kind === 'Th2Hand')
+								.sort((a, b) => (a.name >= b.name ? 1 : -1))}
 							groupsTopOffset={groupsRef.current?.getBoundingClientRect().top}/>
 					}
 					{
 						(rootStore.groups.includes('Th2Codec'))
 						&& <Group
 							title={'Th2Codec'}
-							boxes={rootStore.boxes.filter(box => box.kind === 'Th2Codec')}
+							boxes={rootStore.boxes
+								.filter(box => box.kind === 'Th2Codec')
+								.sort((a, b) => (a.name >= b.name ? 1 : -1))}
 							groupsTopOffset={groupsRef.current?.getBoundingClientRect().top}/>
 					}
 					{
 						(rootStore.groups.includes('Th2Act') || rootStore.groups.includes('Th2Verify'))
 						&& <Group
 							title={'Th2Act'}
-							boxes={rootStore.boxes.filter(box => box.kind === 'Th2Act' || box.name === 'Th2Verify')}
+							boxes={rootStore.boxes
+								.filter(box => box.kind === 'Th2Act' || box.name === 'Th2Verify')
+								.sort((a, b) => (a.name >= b.name ? 1 : -1))}
 							groupsTopOffset={groupsRef.current?.getBoundingClientRect().top}/>
 					}
 					{
@@ -101,7 +107,9 @@ const Groups = () => {
 								<Group
 									title={group}
 									key={group}
-									boxes={rootStore.boxes.filter(box => box.kind === group)}
+									boxes={rootStore.boxes
+										.filter(box => box.kind === group)
+										.sort((a, b) => (a.name >= b.name ? 1 : -1))}
 									groupsTopOffset={groupsRef.current?.getBoundingClientRect().top}/>)
 					}
 				</div>

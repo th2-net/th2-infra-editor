@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import {
-	action, computed, observable, reaction, set,
+	action, computed, IObservableArray, observable, reaction, set,
 } from 'mobx';
 import {
 	BoxEntity,
@@ -24,6 +24,8 @@ import {
 	DictionaryRelation,
 	Pin,
 	Filter,
+	BoxEntityWrapper,
+	ConnectionOwner,
 } from '../models/Box';
 import { intersection } from '../helpers/array';
 import LinksDefinition, { isLinksDefinition, Link } from '../models/LinksDefinition';
@@ -43,8 +45,8 @@ export default class RootStore {
 			() => this.selectedSchema,
 			selectedSchema => {
 				this.connectionCoords = [];
-				this.selectedBox = null;
-				this.selectedPin = null;
+				this.activeBox = null;
+				this.activePin = null;
 				if (selectedSchema) {
 					this.fetchSchemaState(selectedSchema);
 				}
@@ -59,13 +61,13 @@ export default class RootStore {
 	public selectedSchema: string | null = null;
 
 	@observable
-	public boxes: Array<BoxEntity> = observable([]);
+	public boxes: IObservableArray<BoxEntity> = observable.array([]);
 
 	@observable
-	public selectedBox: BoxEntity | null = null;
+	public activeBox: BoxEntity | null = null;
 
 	@observable
-	public selectedPin: Pin | null = null;
+	public activePin: Pin | null = null;
 
 	@observable
 	public selectedLink: string | null = null;
@@ -80,31 +82,39 @@ export default class RootStore {
 	private linkBox: LinksDefinition | null = null;
 
 	@observable
-	public changedBoxes: FileBase[] = [];
+	public changedBoxes: Array<FileBase> = [];
 
 	@observable
-	public connectionCoords: Array<[[string, string], BoxConnections]> = [];
+	public connectionCoords: Array<[ConnectionOwner, BoxConnections]> = [];
 
 	@computed
-	public get connectionChain(): BoxEntity[] {
-		if (!this.selectedBox) return [];
-		const nextBoxes: Array<BoxEntity> = [];
-		const previousBoxes: Array<BoxEntity> = [];
+	public get connectionChain(): BoxEntityWrapper[] {
+		if (!this.activeBox || !this.activePin) return [];
+		const boxes: Array<BoxEntity> = [];
 
-		const groupIndex = this.groups.indexOf(this.selectedBox.kind);
+		const groupIndex = this.groups.indexOf(this.activeBox.kind);
 
-		for (let i = groupIndex + 1; i < this.groups.length; i++) {
+		for (let i = 0; i < this.groups.length; i++) {
+			// eslint-disable-next-line no-continue
+			if (i === groupIndex) continue;
 			const nextGroupBoxes = this.getConnectableBoxes(i);
 			if (!nextGroupBoxes.length) break;
-			nextBoxes.push(...nextGroupBoxes);
-		}
-		for (let i = groupIndex - 1; i >= 0; i--) {
-			const prevGroupBoxes = this.getConnectableBoxes(i);
-			if (!prevGroupBoxes.length) break;
-			previousBoxes.unshift(...prevGroupBoxes);
+			boxes.push(...nextGroupBoxes);
 		}
 
-		return [...previousBoxes, ...nextBoxes];
+		const activeBoxCoords = this.connectionCoords.find(coord => coord[0].box === this.activeBox?.name);
+
+		if (!activeBoxCoords) return [];
+
+		return boxes.map(box => {
+			const findedBoxCoords = this.connectionCoords.find(coord => coord[0].box === box.name);
+			return {
+				box,
+				direction: findedBoxCoords
+					? findedBoxCoords[1].leftConnection.left < activeBoxCoords[1].leftConnection.left
+						? 'right' as 'right' : 'left' as 'left' : 'left' as 'left',
+			};
+		});
 	}
 
 	private getConnectableBoxes(index: number) {
@@ -113,10 +123,10 @@ export default class RootStore {
 			.filter(box => box.kind === group)
 			.filter(box => intersection(
 				box.spec.pins.map(pin => pin['connection-type']),
-				this.selectedPin
-					? [this.selectedPin?.['connection-type']]
-					: this.selectedBox
-						? this.selectedBox.spec.pins.map(pin => pin['connection-type'])
+				this.activePin
+					? [this.activePin?.['connection-type']]
+					: this.activeBox
+						? this.activeBox.spec.pins.map(pin => pin['connection-type'])
 						: [],
 			).length !== 0);
 	}
@@ -130,7 +140,7 @@ export default class RootStore {
 	public createNewBox = (newBox: BoxEntity) => {
 		if (!this.selectedSchema) return;
 
-		if (this.boxes.find(box => box.kind === newBox.kind && box.name === newBox.name)) {
+		if (this.boxes.find(box => box.name === newBox.name)) {
 			// eslint-disable-next-line no-alert
 			alert(`Box "${newBox.name}" already exists`);
 			return;
@@ -146,12 +156,12 @@ export default class RootStore {
 		});
 	};
 
-	@action setSelectedBox = (box: BoxEntity | null) => {
-		this.selectedBox = box;
+	@action setActiveBox = (box: BoxEntity | null) => {
+		this.activeBox = box;
 	};
 
-	@action setSelectedPin = (pin: Pin | null) => {
-		this.selectedPin = pin;
+	@action setActivePin = (pin: Pin | null) => {
+		this.activePin = pin;
 	};
 
 	@action setSelectedLink = (link: string | null) => {
@@ -191,7 +201,7 @@ export default class RootStore {
 		}
 		this.schemaAbortController = new AbortController();
 		const result = await this.api.fetchSchemaState(schemaName, this.schemaAbortController.signal);
-		this.boxes = observable(result.resources.filter(resItem => isValidBox(resItem)));
+		this.boxes = observable.array(result.resources.filter(resItem => isValidBox(resItem)));
 		const links = result.resources.filter(resItem => isLinksDefinition(resItem)) as LinksDefinition[];
 		this.linkBox = links[0];
 		this.setLinks(links);
@@ -204,15 +214,15 @@ export default class RootStore {
 
 	@action
 	public setBoxParamValue = async (boxName: string, paramName: string, value: string) => {
-		const changedBox = this.boxes.find(box => box.name === boxName);
+		const targetBox = this.boxes.find(box => box.name === boxName);
 
-		if (changedBox) {
-			const paramIndex = changedBox.spec.params?.findIndex(param => param.name === paramName);
+		if (targetBox) {
+			const paramIndex = targetBox.spec.params?.findIndex(param => param.name === paramName);
 
-			if (paramIndex && changedBox.spec.params) {
-				changedBox.spec.params[paramIndex].value = value;
+			if (paramIndex && targetBox.spec.params) {
+				targetBox.spec.params[paramIndex].value = value;
 			}
-			this.saveBoxChanges(changedBox);
+			this.saveBoxChanges(targetBox);
 		}
 	};
 
@@ -255,14 +265,29 @@ export default class RootStore {
 	};
 
 	@action
-	public addCoords = (box: string, pinConnections: {pin: string; connections: BoxConnections}[]) => {
+	public addCoords = (box: string, pinConnections: { pin: string; connections: BoxConnections }[]) => {
 		pinConnections.forEach(pinConnection => {
 			const coordIndex = this.connectionCoords
-				.findIndex(coord => coord[0][0] === box && coord[0][1] === pinConnection.pin);
+				.findIndex(coord => coord[0].box === box && coord[0].pin === pinConnection.pin);
 			if (coordIndex === -1) {
-				this.connectionCoords.push([[box, pinConnection.pin], pinConnection.connections]);
+				this.connectionCoords.push(
+					[
+						{
+							box,
+							pin: pinConnection.pin,
+							connectionType: pinConnection.connections.leftConnection.connectionOwner.connectionType,
+						}, pinConnection.connections,
+					],
+				);
 			} else {
-				this.connectionCoords.splice(coordIndex, 1, [[box, pinConnection.pin], pinConnection.connections]);
+				this.connectionCoords.splice(coordIndex, 1,
+					[
+						{
+							box,
+							pin: pinConnection.pin,
+							connectionType: pinConnection.connections.leftConnection.connectionOwner.connectionType,
+						}, pinConnection.connections,
+					]);
 			}
 		});
 	};
@@ -274,20 +299,17 @@ export default class RootStore {
 			const startBox = this.boxes.find(box => box.name === link.from.box);
 			const endBox = this.boxes.find(box => box.name === link.to.box);
 			if (startBox && endBox) {
-				const startBoxCoords = this.connectionCoords.find(coords => coords[0][0] === startBox.name
-					&& coords[0][1] === link.from.pin);
-				const endBoxCoords = this.connectionCoords.find(coords => coords[0][0] === endBox.name
-					&& coords[0][1] === link.to.pin);
+				const startBoxCoords = this.connectionCoords.find(coords => coords[0].box === startBox.name
+					&& coords[0].pin === link.from.pin);
+				const endBoxCoords = this.connectionCoords.find(coords => coords[0].box === endBox.name
+					&& coords[0].pin === link.to.pin);
 				if (startBoxCoords && endBoxCoords) {
-					const startBoxGroupIndex = this.groups.findIndex(group => startBox?.kind === group);
-					const endBoxGroupIndex = this.groups.findIndex(group => endBox?.kind === group);
-
 					return {
 						name: link.name,
-						start: startBoxGroupIndex < endBoxGroupIndex
+						start: startBoxCoords[1].rightConnection.left < endBoxCoords[1].leftConnection.left
 							? startBoxCoords[1].rightConnection
 							: startBoxCoords[1].leftConnection,
-						end: startBoxGroupIndex < endBoxGroupIndex
+						end: startBoxCoords[1].rightConnection.left < endBoxCoords[1].leftConnection.left
 							? endBoxCoords[1].leftConnection
 							: endBoxCoords[1].rightConnection,
 					};
@@ -299,12 +321,12 @@ export default class RootStore {
 
 	@action
 	public setConnection = async (connectionName: string, pin: Pin, box: BoxEntity) => {
-		if (!this.selectedSchema || !this.selectedBox || !this.selectedPin || !this.linkBox) return;
+		if (!this.selectedSchema || !this.activeBox || !this.activePin || !this.linkBox) return;
 		this.links.push({
 			name: connectionName,
 			from: {
-				box: this.selectedBox.name,
-				pin: this.selectedPin.name,
+				box: this.activeBox.name,
+				pin: this.activePin.name,
 				connectionType: pin['connection-type'],
 			},
 			to: {
@@ -316,8 +338,8 @@ export default class RootStore {
 		const newConnection = {
 			name: connectionName,
 			from: {
-				box: this.selectedBox.name,
-				pin: this.selectedPin.name,
+				box: this.activeBox.name,
+				pin: this.activePin.name,
 			},
 			to: {
 				box: box.name,
@@ -333,39 +355,39 @@ export default class RootStore {
 				.push(newConnection);
 		}
 		this.saveBoxChanges(this.linkBox);
-		this.selectedBox = null;
-		this.selectedPin = null;
+		this.activeBox = null;
+		this.activePin = null;
 	};
 
 	@action
 	public changeCustomConfig = async (config: {[prop: string]: string}, boxName: string) => {
-		const changedBox = this.boxes.find(box => box.name === boxName);
-		if (changedBox) {
-			changedBox.spec['custom-config'] = config;
+		const targetBox = this.boxes.find(box => box.name === boxName);
+		if (targetBox) {
+			targetBox.spec['custom-config'] = config;
 		}
 	};
 
 	@action
 	public deleteParam = (paramName: string, boxName: string) => {
-		const changedBox = this.boxes.find(box => box.name === boxName);
-		if (changedBox && changedBox.spec.params) {
-			const paramIndex = changedBox?.spec.params.findIndex(param => param.name === paramName);
+		const targetBox = this.boxes.find(box => box.name === boxName);
+		if (targetBox && targetBox.spec.params) {
+			const paramIndex = targetBox?.spec.params.findIndex(param => param.name === paramName);
 
 			if (paramIndex >= 0) {
-				const params = [...changedBox?.spec.params.filter(param => param.name !== paramName)];
+				const params = [...targetBox?.spec.params.filter(param => param.name !== paramName)];
 				const boxIndex = this.boxes.findIndex(box => box.name === boxName);
 				this.boxes[boxIndex] = {
-					...changedBox,
+					...targetBox,
 					spec: {
-						pins: changedBox.spec.pins,
-						'image-name': changedBox.spec['image-name'],
-						'image-version': changedBox.spec['image-version'],
-						'node-port': changedBox.spec['node-port'],
+						pins: targetBox.spec.pins,
+						'image-name': targetBox.spec['image-name'],
+						'image-version': targetBox.spec['image-version'],
+						'node-port': targetBox.spec['node-port'],
 						params,
 					},
 				};
 
-				this.saveBoxChanges(changedBox);
+				this.saveBoxChanges(targetBox);
 			}
 		}
 	};
@@ -388,14 +410,15 @@ export default class RootStore {
 	@action
 	public deleteBox = async (boxName: string) => {
 		if (!this.selectedSchema) return;
-		const removableBoxIndex = this.boxes.findIndex(box => box.name === boxName);
+		const removableBox = this.boxes.find(box => box.name === boxName);
+		if (!removableBox) return;
 		const isSuccess = await this.api.sendSchemaRequest(this.selectedSchema, [{
 			operation: 'remove',
-			payload: this.boxes[removableBoxIndex],
+			payload: removableBox,
 		}]);
 		if (isSuccess) {
-			this.boxes[removableBoxIndex].spec.pins.forEach(pin => this.removeConnectionsFromLinkBox(pin, boxName));
-			this.boxes.splice(removableBoxIndex, 1);
+			removableBox.spec.pins.forEach(pin => this.removeConnectionsFromLinkBox(pin, boxName, true));
+			this.boxes = observable.array(this.boxes.filter(box => box.name !== boxName));
 		}
 	};
 
@@ -408,49 +431,53 @@ export default class RootStore {
 
 	@action
 	public configuratePin = (pin: Pin, boxName: string) => {
-		const changedBox = this.boxes.find(box => box.name === boxName);
+		const targetBox = this.boxes.find(box => box.name === boxName);
 
-		if (changedBox) {
-			const pinIndex = changedBox.spec.pins.findIndex(boxPin => boxPin.name === pin.name);
+		if (targetBox) {
+			const pinIndex = targetBox.spec.pins.findIndex(boxPin => boxPin.name === pin.name);
 
 			if (pinIndex >= 0) {
-				changedBox.spec.pins = [
-					...changedBox.spec.pins.slice(0, pinIndex),
+				targetBox.spec.pins = [
+					...targetBox.spec.pins.slice(0, pinIndex),
 					pin,
-					...changedBox.spec.pins.slice(pinIndex + 1, changedBox.spec.pins.length),
+					...targetBox.spec.pins.slice(pinIndex + 1, targetBox.spec.pins.length),
 				];
-				this.saveBoxChanges(changedBox);
+				this.saveBoxChanges(targetBox);
 			}
 		}
 	};
 
 	@action
 	public addPinToBox = (pin: Pin, boxName: string) => {
-		const changedBox = this.boxes.find(box => box.name === boxName);
+		const targetBox = this.boxes.find(box => box.name === boxName);
 
-		if (changedBox) {
-			changedBox.spec.pins = [...changedBox.spec.pins, pin];
-			this.saveBoxChanges(changedBox);
+		if (targetBox) {
+			targetBox.spec.pins = [...targetBox.spec.pins, pin];
+			this.saveBoxChanges(targetBox);
 		}
 	};
 
 	@action
 	public removePinFromBox = (pin: Pin, boxName: string) => {
-		const changedBox = this.boxes.find(box => box.name === boxName);
+		const targetBox = this.boxes.find(box => box.name === boxName);
 
-		if (changedBox) {
-			changedBox.spec.pins = [...changedBox.spec.pins.filter(boxPin => boxPin.name !== pin.name)];
-			this.removeConnectionsFromLinkBox(pin, boxName);
-			this.saveBoxChanges(changedBox);
+		if (targetBox) {
+			targetBox.spec.pins = [...targetBox.spec.pins.filter(boxPin => boxPin.name !== pin.name)];
+			this.removeConnectionsFromLinkBox(pin, boxName, true);
+			this.saveBoxChanges(targetBox);
 		}
 	};
 
 	@action
-	private removeConnectionsFromLinkBox = (pin: Pin, boxName: string) => {
-		this.links = [...this.links.filter(connection => (connection.from.box !== boxName
-			&& connection.from.pin !== pin.name)
-			&& (connection.to.box !== boxName
-				&& connection.to.pin !== pin.name))];
+	private removeConnectionsFromLinkBox = (pin: Pin, boxName: string, full: boolean) => {
+		this.links = [...this.links.filter(connection => connection.from.box !== boxName
+			|| connection.from.pin !== pin.name)];
+
+		if (full) {
+			this.links = [...this.links.filter(connection => connection.to.box !== boxName
+				|| connection.to.pin !== pin.name)];
+		}
+
 		if (this.linkBox?.spec['links-definition']) {
 			this.linkBox
 				// eslint-disable-next-line max-len
@@ -474,12 +501,9 @@ export default class RootStore {
 	@action
 	public deletePinConnections = async (pin: Pin, boxName: string) => {
 		if (this.selectedSchema && this.linkBox) {
-			this.removeConnectionsFromLinkBox(pin, boxName);
+			this.removeConnectionsFromLinkBox(pin, boxName, false);
 
-			await this.api.sendSchemaRequest(this.selectedSchema, [{
-				operation: 'update',
-				payload: this.linkBox,
-			}]);
+			this.saveBoxChanges(this.linkBox);
 		}
 	};
 
@@ -518,67 +542,69 @@ export default class RootStore {
 
 	@action
 	public addAttribute = (attribute: string, pinName: string, boxName: string) => {
-		const changedBox = this.boxes.find(box => box.name === boxName);
+		const targetBox = this.boxes.find(box => box.name === boxName);
 
-		if (changedBox) {
-			const changedPin = changedBox.spec.pins.find(pin => pin.name === pinName);
+		if (targetBox) {
+			const targetPin = targetBox.spec.pins.find(pin => pin.name === pinName);
 
-			if (changedPin) {
-				if (!changedPin.attributes) {
-					set(changedPin, { attributes: [attribute] });
+			if (targetPin) {
+				if (!targetPin.attributes) {
+					set(targetPin, { attributes: [attribute] });
 					return;
 				}
-				changedPin.attributes.push(attribute);
-				this.saveBoxChanges(changedBox);
+				targetPin.attributes.push(attribute);
+				this.saveBoxChanges(targetBox);
 			}
 		}
 	};
 
 	@action
 	public removeAttribute = (attribute: string, pinName: string, boxName: string) => {
-		const changedBox = this.boxes.find(box => box.name === boxName);
+		const targetBox = this.boxes.find(box => box.name === boxName);
 
-		if (changedBox) {
-			const changedPin = changedBox.spec.pins.find(pin => pin.name === pinName);
+		if (targetBox) {
+			const targetPin = targetBox.spec.pins.find(pin => pin.name === pinName);
 
-			if (changedPin) {
-				changedPin.attributes = [...changedPin.attributes.filter(pinAttibute => pinAttibute !== attribute)];
-				this.saveBoxChanges(changedBox);
+			if (targetPin) {
+				console.log(targetPin.attributes);
+				targetPin.attributes = [...targetPin.attributes.filter(pinAttibute => pinAttibute !== attribute)];
+				console.log(targetPin.attributes);
+				this.saveBoxChanges(targetBox);
 			}
 		}
 	};
 
 	@action
 	public addFilter = (filter: Filter, pinName: string, boxName: string) => {
-		const changedBox = this.boxes.find(box => box.name === boxName);
+		const targetBox = this.boxes.find(box => box.name === boxName);
 
-		if (changedBox) {
-			const changedPin = changedBox.spec.pins.find(pin => pin.name === pinName);
+		if (targetBox) {
+			const targetPin = targetBox.spec.pins.find(pin => pin.name === pinName);
 
-			if (changedPin) {
-				if (!changedPin.filters) {
-					set(changedPin, { filters: [filter] });
+			if (targetPin) {
+				if (!targetPin.filters) {
+					set(targetPin, { filters: [filter] });
 					return;
 				}
-				changedPin.filters.push(filter);
-				this.saveBoxChanges(changedBox);
+				targetPin.filters.push(filter);
+				this.saveBoxChanges(targetBox);
 			}
 		}
 	};
 
 	@action
 	public removeFilter = (filter: Filter, pinName: string, boxName: string) => {
-		const changedBox = this.boxes.find(box => box.name === boxName);
+		const targetBox = this.boxes.find(box => box.name === boxName);
 
-		if (changedBox) {
-			const changedPin = changedBox.spec.pins.find(pin => pin.name === pinName);
+		if (targetBox) {
+			const targetPin = targetBox.spec.pins.find(pin => pin.name === pinName);
 
-			if (changedPin && changedPin.filters) {
-				changedPin.filters = [...changedPin.filters.filter(pinFilter => pinFilter
+			if (targetPin && targetPin.filters) {
+				targetPin.filters = [...targetPin.filters.filter(pinFilter => pinFilter
 					.metadata[0]['field-name'] !== filter.metadata[0]['field-name']
 					|| pinFilter.metadata[0]['expected-value'] !== filter.metadata[0]['expected-value']
 					|| pinFilter.metadata[0].operation !== filter.metadata[0].operation)];
-				this.saveBoxChanges(changedBox);
+				this.saveBoxChanges(targetBox);
 			}
 		}
 	};

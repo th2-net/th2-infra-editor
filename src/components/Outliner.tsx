@@ -38,8 +38,8 @@ const Outliner = () => {
 								rootStore.boxes.map(box => (
 									<div
 										key={`${box.name}-${box.kind}`}
-										onMouseOver={() => rootStore.setSelectedBox(box)}
-										onMouseLeave={() => rootStore.setSelectedBox(null)}
+										onMouseOver={() => rootStore.setActiveBox(box)}
+										onMouseLeave={() => rootStore.setActiveBox(null)}
 										className="outliner__list-item">
 										<div className="outliner__item-info">
 											<span className="outliner__info-key">Kind:</span>

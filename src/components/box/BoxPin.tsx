@@ -20,7 +20,7 @@ import PinConfigurator from '../pin-configurator/PinConfigurator';
 import { Pin, BoxEntity } from '../../models/Box';
 import useOutsideClickListener from '../../hooks/useOutsideClickListener';
 import ContextMenu from './ContextMenu';
-import { createBemBlock } from '../../helpers/styleCreators';
+import { createBemElement } from '../../helpers/styleCreators';
 
 interface BoxPinProps {
 	configuratePin: (pin: Pin, boxName: string) => void;
@@ -29,60 +29,88 @@ interface BoxPinProps {
 	deletePinConnections: (pin: Pin, boxName: string) => void;
 	selectBox: (box: BoxEntity | null) => void;
 	selectPin: (pin: Pin | null) => void;
-	isConnectable: boolean;
+	connectionDirection: 'left' | 'right' | 'both' | 'none';
 	setConnection: (connectionName: string, pin: Pin, box: BoxEntity) => void;
 	onContextMenuStateChange: (isOpen: boolean) => void;
 	onPinConfiguratorStateChange: (isOpen: boolean) => void;
-	selectedBox: BoxEntity | null;
+	leftDotVisible: boolean;
+	rightDotVisible: boolean;
+	activeBox: BoxEntity | null;
+	activePin: Pin | null;
 }
 
-const BoxPin = ({
+const BoxPin = React.forwardRef(({
 	configuratePin,
 	pin,
 	box,
 	deletePinConnections,
 	selectBox,
 	selectPin,
-	isConnectable,
+	connectionDirection,
 	setConnection,
 	onContextMenuStateChange,
 	onPinConfiguratorStateChange,
-	selectedBox,
-}: BoxPinProps) => {
+	leftDotVisible,
+	rightDotVisible,
+	activeBox,
+	activePin,
+}: BoxPinProps, ref: React.Ref<HTMLDivElement>) => {
 	const [isPinConfiguratorOpen, setIsPinConfiguratorOpen] = React.useState(false);
-	const [isContextMenuOpen, setIsContextMenuOpen] = React.useState(false);
+	const [contextMenuState, setContextMenuState] = React.useState<'left' | 'right' | 'closed'>('closed');
 
 	const pinRef = React.useRef<HTMLDivElement>(null);
 
 	useOutsideClickListener(pinRef, (e: MouseEvent) => {
-		if (!e.composedPath().some(elem => (elem as HTMLElement).className === 'pin__dot'
-		|| (elem as HTMLElement).className === 'pin__context-menu')) {
+		if (
+			!e.composedPath()
+				.some(
+					elem =>
+						((elem as HTMLElement).className
+							&& (elem as HTMLElement).className.includes)
+							&& ((elem as HTMLElement).className.includes('pin__dot')
+						|| (elem as HTMLElement).className.includes('pin__context-menu')),
+				)
+		) {
 			onContextMenuStateChange(false);
-			setIsContextMenuOpen(false);
+			setContextMenuState('closed');
 			selectBox(null);
 			selectPin(null);
 		}
 	});
 
 	React.useEffect(() => {
-		if (!selectedBox) {
-			setIsContextMenuOpen(false);
+		if (activePin?.name !== pin.name) {
+			setContextMenuState('closed');
 			onContextMenuStateChange(false);
 		}
-	}, [selectedBox]);
+	}, [activePin]);
 
-	const pinClass = createBemBlock(
+	const leftDotClass = createBemElement(
 		'pin',
-		isContextMenuOpen || isConnectable ? 'active' : null,
+		'dot',
+		contextMenuState === 'left' || connectionDirection === 'left'
+			? 'active' : null,
+		contextMenuState !== 'left'
+			&& !leftDotVisible
+			&& connectionDirection !== 'left'
+			&& connectionDirection !== 'both'
+			? 'hidden' : null,
 	);
 
-	const clickHandler = () => {
-		if (!isConnectable) {
-			setIsContextMenuOpen(!isContextMenuOpen);
-			onContextMenuStateChange(!isContextMenuOpen);
-			selectBox(box);
-			selectPin(pin);
-		} else {
+	const rightDotClass = createBemElement(
+		'pin',
+		'dot',
+		contextMenuState === 'right' || connectionDirection === 'right'
+			? 'active' : null,
+		contextMenuState !== 'right'
+			&& !rightDotVisible
+			&& connectionDirection !== 'right'
+			&& connectionDirection !== 'both'
+			? 'hidden' : null,
+	);
+
+	const clickHandler = (direction: 'left' | 'right') => {
+		if (activePin && box.name !== activeBox?.name) {
 			// eslint-disable-next-line no-alert
 			const connectionName = prompt('Connection name');
 			if (connectionName) {
@@ -90,35 +118,43 @@ const BoxPin = ({
 			}
 			selectBox(null);
 			selectPin(null);
+		} else {
+			setContextMenuState(direction);
+			onContextMenuStateChange(true);
+			selectBox(box);
+			selectPin(pin);
 		}
 	};
 
 	return (
 		<>
 			<div
-				className={pinClass}>
+				ref={ref}
+				className='pin'>
 				<div
 					ref={pinRef}
-					onClick={clickHandler}
-					className="pin__dot"/>
+					onClick={() => clickHandler('left')}
+					className={leftDotClass}/>
 				<div className="pin__info">
-					<span className="pin__name">{pin.name}</span>
-					<span className="pin__type">{pin['connection-type']}</span>
+					<div className="pin__info-value">{pin.name}</div>
+					<div className="pin__info-value">{pin['connection-type']}</div>
 				</div>
-				{
-					isContextMenuOpen
-					&& <ContextMenu
-						togglePinConfigurator={() => {
-							setIsPinConfiguratorOpen(!isPinConfiguratorOpen);
-							onPinConfiguratorStateChange(false);
-						}}
-						closeContextMenu={() => {
-							setIsContextMenuOpen(false);
-							onContextMenuStateChange(false);
-						}}
-						deletePinConnections={() => deletePinConnections(pin, box.name)}
-					/>
-				}
+				<div
+					ref={pinRef}
+					onClick={() => clickHandler('right')}
+					className={rightDotClass}/>
+				<ContextMenu
+					state={contextMenuState}
+					togglePinConfigurator={() => {
+						setIsPinConfiguratorOpen(!isPinConfiguratorOpen);
+						onPinConfiguratorStateChange(false);
+					}}
+					closeContextMenu={() => {
+						setContextMenuState('closed');
+						onContextMenuStateChange(false);
+					}}
+					deletePinConnections={() => deletePinConnections(pin, box.name)}
+				/>
 			</div>
 			<ModalPortal isOpen={isPinConfiguratorOpen}>
 				<PinConfigurator
@@ -133,6 +169,8 @@ const BoxPin = ({
 			</ModalPortal>
 		</>
 	);
-};
+});
+
+BoxPin.displayName = 'BoxPin';
 
 export default BoxPin;

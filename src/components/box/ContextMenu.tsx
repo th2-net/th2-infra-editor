@@ -15,37 +15,50 @@
  ***************************************************************************** */
 
 import React from 'react';
+import { createBemElement } from '../../helpers/styleCreators';
 
 interface ContextMenu {
+	state: 'left' | 'right' | 'closed';
 	togglePinConfigurator: () => void;
 	closeContextMenu: () => void;
 	deletePinConnections: () => void;
 }
 
 const ContextMenu = ({
+	state,
 	togglePinConfigurator,
 	closeContextMenu,
 	deletePinConnections,
-}: ContextMenu) => (<div
-	className="pin__context-menu">
-	<button
-		onClick={() => {
-			togglePinConfigurator();
-			closeContextMenu();
-		}}
-		className="pin__menu-button"
-	>
-		<i className='pin__menu-button-icon edit'/>
-	</button>
-	<div className="pin__menu-separator"/>
-	<button
-		onClick={() => {
-			deletePinConnections();
-			closeContextMenu();
-		}}
-		className="pin__menu-button">
-		<i className='pin__menu-button-icon delete'/>
-	</button>
-</div>);
+}: ContextMenu) => {
+	const contextMenuClass = createBemElement(
+		'pin',
+		'context-menu',
+		state,
+	);
+
+	return (
+		<div
+			className={contextMenuClass}>
+			<button
+				onClick={() => {
+					togglePinConfigurator();
+					closeContextMenu();
+				}}
+				className="pin__menu-button"
+			>
+				<i className='pin__menu-button-icon edit'/>
+			</button>
+			<div className="pin__menu-separator"/>
+			<button
+				onClick={() => {
+					deletePinConnections();
+					closeContextMenu();
+				}}
+				className="pin__menu-button">
+				<i className='pin__menu-button-icon delete'/>
+			</button>
+		</div>
+	);
+};
 
 export default ContextMenu;

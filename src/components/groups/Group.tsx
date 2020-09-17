@@ -37,9 +37,9 @@ const Group = React.memo(({
 
 	React.useEffect(() => {
 		setBoxRefs(boxRef => (
-		  Array(arrLength).fill('').map((_, i) => boxRef[i] || React.createRef())
+			Array(arrLength).fill('').map((_, i) => boxRef[i] || React.createRef())
 		));
-	  }, [boxes]);
+	}, [boxes]);
 
 	const onScroll = () => {
 		boxRefs

@@ -32,6 +32,11 @@ export interface BoxEntity extends FileBase {
 	};
 }
 
+export interface BoxEntityWrapper {
+	box: BoxEntity;
+	direction: 'left' | 'right';
+}
+
 export interface Pin {
 	attributes: Array<string>;
 	['connection-type']: string;
