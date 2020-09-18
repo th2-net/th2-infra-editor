@@ -23,17 +23,13 @@ import Input from '../util/Input';
 interface PinFilterProps {
 	filter: Filter;
 	changeFilter: (oldValue: Filter, newValue: Filter) => void;
-	removeFilter: (filter: Filter, pinName: string, boxName: string) => void;
-	boxName: string;
-	pinName: string;
+	removeFilter: (filter: Filter) => void;
 }
 
 const PinFilter = ({
 	filter,
 	changeFilter,
 	removeFilter,
-	boxName,
-	pinName,
 }: PinFilterProps) => {
 	const [isEdited, setIsEdited] = React.useState(false);
 	const [filedNameValue, setFiledNameValue] = React.useState('');
@@ -91,7 +87,7 @@ const PinFilter = ({
 									<i className="pin-configurator__filter-button-icon edit"/>
 								</button>
 								<button
-									onClick={() => removeFilter(filter, pinName, boxName)}
+									onClick={() => removeFilter(filter)}
 									className="pin-configurator__filter-button">
 									<i className="pin-configurator__filter-button-icon delete"/>
 								</button>
@@ -143,11 +139,9 @@ const PinFilter = ({
 
 interface FiltersListProps {
 	filters?: Filter[];
-	addFilter: (filter: Filter, pinName: string, boxName: string) => void;
+	addFilter: (filter: Filter) => void;
+	removeFilter: (filter: Filter) => void;
 	changeFiltersList: (filters: Filter[]) => void;
-	removeFilter: (filter: Filter, pinName: string, boxName: string) => void;
-	boxName: string;
-	pinName: string;
 }
 
 const FiltersList = ({
@@ -155,8 +149,6 @@ const FiltersList = ({
 	addFilter,
 	changeFiltersList,
 	removeFilter,
-	boxName,
-	pinName,
 }: FiltersListProps) => {
 	const [isAddFilterFormOpen, setIsAddFilterFormOpen] = React.useState(false);
 
@@ -192,7 +184,7 @@ const FiltersList = ({
 					operation: operationInput.value,
 				},
 			],
-		}, pinName, boxName);
+		});
 	};
 
 	const changeFilter = (oldValue: Filter, newValue: Filter) => {
@@ -222,8 +214,6 @@ const FiltersList = ({
 								filter={filter}
 								changeFilter={changeFilter}
 								removeFilter={removeFilter}
-								boxName={boxName}
-								pinName={pinName}
 							/>
 						))
 					}

@@ -21,17 +21,13 @@ import { useInput } from '../../hooks/useInput';
 interface AttributeProps {
 	attribute: string;
 	changeAttribute: (oldValue: string, newValue: string) => void;
-	removeAttribute: (attribute: string, pinName: string, boxName: string) => void;
-	boxName: string;
-	pinName: string;
+	removeAttribute: (attribute: string) => void;
 }
 
 const Attribute = ({
 	attribute,
 	changeAttribute,
 	removeAttribute,
-	boxName,
-	pinName,
 }: AttributeProps) => {
 	const [isEdited, setIsEdited] = React.useState(false);
 	const [savedValue, setSavedValue] = React.useState('');
@@ -60,7 +56,7 @@ const Attribute = ({
 								<i className='pin-configurator__attribute-button-icon edit'></i>
 							</button>
 							<button
-								onClick={() => removeAttribute(attribute, pinName, boxName)}
+								onClick={() => removeAttribute(attribute)}
 								className='pin-configurator__attribute-button'>
 								<i className='pin-configurator__attribute-button-icon delete'></i>
 							</button>
@@ -98,11 +94,9 @@ const Attribute = ({
 
 interface AttributesListProps {
 	attributes: string[];
-	addAttribute: (attribute: string, pinName: string, boxName: string) => void;
-	removeAttribute: (attribute: string, pinName: string, boxName: string) => void;
+	addAttribute: (attribute: string) => void;
+	removeAttribute: (attribute: string) => void;
 	changeAttributesList: (attributes: string[]) => void;
-	boxName: string;
-	pinName: string;
 }
 
 const AttributesList = ({
@@ -110,8 +104,6 @@ const AttributesList = ({
 	addAttribute,
 	removeAttribute,
 	changeAttributesList,
-	boxName,
-	pinName,
 }: AttributesListProps) => {
 	const [isAddAttributeFormOpen, setIsAddAttributeFormOpen] = React.useState(false);
 
@@ -121,7 +113,7 @@ const AttributesList = ({
 	});
 
 	const addNewAttribute = () => {
-		addAttribute(addInput.value, pinName, boxName);
+		addAttribute(addInput.value);
 		setIsAddAttributeFormOpen(false);
 	};
 
@@ -149,9 +141,7 @@ const AttributesList = ({
 								key={attribute}
 								attribute={attribute}
 								changeAttribute={changeAttribute}
-								removeAttribute={removeAttribute}
-								boxName={boxName}
-								pinName={pinName}/>)
+								removeAttribute={removeAttribute}/>)
 					}
 					{
 						isAddAttributeFormOpen

@@ -26,7 +26,6 @@ import { isValidBox } from '../helpers/box';
 import {
 	BoxEntity,
 	DictionaryRelation,
-	Filter,
 	Pin,
 } from '../models/Box';
 import FileBase from '../models/FileBase';
@@ -305,76 +304,6 @@ export default class SchemasStore {
 			this.connectionStore.removeConnectionsFromLinkBox(pin, boxName, false);
 
 			this.saveBoxChanges(this.connectionStore.linkBox);
-		}
-	};
-
-	@action
-	public addAttribute = (attribute: string, pinName: string, boxName: string) => {
-		const targetBox = this.boxes.find(box => box.name === boxName);
-
-		if (targetBox) {
-			const targetPin = targetBox.spec.pins.find(pin => pin.name === pinName);
-
-			if (targetPin) {
-				if (!targetPin.attributes) {
-					set(targetPin, { attributes: [attribute] });
-					return;
-				}
-				targetPin.attributes.push(attribute);
-				this.saveBoxChanges(targetBox);
-			}
-		}
-	};
-
-	@action
-	public removeAttribute = (attribute: string, pinName: string, boxName: string) => {
-		const targetBox = this.boxes.find(box => box.name === boxName);
-
-		if (targetBox) {
-			const targetPin = targetBox.spec.pins.find(pin => pin.name === pinName);
-
-			if (targetPin) {
-				set(targetPin, {
-					attributes: [...targetPin.attributes
-						.filter(pinAttibute => pinAttibute !== attribute)],
-				});
-				this.saveBoxChanges(targetBox);
-			}
-		}
-	};
-
-	@action
-	public addFilter = (filter: Filter, pinName: string, boxName: string) => {
-		const targetBox = this.boxes.find(box => box.name === boxName);
-
-		if (targetBox) {
-			const targetPin = targetBox.spec.pins.find(pin => pin.name === pinName);
-
-			if (targetPin) {
-				if (!targetPin.filters) {
-					set(targetPin, { filters: [filter] });
-					return;
-				}
-				targetPin.filters.push(filter);
-				this.saveBoxChanges(targetBox);
-			}
-		}
-	};
-
-	@action
-	public removeFilter = (filter: Filter, pinName: string, boxName: string) => {
-		const targetBox = this.boxes.find(box => box.name === boxName);
-
-		if (targetBox) {
-			const targetPin = targetBox.spec.pins.find(pin => pin.name === pinName);
-
-			if (targetPin && targetPin.filters) {
-				targetPin.filters = [...targetPin.filters.filter(pinFilter => pinFilter
-					.metadata[0]['field-name'] !== filter.metadata[0]['field-name']
-					|| pinFilter.metadata[0]['expected-value'] !== filter.metadata[0]['expected-value']
-					|| pinFilter.metadata[0].operation !== filter.metadata[0].operation)];
-				this.saveBoxChanges(targetBox);
-			}
 		}
 	};
 }

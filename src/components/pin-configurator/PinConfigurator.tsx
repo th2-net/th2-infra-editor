@@ -16,15 +16,13 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { observer } from 'mobx-react-lite';
 import useOutsideClickListener from '../../hooks/useOutsideClickListener';
-import { Pin } from '../../models/Box';
+import { Filter, Pin } from '../../models/Box';
 import { useInput } from '../../hooks/useInput';
 import '../../styles/pin-configurator.scss';
 import Input from '../util/Input';
 import AttributesList from './AttributesList';
 import FiltersList from './FiltersList';
-import useSchemasStore from '../../hooks/useSchemasStore';
 
 interface PinConfiguratorProps {
 	pin: Pin;
@@ -39,10 +37,8 @@ const PinConfigurator = ({
 	onClose,
 	configuratePin,
 }: PinConfiguratorProps) => {
-	const schemasStore = useSchemasStore();
-
 	const [attributes, setAttributes] = React.useState(pin.attributes);
-	const [filters, setFilters] = React.useState(pin.filters);
+	const [filters, setFilters] = React.useState(() => (pin.filters ?? []));
 
 	const editorRef = React.useRef<HTMLDivElement>(null);
 
@@ -59,6 +55,22 @@ const PinConfigurator = ({
 		label: 'Name',
 		id: 'pin-connection-type',
 	});
+
+	const addAttribute = (attribute: string) => {
+		setAttributes([...attributes, attribute]);
+	};
+
+	const removeAttribute = (attribute: string) => {
+		setAttributes([...attributes.filter(attr => attr !== attribute)]);
+	};
+
+	const addFilter = (filter: Filter) => {
+		setFilters([...filters, filter]);
+	};
+
+	const removeFilter = (filter: Filter) => {
+		setFilters([...filters.filter(pinFilter => pinFilter !== filter)]);
+	};
 
 	const submit = () => {
 		configuratePin({
@@ -82,20 +94,15 @@ const PinConfigurator = ({
 					<AttributesList
 						attributes={attributes}
 						changeAttributesList={setAttributes}
-						addAttribute={schemasStore.addAttribute}
-						removeAttribute={schemasStore.removeAttribute}
-						boxName={boxName}
-						pinName={pin.name}
-					/>
+						addAttribute={addAttribute}
+						removeAttribute={removeAttribute}/>
 				</div>
 				<div className="pin-configurator__part">
 					<FiltersList
 						filters={filters}
 						changeFiltersList={setFilters}
-						addFilter={schemasStore.addFilter}
-						removeFilter={schemasStore.removeFilter}
-						boxName={boxName}
-						pinName={pin.name}
+						addFilter={addFilter}
+						removeFilter={removeFilter}
 					/>
 				</div>
 			</div>
@@ -113,4 +120,4 @@ const PinConfigurator = ({
 	);
 };
 
-export default observer(PinConfigurator);
+export default PinConfigurator;
