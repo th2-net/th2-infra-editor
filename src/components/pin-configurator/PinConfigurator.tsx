@@ -24,7 +24,7 @@ import '../../styles/pin-configurator.scss';
 import Input from '../util/Input';
 import AttributesList from './AttributesList';
 import FiltersList from './FiltersList';
-import useStore from '../../hooks/useStore';
+import useSchemasStore from '../../hooks/useSchemasStore';
 
 interface PinConfiguratorProps {
 	pin: Pin;
@@ -39,7 +39,7 @@ const PinConfigurator = ({
 	onClose,
 	configuratePin,
 }: PinConfiguratorProps) => {
-	const { rootStore } = useStore();
+	const schemasStore = useSchemasStore();
 
 	const [attributes, setAttributes] = React.useState(pin.attributes);
 	const [filters, setFilters] = React.useState(pin.filters);
@@ -82,8 +82,8 @@ const PinConfigurator = ({
 					<AttributesList
 						attributes={attributes}
 						changeAttributesList={setAttributes}
-						addAttribute={rootStore.addAttribute}
-						removeAttribute={rootStore.removeAttribute}
+						addAttribute={schemasStore.addAttribute}
+						removeAttribute={schemasStore.removeAttribute}
 						boxName={boxName}
 						pinName={pin.name}
 					/>
@@ -92,8 +92,8 @@ const PinConfigurator = ({
 					<FiltersList
 						filters={filters}
 						changeFiltersList={setFilters}
-						addFilter={rootStore.addFilter}
-						removeFilter={rootStore.removeFilter}
+						addFilter={schemasStore.addFilter}
+						removeFilter={schemasStore.removeFilter}
 						boxName={boxName}
 						pinName={pin.name}
 					/>

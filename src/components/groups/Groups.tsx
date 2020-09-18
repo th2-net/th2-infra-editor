@@ -20,15 +20,18 @@ import { useDropzone } from 'react-dropzone';
 import yaml from 'js-yaml';
 import Group from './Group';
 import SvgLayout from '../SvgLayout';
-import useStore from '../../hooks/useStore';
 import { isFileBase } from '../../models/FileBase';
 import { isLinksDefinition } from '../../models/LinksDefinition';
 import { readFileAsText } from '../../helpers/files';
 import { isValidBox } from '../../helpers/box';
 import '../../styles/group.scss';
+import useSchemasStore from '../../hooks/useSchemasStore';
+import useConnectionsStore from '../../hooks/useConnectionsStore';
 
 const Groups = () => {
-	const { rootStore } = useStore();
+	const schemasStore = useSchemasStore();
+	const connectionStore = useConnectionsStore();
+
 	const groupsRef = React.useRef<HTMLDivElement>(null);
 
 	const onDrop = React.useCallback(acceptedFiles => {
@@ -45,11 +48,11 @@ const Groups = () => {
 				}
 
 				if (isValidBox(parsedYamlFile)) {
-					rootStore.addBox(parsedYamlFile);
+					schemasStore.addBox(parsedYamlFile);
 				}
 
 				if (isLinksDefinition(parsedYamlFile)) {
-					rootStore.setLinks([parsedYamlFile]);
+					connectionStore.setLinks([parsedYamlFile]);
 				}
 			} catch (error) {
 				console.error('error');
@@ -69,37 +72,37 @@ const Groups = () => {
 				<div
 					className="groups__list"
 					style={{
-						gridTemplateColumns: `repeat(${Math.max(rootStore.groups.length, 6)}, 250px)`,
+						gridTemplateColumns: `repeat(${Math.max(schemasStore.groups.length, 6)}, 250px)`,
 					}}>
 					{
-						(rootStore.groups.includes('Th2Connector') || rootStore.groups.includes('Th2Hand'))
+						(schemasStore.groups.includes('Th2Connector') || schemasStore.groups.includes('Th2Hand'))
 						&& <Group
 							title={'Th2Connector'}
-							boxes={rootStore.boxes
+							boxes={schemasStore.boxes
 								.filter(box => box.kind === 'Th2Connector' || box.kind === 'Th2Hand')
 								.sort((a, b) => (a.name >= b.name ? 1 : -1))}
 							groupsTopOffset={groupsRef.current?.getBoundingClientRect().top}/>
 					}
 					{
-						(rootStore.groups.includes('Th2Codec'))
+						(schemasStore.groups.includes('Th2Codec'))
 						&& <Group
 							title={'Th2Codec'}
-							boxes={rootStore.boxes
+							boxes={schemasStore.boxes
 								.filter(box => box.kind === 'Th2Codec')
 								.sort((a, b) => (a.name >= b.name ? 1 : -1))}
 							groupsTopOffset={groupsRef.current?.getBoundingClientRect().top}/>
 					}
 					{
-						(rootStore.groups.includes('Th2Act') || rootStore.groups.includes('Th2Verify'))
+						(schemasStore.groups.includes('Th2Act') || schemasStore.groups.includes('Th2Verify'))
 						&& <Group
 							title={'Th2Act'}
-							boxes={rootStore.boxes
+							boxes={schemasStore.boxes
 								.filter(box => box.kind === 'Th2Act' || box.name === 'Th2Verify')
 								.sort((a, b) => (a.name >= b.name ? 1 : -1))}
 							groupsTopOffset={groupsRef.current?.getBoundingClientRect().top}/>
 					}
 					{
-						rootStore.groups
+						schemasStore.groups
 							.filter(group =>
 								!['Th2Connector', 'Th2Hand', 'Th2Codec', 'Th2Act', 'Th2Verify']
 									.some(groupName => groupName === group))
@@ -107,7 +110,7 @@ const Groups = () => {
 								<Group
 									title={group}
 									key={group}
-									boxes={rootStore.boxes
+									boxes={schemasStore.boxes
 										.filter(box => box.kind === group)
 										.sort((a, b) => (a.name >= b.name ? 1 : -1))}
 									groupsTopOffset={groupsRef.current?.getBoundingClientRect().top}/>)
@@ -115,8 +118,8 @@ const Groups = () => {
 				</div>
 			</div>
 			<SvgLayout
-				connections={rootStore.connections}
-				deleteConnection={rootStore.deleteConnection}
+				connections={connectionStore.connections}
+				deleteConnection={connectionStore.deleteConnection}
 			/>
 		</div>
 	);

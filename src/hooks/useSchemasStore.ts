@@ -14,15 +14,10 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
-import StoresContext from '../contexts/storesContext';
+import useRootStore from './useRootStore';
 
-export default function useStore() {
-	const rootStore = React.useContext(StoresContext);
+export default function useSchemasStore() {
+	const { rootStore } = useRootStore();
 
-	if (!rootStore) {
-		throw new Error('useRootStore should be used inside of RootStoreContextProvider');
-	}
-
-	return rootStore;
+	return rootStore.schemaStore;
 }

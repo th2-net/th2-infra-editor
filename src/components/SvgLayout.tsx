@@ -21,7 +21,7 @@ import '../styles/svg-layout.scss';
 import useOutsideClickListener from '../hooks/useOutsideClickListener';
 import { Link } from '../models/LinksDefinition';
 import { createBemElement } from '../helpers/styleCreators';
-import useStore from '../hooks/useStore';
+import useConnectionsStore from '../hooks/useConnectionsStore';
 
 interface ArrowProps {
 	connection: ConnectionArrow;
@@ -35,7 +35,7 @@ const Arrow = observer(({
 	const [showRemoveButton, setShowRemoveButton] = React.useState(false);
 	const arrowRef = React.useRef<SVGGElement>(null);
 
-	const { rootStore } = useStore();
+	const connectionsStore = useConnectionsStore();
 
 	useOutsideClickListener(arrowRef, () => setShowRemoveButton(false));
 
@@ -62,7 +62,7 @@ const Arrow = observer(({
 	const arrowLineClass = createBemElement(
 		'arrow',
 		'line',
-		rootStore.selectedLink === connection.name
+		connectionsStore.selectedLink === connection.name
 			? 'active'
 			: null,
 	);
@@ -70,7 +70,7 @@ const Arrow = observer(({
 	const arrowPointerClass = createBemElement(
 		'arrow',
 		'pointer',
-		rootStore.selectedLink === connection.name
+		connectionsStore.selectedLink === connection.name
 			? 'active'
 			: null,
 	);
@@ -78,7 +78,7 @@ const Arrow = observer(({
 	const arrowBackgroundClass = createBemElement(
 		'arrow',
 		'background',
-		rootStore.selectedLink === connection.name
+		connectionsStore.selectedLink === connection.name
 			? 'active'
 			: null,
 	);
