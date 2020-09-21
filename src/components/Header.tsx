@@ -18,11 +18,12 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import CreateBoxModal from './box/CreateBoxModal';
 import { ModalPortal } from './util/Portal';
-import useStore from '../hooks/useStore';
+import useSchemasStore from '../hooks/useSchemasStore';
 import '../styles/header.scss';
+import { createBemElement } from '../helpers/styleCreators';
 
 const Header = () => {
-	const { rootStore } = useStore();
+	const schemasStore = useSchemasStore();
 
 	const [isCreateBoxModalOpen, setIsCreateBoxModalOpen] = React.useState(false);
 
@@ -39,22 +40,28 @@ const Header = () => {
 			&& !trimmedValue.includes('_')
 			&& !/[A-Z]/g.test(trimmedValue)
 		) {
-			rootStore.createNewSchema(schemaName);
+			schemasStore.createNewSchema(schemaName);
 		} else {
 			// eslint-disable-next-line no-alert
 			alert('Invalid schema name');
 		}
 	};
 
+	const saveButtonClass = createBemElement(
+		'header',
+		'button',
+		schemasStore.changedBoxes.length === 0 ? 'disable' : null,
+	);
+
 	return (
 		<div className="header">
 			<select
 				className="header__select"
-				onChange={e => rootStore.setSelectedSchema(e.target.value)}
-				value={rootStore.selectedSchema || undefined}
+				onChange={e => schemasStore.setSelectedSchema(e.target.value)}
+				value={schemasStore.selectedSchema || undefined}
 			>
 				{
-					rootStore.schemas.map(schema => (
+					schemasStore.schemas.map(schema => (
 						<option key={schema} value={schema}>
 							{schema}
 						</option>
@@ -69,12 +76,12 @@ const Header = () => {
 			<button className="header__button" onClick={createNewSchema}>
 				Create new schema
 			</button>
-			<button className="header__button" onClick={rootStore.saveChanges}>
+			<button className={saveButtonClass} onClick={schemasStore.saveChanges}>
 				Save changes
 			</button>
 			<ModalPortal isOpen={isCreateBoxModalOpen}>
 				<CreateBoxModal
-					createNewBox={rootStore.createNewBox}
+					createNewBox={schemasStore.createNewBox}
 					onClose={() => setIsCreateBoxModalOpen(false)}
 				/>
 			</ModalPortal>

@@ -14,21 +14,24 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
+import React, { Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useDropzone } from 'react-dropzone';
 import yaml from 'js-yaml';
 import Group from './Group';
 import SvgLayout from '../SvgLayout';
-import useStore from '../../hooks/useStore';
 import { isFileBase } from '../../models/FileBase';
 import { isLinksDefinition } from '../../models/LinksDefinition';
 import { readFileAsText } from '../../helpers/files';
 import { isValidBox } from '../../helpers/box';
 import '../../styles/group.scss';
+import useSchemasStore from '../../hooks/useSchemasStore';
+import useConnectionsStore from '../../hooks/useConnectionsStore';
 
 const Groups = () => {
-	const { rootStore } = useStore();
+	const schemasStore = useSchemasStore();
+	const connectionStore = useConnectionsStore();
+
 	const groupsRef = React.useRef<HTMLDivElement>(null);
 
 	const onDrop = React.useCallback(acceptedFiles => {
@@ -45,11 +48,11 @@ const Groups = () => {
 				}
 
 				if (isValidBox(parsedYamlFile)) {
-					rootStore.addBox(parsedYamlFile);
+					schemasStore.addBox(parsedYamlFile);
 				}
 
 				if (isLinksDefinition(parsedYamlFile)) {
-					rootStore.setLinks([parsedYamlFile]);
+					connectionStore.setLinks([parsedYamlFile]);
 				}
 			} catch (error) {
 				console.error('error');
@@ -69,21 +72,40 @@ const Groups = () => {
 				<div
 					className="groups__list"
 					style={{
-						gridTemplateColumns: `repeat(${Math.max(rootStore.groups.length, 6)}, 250px)`,
+						gridTemplateColumns: `repeat(${Math.max(schemasStore.kinds.length, 6)}, 250px)`,
 					}}>
 					{
-						rootStore.groups.map(group =>
-							<Group
-								title={group}
-								key={group}
-								boxes={rootStore.boxes.filter(box => box.kind === group)}
-								groupsTopOffset={groupsRef.current?.getBoundingClientRect().top}/>)
+						schemasStore.groups.map(group => {
+							const boxes = schemasStore.boxes.filter(box => group.kinds.some(kind => kind === box.kind));
+							return boxes.length > 0
+								? <Group
+									key={group.title}
+									title={group.title}
+									boxes={boxes.sort((first, second) => (first.name > second.name ? 1 : -1))}
+									groupsTopOffset={groupsRef.current?.getBoundingClientRect().top}/>
+								: <Fragment key={group.title}></Fragment>;
+						})
+					}
+					{
+						schemasStore.kinds
+							.filter(kind => schemasStore
+								.groups.every(group => group.kinds
+									.every(groupKind => groupKind !== kind)))
+							.map(kind => (
+								<Group
+									key={kind}
+									title={kind}
+									boxes={schemasStore.boxes.filter(box => box.kind === kind)
+										.sort((first, second) => (first.name > second.name ? 1 : -1))}
+									groupsTopOffset={groupsRef.current?.getBoundingClientRect().top}
+								/>
+							))
 					}
 				</div>
 			</div>
 			<SvgLayout
-				connections={rootStore.connections}
-				deleteConnection={rootStore.deleteConnection}
+				connections={connectionStore.connections}
+				deleteConnection={connectionStore.deleteConnection}
 			/>
 		</div>
 	);

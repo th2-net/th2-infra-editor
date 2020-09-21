@@ -1,8 +1,9 @@
 @import './common/vars';
 
 .outliner {
-    width: 450px;
+    width: 350px;
     margin: 0 50px;
+    flex-shrink: 0;
 
     &__list {
         @include scrollbar;

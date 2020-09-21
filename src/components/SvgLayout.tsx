@@ -15,46 +15,79 @@
  ***************************************************************************** */
 
 import React from 'react';
+import { observer } from 'mobx-react-lite';
 import { ConnectionArrow } from '../models/Box';
 import '../styles/svg-layout.scss';
 import useOutsideClickListener from '../hooks/useOutsideClickListener';
 import { Link } from '../models/LinksDefinition';
+import { createBemElement } from '../helpers/styleCreators';
+import useConnectionsStore from '../hooks/useConnectionsStore';
 
 interface ArrowProps {
 	connection: ConnectionArrow;
 	deleteConnection: (connection: Link) => void;
 }
 
-const Arrow = ({
+const Arrow = observer(({
 	connection,
 	deleteConnection,
 }: ArrowProps) => {
 	const [showRemoveButton, setShowRemoveButton] = React.useState(false);
 	const arrowRef = React.useRef<SVGGElement>(null);
 
+	const connectionsStore = useConnectionsStore();
+
 	useOutsideClickListener(arrowRef, () => setShowRemoveButton(false));
 
 	const deleteArrow = () => {
-		deleteConnection({
-			name: connection.name,
-			from: {
-				box: connection.start.connectionOwner.box,
-				pin: connection.start.connectionOwner.pin,
-				connectionType: connection.start.connectionOwner.connectionType,
-			},
-			to: {
-				box: connection.end.connectionOwner.box,
-				pin: connection.end.connectionOwner.pin,
-				connectionType: connection.end.connectionOwner.connectionType,
-			},
-		});
+		// eslint-disable-next-line no-alert
+		if (window.confirm('Are you sure you want '
+		+ `to delete link "${connection.name}"`)) {
+			deleteConnection({
+				name: connection.name,
+				from: {
+					box: connection.start.connectionOwner.box,
+					pin: connection.start.connectionOwner.pin,
+					connectionType: connection.start.connectionOwner.connectionType,
+				},
+				to: {
+					box: connection.end.connectionOwner.box,
+					pin: connection.end.connectionOwner.pin,
+					connectionType: connection.end.connectionOwner.connectionType,
+				},
+			});
+		}
 	};
 
+	const arrowLineClass = createBemElement(
+		'arrow',
+		'line',
+		connectionsStore.selectedLink === connection.name
+			? 'active'
+			: null,
+	);
+
+	const arrowPointerClass = createBemElement(
+		'arrow',
+		'pointer',
+		connectionsStore.selectedLink === connection.name
+			? 'active'
+			: null,
+	);
+
+	const arrowBackgroundClass = createBemElement(
+		'arrow',
+		'background',
+		connectionsStore.selectedLink === connection.name
+			? 'active'
+			: null,
+	);
 	return (
 		<>
 			<g
 				ref={arrowRef}
 				className="arrow"
+				onClick={() => setShowRemoveButton(!showRemoveButton)}
 				pointerEvents="all"
 			>
 				<path
@@ -66,10 +99,7 @@ const Arrow = ({
 						${connection.end.top} 
 						${connection.end.left},${connection.end.top}`
 					}
-					stroke="#00997F"
-					strokeWidth="2"
-					fill="none"
-					className="arrow__part"
+					className={arrowBackgroundClass}
 				/>
 				<path
 					d={
@@ -80,11 +110,7 @@ const Arrow = ({
 						${connection.end.top} 
 						${connection.end.left},${connection.end.top}`
 					}
-					stroke="none"
-					strokeWidth="10"
-					fill="none"
-					onClick={() => setShowRemoveButton(!showRemoveButton)}
-					className="arrow__part"
+					className={arrowLineClass}
 				/>
 				<polygon
 					points={
@@ -94,8 +120,7 @@ const Arrow = ({
 						${connection.end.left - (connection.end.left > connection.start.left ? 7 : -7)},
 						${connection.end.top + 5}`
 					}
-					fill="#00997F"
-					className="arrow__part"
+					className={arrowPointerClass}
 				/>
 			</g>
 			{
@@ -143,7 +168,7 @@ const Arrow = ({
 			}
 		</>
 	);
-};
+});
 
 interface SvgLayoutProps {
 	connections: ConnectionArrow[];

@@ -11,24 +11,13 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  limitations under the License.
  ***************************************************************************** */
 
-import ApiSchema from '../api/ApiSchema';
-import SchemasStore from './SchemasStore';
+import useRootStore from './useRootStore';
 
-export default class RootStore {
-	public schemaStore: SchemasStore;
+export default function useSchemasStore() {
+	const { rootStore } = useRootStore();
 
-	constructor(private api: ApiSchema) {
-		this.schemaStore = new SchemasStore(this, this.api);
-	}
-
-	async init() {
-		await this.schemaStore.fetchSchemas();
-		if (this.schemaStore.schemas.length) {
-			this.schemaStore.setSelectedSchema(this.schemaStore.schemas[0]);
-			await this.schemaStore.fetchSchemaState(this.schemaStore.schemas[0]);
-		}
-	}
+	return rootStore.schemaStore;
 }

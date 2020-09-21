@@ -17,7 +17,7 @@
 import React from 'react';
 import { Pin } from '../../models/Box';
 import { useInput } from '../../hooks/useInput';
-import { createBemElement } from '../../helpers/styleCreators';
+import Input from '../util/Input';
 
 interface PinsListProps {
 	pins: Pin[];
@@ -36,24 +36,30 @@ const PinsList = ({
 
 	const pinNameInput = useInput({
 		initialValue: '',
+		label: 'Name',
 		id: 'pin-name',
-		name: 'Name',
+		name: 'name',
 	});
 
 	const pinConnectionTypeInput = useInput({
 		initialValue: '',
+		label: 'Type',
 		id: 'pin-type',
-		name: 'Type',
+		name: 'type',
 	});
 
 	const addPin = () => {
-		addPinToBox({
-			name: pinNameInput.value,
-			'connection-type': pinConnectionTypeInput.value,
-			filters: [],
-			attributes: [],
-		}, boxName);
-		setIsAddFormOpen(false);
+		if (pinNameInput.value.trim() && pinConnectionTypeInput.value.trim()) {
+			addPinToBox({
+				name: pinNameInput.value,
+				'connection-type': pinConnectionTypeInput.value,
+				filters: [],
+				attributes: [],
+			}, boxName);
+			setIsAddFormOpen(false);
+			pinNameInput.setValue('');
+			pinConnectionTypeInput.setValue('');
+		}
 	};
 
 	const removePin = (pin: Pin) => {
@@ -90,23 +96,10 @@ const PinsList = ({
 						<div className="box-modal__add-form">
 							{
 								[pinNameInput, pinConnectionTypeInput].map(inputConfig =>
-									<div
-										key={inputConfig.bind.name}
-										className="box-settings__group">
-										<label
-											htmlFor={inputConfig.bind.id}
-											className="box-settings__label">
-											{inputConfig.bind.name}
-										</label>
-										<input
-											type="text"
-											className={createBemElement(
-												'box-settings',
-												'input',
-												!inputConfig.isValid && inputConfig.isDirty ? 'invalid' : '',
-											)}
-											{...inputConfig.bind}/>
-									</div>)
+									<Input
+										key={inputConfig.bind.id}
+										inputConfig={inputConfig}
+									/>)
 							}
 						</div>
 					)

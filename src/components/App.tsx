@@ -18,12 +18,13 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import Header from './Header';
 import Groups from './groups/Groups';
-import useStore from '../hooks/useStore';
+import useRootStore from '../hooks/useRootStore';
 import '../styles/root.scss';
 import Outliner from './Outliner';
+import SplashScreen from './SplashScreen';
 
 function App() {
-	const { rootStore } = useStore();
+	const { rootStore } = useRootStore();
 
 	React.useEffect(() => {
 		rootStore.init();
@@ -32,10 +33,14 @@ function App() {
 	return (
 		<div className="root">
 			<Header />
-			<div className="main">
-				<Groups />
-				<Outliner />
-			</div>
+			{
+				rootStore.schemaStore.isLoading
+					? <SplashScreen />
+					: <div className="main">
+						<Groups />
+						<Outliner />
+					</div>
+			}
 		</div>
 	);
 }

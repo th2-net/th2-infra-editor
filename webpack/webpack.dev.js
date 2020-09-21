@@ -20,6 +20,9 @@ const { appSrc } = require('./paths');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 module.exports = webpackMerge(commonConfig, {
+    output: {
+        publicPath: '/',
+    },
     mode: 'development',
     entry: appSrc,
     devtool: 'inline-source-map',

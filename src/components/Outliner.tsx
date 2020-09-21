@@ -17,13 +17,15 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import '../styles/outliner.scss';
-import useStore from '../hooks/useStore';
 import { ModalPortal } from './util/Portal';
 import BoxSettings from './box/BoxSettings';
 import { BoxEntity } from '../models/Box';
+import useConnectionsStore from '../hooks/useConnectionsStore';
+import useSchemasStore from '../hooks/useSchemasStore';
 
 const Outliner = () => {
-	const { rootStore } = useStore();
+	const schemasStore = useSchemasStore();
+	const connectionStore = useConnectionsStore();
 
 	const [editableBox, setEditableBox] = React.useState<BoxEntity>({} as BoxEntity);
 	const [isBoxCreateModalOpen, setIsBoxCreateModalOpen] = React.useState(false);
@@ -31,13 +33,15 @@ const Outliner = () => {
 	return (
 		<>
 			{
-				rootStore.boxes.length > 0
+				schemasStore.boxes.length > 0
 					? <div className="outliner">
 						<div className="outliner__list">
 							{
-								rootStore.boxes.map(box => (
+								schemasStore.boxes.map(box => (
 									<div
 										key={`${box.name}-${box.kind}`}
+										onMouseOver={() => schemasStore.setActiveBox(box)}
+										onMouseLeave={() => schemasStore.setActiveBox(null)}
 										className="outliner__list-item">
 										<div className="outliner__item-info">
 											<span className="outliner__info-key">Kind:</span>
@@ -62,7 +66,7 @@ const Outliner = () => {
 													if (window
 														.confirm('Are you sure you want'
 														+ `to delete resourse "${box.name}"`)) {
-														rootStore.deleteBox(box.name);
+														schemasStore.deleteBox(box.name);
 													}
 												}}
 												className="outliner__item-button">
@@ -75,9 +79,11 @@ const Outliner = () => {
 						</div>
 						<div className="outliner__list">
 							{
-								rootStore.links.map(link => (
+								connectionStore.links.map(link => (
 									<div
 										key={`${link.name}-${link.from.box}-${link.to.box}`}
+										onMouseOver={() => connectionStore.setSelectedLink(link.name)}
+										onMouseLeave={() => connectionStore.setSelectedLink(null)}
 										className="outliner__list-item">
 										<div className="outliner__item-info">
 											<span className="outliner__info-key">Name:</span>
@@ -118,7 +124,7 @@ const Outliner = () => {
 													// eslint-disable-next-line no-alert
 													if (window.confirm('Are you sure you want'
 													+ `to delete link ${link.name}`)) {
-														rootStore.deleteConnection(link);
+														connectionStore.deleteConnection(link);
 													}
 												}}
 												className="outliner__item-button">
@@ -135,14 +141,14 @@ const Outliner = () => {
 			<ModalPortal isOpen={isBoxCreateModalOpen}>
 				<BoxSettings
 					box={editableBox}
-					onParamValueChange={rootStore.setBoxParamValue}
+					onParamValueChange={schemasStore.setBoxParamValue}
 					onClose={() => setIsBoxCreateModalOpen(false)}
-					addDictionaryRelation={rootStore.addDictionaryRelation}
-					changeCustomConfig={rootStore.changeCustomConfig}
-					deleteParam={rootStore.deleteParam}
-					setImageInfo={rootStore.setImageInfo}
-					addPinToBox={rootStore.addPinToBox}
-					removePinFromBox={rootStore.removePinFromBox}
+					addDictionaryRelation={schemasStore.addDictionaryRelation}
+					changeCustomConfig={schemasStore.changeCustomConfig}
+					deleteParam={schemasStore.deleteParam}
+					setImageInfo={schemasStore.setImageInfo}
+					addPinToBox={schemasStore.addPinToBox}
+					removePinFromBox={schemasStore.removePinFromBox}
 				/>
 			</ModalPortal>
 		</>

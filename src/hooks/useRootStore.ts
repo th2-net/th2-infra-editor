@@ -11,24 +11,18 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  limitations under the License.
  ***************************************************************************** */
 
-import ApiSchema from '../api/ApiSchema';
-import SchemasStore from './SchemasStore';
+import React from 'react';
+import StoresContext from '../contexts/storesContext';
 
-export default class RootStore {
-	public schemaStore: SchemasStore;
+export default function useRootStore() {
+	const rootStore = React.useContext(StoresContext);
 
-	constructor(private api: ApiSchema) {
-		this.schemaStore = new SchemasStore(this, this.api);
+	if (!rootStore) {
+		throw new Error('useRootStore should be used inside of RootStoreContextProvider');
 	}
 
-	async init() {
-		await this.schemaStore.fetchSchemas();
-		if (this.schemaStore.schemas.length) {
-			this.schemaStore.setSelectedSchema(this.schemaStore.schemas[0]);
-			await this.schemaStore.fetchSchemaState(this.schemaStore.schemas[0]);
-		}
-	}
+	return rootStore;
 }

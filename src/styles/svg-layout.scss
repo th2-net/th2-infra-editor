@@ -1,8 +1,41 @@
 #svg-layout {
+    width: 100%;
+    height: calc(100% - 68px);
     position: absolute;
     left: 0;
     bottom: 0;
-    z-index: 2;
-    width: 100%;
-    height: calc(100% - 68px);
+    z-index: 1;
+}
+
+.arrow {
+    cursor: pointer;
+
+    &__line {
+        stroke: #00997F;
+        stroke-width: 2;
+        fill: none;
+
+        &.active {
+            stroke: rgb(24, 150, 260);
+        }
+    }
+
+    &__pointer {
+        fill: #00997F;
+
+        &.active {
+            fill: rgb(24, 150, 260);
+        }
+    }
+
+    &__background {
+        stroke: none;
+        stroke-width: 10px;
+        fill: none;
+
+        &.active {
+            stroke-width: 6px;
+            stroke: rgb(196, 226, 255);
+        }
+    }
 }

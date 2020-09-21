@@ -1,3 +1,4 @@
+import { RequestModel } from '../models/FileBase';
 /** *****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
@@ -11,24 +12,14 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  limitations under the License.
  ***************************************************************************** */
 
-import ApiSchema from '../api/ApiSchema';
-import SchemasStore from './SchemasStore';
+import Schema from '../models/Schema';
 
-export default class RootStore {
-	public schemaStore: SchemasStore;
-
-	constructor(private api: ApiSchema) {
-		this.schemaStore = new SchemasStore(this, this.api);
-	}
-
-	async init() {
-		await this.schemaStore.fetchSchemas();
-		if (this.schemaStore.schemas.length) {
-			this.schemaStore.setSelectedSchema(this.schemaStore.schemas[0]);
-			await this.schemaStore.fetchSchemaState(this.schemaStore.schemas[0]);
-		}
-	}
+export default interface ApiSchema {
+    fetchSchemasList: () => Promise<string[]>;
+    fetchSchemaState: (schemaName: string, abortSignal: AbortSignal) => Promise<Schema>;
+    createNewSchema: (schemaName: string) => Promise<Schema>;
+    sendSchemaRequest: (schemaName: string, schema: RequestModel[]) => Promise<boolean>;
 }
