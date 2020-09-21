@@ -1,5 +1,5 @@
-/******************************************************************************
- * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
+/** ****************************************************************************
+ * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,22 +12,15 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ ***************************************************************************** */
 
-$appBackgroundColor: #E1E8ED;
+import * as React from 'react';
+import '../styles/root.scss';
 
-$primaryColor: #00997F;
+const SplashScreen = () => (
+	<div className="splash-screen">
+		<div className="splash-screen__spinner"/>
+	</div>
+);
 
-$secondaryColor: #808080;
-
-$scrollbarThumbBackground: rgba(#808080, 0.25);
-
-$scrollbarTrackBackground: rgba(0,0,0,0);
-
-$primaryTextColor: #333333;
-
-$secondaryTextColor: #808080;
-
-$boxBoderColor: #1481B8;
-
-$spinnerOuterColor: #00997F;
+export default SplashScreen;

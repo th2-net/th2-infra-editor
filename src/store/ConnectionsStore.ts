@@ -74,9 +74,9 @@ export default class ConnectionsStore {
 		if (!this.schemasStore.activeBox || !this.schemasStore.activePin) return [];
 		const boxes: Array<BoxEntity> = [];
 
-		const groupIndex = this.schemasStore.groups.indexOf(this.schemasStore.activeBox.kind);
+		const groupIndex = this.schemasStore.kinds.indexOf(this.schemasStore.activeBox.kind);
 
-		for (let i = 0; i < this.schemasStore.groups.length; i++) {
+		for (let i = 0; i < this.schemasStore.kinds.length; i++) {
 			// eslint-disable-next-line no-continue
 			if (i === groupIndex) continue;
 			const nextGroupBoxes = this.getConnectableBoxes(i);
@@ -100,7 +100,7 @@ export default class ConnectionsStore {
 	}
 
 	private getConnectableBoxes(index: number) {
-		const group = this.schemasStore.groups[index];
+		const group = this.schemasStore.kinds[index];
 		return this.schemasStore.boxes
 			.filter(box => box.kind === group)
 			.filter(box => intersection(

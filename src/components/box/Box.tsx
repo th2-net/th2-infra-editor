@@ -66,7 +66,7 @@ const Box = ({ box, groupsTopOffset, titleHeight }: Props, ref: React.Ref<BoxMet
 
 	React.useEffect(() => {
 		sendCoords();
-	}, [pinsRefs]);
+	}, [pinsRefs, groupsTopOffset, titleHeight]);
 
 	useImperativeHandle(
 		ref,
@@ -85,7 +85,7 @@ const Box = ({ box, groupsTopOffset, titleHeight }: Props, ref: React.Ref<BoxMet
 	);
 
 	const sendCoords = () => {
-		if (groupsTopOffset && titleHeight && pinsRefs.length === box.spec.pins.length) {
+		if (pinsRefs.length === box.spec.pins.length) {
 			connectionStore.addCoords(
 				box.name,
 				pinsRefs.map((pinRef, index) => {
@@ -100,7 +100,10 @@ const Box = ({ box, groupsTopOffset, titleHeight }: Props, ref: React.Ref<BoxMet
 						},
 						left: pinClientRect ? pinClientRect.left - 20 : 0,
 						top: pinClientRect
-							? pinClientRect.top + pinClientRect?.height / 2 - groupsTopOffset - titleHeight
+							? pinClientRect.top
+							+ pinClientRect?.height / 2
+								- (groupsTopOffset ?? 0)
+								- (titleHeight ?? 0)
 							: 0,
 					};
 					const rightConnection = {
@@ -112,7 +115,10 @@ const Box = ({ box, groupsTopOffset, titleHeight }: Props, ref: React.Ref<BoxMet
 						},
 						left: pinClientRect ? pinClientRect.left + pinClientRect.width + 20 : 0,
 						top: pinClientRect
-							? pinClientRect.top + pinClientRect?.height / 2 - groupsTopOffset - titleHeight
+							? pinClientRect.top
+								+ pinClientRect?.height / 2
+								- (groupsTopOffset ?? 0)
+								- (titleHeight ?? 0)
 							: 0,
 					};
 					return {

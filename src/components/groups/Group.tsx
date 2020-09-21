@@ -43,7 +43,6 @@ const Group = React.memo(({
 
 	const onScroll = () => {
 		boxRefs
-			.filter(boxRef => boxRef.current?.kind === title)
 			.forEach(boxRef => boxRef.current?.updateCoords());
 	};
 

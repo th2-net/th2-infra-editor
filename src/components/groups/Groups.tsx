@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
+import React, { Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useDropzone } from 'react-dropzone';
 import yaml from 'js-yaml';
@@ -72,48 +72,34 @@ const Groups = () => {
 				<div
 					className="groups__list"
 					style={{
-						gridTemplateColumns: `repeat(${Math.max(schemasStore.groups.length, 6)}, 250px)`,
+						gridTemplateColumns: `repeat(${Math.max(schemasStore.kinds.length, 6)}, 250px)`,
 					}}>
 					{
-						(schemasStore.groups.includes('Th2Connector') || schemasStore.groups.includes('Th2Hand'))
-						&& <Group
-							title={'Th2Connector'}
-							boxes={schemasStore.boxes
-								.filter(box => box.kind === 'Th2Connector' || box.kind === 'Th2Hand')
-								.sort((a, b) => (a.name >= b.name ? 1 : -1))}
-							groupsTopOffset={groupsRef.current?.getBoundingClientRect().top}/>
+						schemasStore.groups.map(group => {
+							const boxes = schemasStore.boxes.filter(box => group.kinds.some(kind => kind === box.kind));
+							return boxes.length > 0
+								? <Group
+									key={group.title}
+									title={group.title}
+									boxes={boxes.sort((first, second) => (first.name > second.name ? 1 : -1))}
+									groupsTopOffset={groupsRef.current?.getBoundingClientRect().top}/>
+								: <Fragment key={group.title}></Fragment>;
+						})
 					}
 					{
-						(schemasStore.groups.includes('Th2Codec'))
-						&& <Group
-							title={'Th2Codec'}
-							boxes={schemasStore.boxes
-								.filter(box => box.kind === 'Th2Codec')
-								.sort((a, b) => (a.name >= b.name ? 1 : -1))}
-							groupsTopOffset={groupsRef.current?.getBoundingClientRect().top}/>
-					}
-					{
-						(schemasStore.groups.includes('Th2Act') || schemasStore.groups.includes('Th2Verify'))
-						&& <Group
-							title={'Th2Act'}
-							boxes={schemasStore.boxes
-								.filter(box => box.kind === 'Th2Act' || box.name === 'Th2Verify')
-								.sort((a, b) => (a.name >= b.name ? 1 : -1))}
-							groupsTopOffset={groupsRef.current?.getBoundingClientRect().top}/>
-					}
-					{
-						schemasStore.groups
-							.filter(group =>
-								!['Th2Connector', 'Th2Hand', 'Th2Codec', 'Th2Act', 'Th2Verify']
-									.some(groupName => groupName === group))
-							.map(group =>
+						schemasStore.kinds
+							.filter(kind => schemasStore
+								.groups.every(group => group.kinds
+									.every(groupKind => groupKind !== kind)))
+							.map(kind => (
 								<Group
-									title={group}
-									key={group}
-									boxes={schemasStore.boxes
-										.filter(box => box.kind === group)
-										.sort((a, b) => (a.name >= b.name ? 1 : -1))}
-									groupsTopOffset={groupsRef.current?.getBoundingClientRect().top}/>)
+									key={kind}
+									title={kind}
+									boxes={schemasStore.boxes.filter(box => box.kind === kind)
+										.sort((first, second) => (first.name > second.name ? 1 : -1))}
+									groupsTopOffset={groupsRef.current?.getBoundingClientRect().top}
+								/>
+							))
 					}
 				</div>
 			</div>

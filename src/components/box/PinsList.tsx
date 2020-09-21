@@ -49,13 +49,17 @@ const PinsList = ({
 	});
 
 	const addPin = () => {
-		addPinToBox({
-			name: pinNameInput.value,
-			'connection-type': pinConnectionTypeInput.value,
-			filters: [],
-			attributes: [],
-		}, boxName);
-		setIsAddFormOpen(false);
+		if (pinNameInput.value.trim() && pinConnectionTypeInput.value.trim()) {
+			addPinToBox({
+				name: pinNameInput.value,
+				'connection-type': pinConnectionTypeInput.value,
+				filters: [],
+				attributes: [],
+			}, boxName);
+			setIsAddFormOpen(false);
+			pinNameInput.setValue('');
+			pinConnectionTypeInput.setValue('');
+		}
 	};
 
 	const removePin = (pin: Pin) => {

@@ -36,12 +36,27 @@ import RootStore from './RootStore';
 export default class SchemasStore {
 	public connectionStore: ConnectionsStore;
 
+	public readonly groups = [
+		{
+			title: 'Th2Connector',
+			kinds: ['Th2Connector', 'Th2Hand'],
+		},
+		{
+			title: 'Th2Codec',
+			kinds: ['Th2Codec'],
+		},
+		{
+			title: 'Th2Act',
+			kinds: ['Th2Act', 'Th2Verify'],
+		},
+	];
+
 	constructor(private rootStore: RootStore, private api: ApiSchema) {
 		this.connectionStore = new ConnectionsStore(rootStore, api, this);
 
 		reaction(
 			() => this.boxes.map(box => box.kind),
-			groups => this.groups = [...new Set(groups)],
+			kinds => this.kinds = [...new Set(kinds)],
 		);
 
 		reaction(
@@ -50,12 +65,16 @@ export default class SchemasStore {
 				this.connectionStore.connectionCoords = [];
 				this.activeBox = null;
 				this.activePin = null;
+				this.isLoading = true;
 				if (selectedSchema) {
 					this.fetchSchemaState(selectedSchema);
 				}
 			},
 		);
 	}
+
+	@observable
+	public isLoading = false;
 
 	@observable
 	public schemas: string[] = [];
@@ -73,7 +92,7 @@ export default class SchemasStore {
 	public activePin: Pin | null = null;
 
 	@observable
-	public groups: Array<string> = [];
+	public kinds: Array<string> = [];
 
 	@observable
 	public changedBoxes: Array<FileBase> = [];
@@ -129,6 +148,7 @@ export default class SchemasStore {
 		const links = result.resources.filter(resItem => isLinksDefinition(resItem)) as LinksDefinition[];
 		this.connectionStore.linkBox = links[0];
 		this.connectionStore.setLinks(links);
+		this.isLoading = false;
 	}
 
 	@action
@@ -152,7 +172,7 @@ export default class SchemasStore {
 
 	@action
 	public saveChanges = async () => {
-		if (!this.selectedSchema) return;
+		if (!this.selectedSchema || this.changedBoxes.length === 0) return;
 		try {
 			await this.api.sendSchemaRequest(
 				this.selectedSchema,
@@ -161,6 +181,7 @@ export default class SchemasStore {
 					payload: box,
 				})),
 			);
+			this.changedBoxes = [];
 			// eslint-disable-next-line no-alert
 			alert('Changes saved');
 		} catch (error) {

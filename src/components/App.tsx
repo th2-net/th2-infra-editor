@@ -21,6 +21,7 @@ import Groups from './groups/Groups';
 import useRootStore from '../hooks/useRootStore';
 import '../styles/root.scss';
 import Outliner from './Outliner';
+import SplashScreen from './SplashScreen';
 
 function App() {
 	const { rootStore } = useRootStore();
@@ -32,10 +33,14 @@ function App() {
 	return (
 		<div className="root">
 			<Header />
-			<div className="main">
-				<Groups />
-				<Outliner />
-			</div>
+			{
+				rootStore.schemaStore.isLoading
+					? <SplashScreen />
+					: <div className="main">
+						<Groups />
+						<Outliner />
+					</div>
+			}
 		</div>
 	);
 }
