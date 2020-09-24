@@ -19,7 +19,7 @@ import Schema from '../models/Schema';
 
 export default class Api {
 	async fetchSchemasList(): Promise<string[]> {
-		const res = await fetch('schemas');
+		const res = await fetch('backend/schemas');
 
 		if (!res.ok) {
 			console.error(`Can't fetch schemas list - ${res.statusText}`);
@@ -30,7 +30,7 @@ export default class Api {
 	}
 
 	async fetchSchemaState(schemaName: string, abortSignal: AbortSignal): Promise<Schema> {
-		const res = await fetch(`schema/${schemaName}`, { signal: abortSignal });
+		const res = await fetch(`backend/schema/${schemaName}`, { signal: abortSignal });
 
 		if (!res.ok) {
 			console.error(`Can't fetch schema state - ${res.statusText}`);
@@ -41,7 +41,7 @@ export default class Api {
 	}
 
 	async createNewSchema(schemaName: string): Promise<Schema> {
-		const res = await fetch(`schema/${schemaName}`, {
+		const res = await fetch(`backend/schema/${schemaName}`, {
 			method: 'PUT',
 		});
 
@@ -54,7 +54,7 @@ export default class Api {
 	}
 
 	async sendSchemaRequest(schemaName: string, schema: RequestModel[]): Promise<boolean> {
-		const res = await fetch(`schema/${schemaName}`, {
+		const res = await fetch(`backend/schema/${schemaName}`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
