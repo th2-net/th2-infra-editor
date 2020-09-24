@@ -59,30 +59,33 @@ body {
 .root {
     width: 100%;
     height: 100%;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+    display: grid;
+    grid-template-columns: auto 350px;
+    grid-template-rows: 110px 1fr;
+    column-gap: 20px;
     background-color: $appBackgroundColor;
+
+    grid-template-areas: 
+    "header outliner"
+    "groups outliner";
 
     & div:focus {
 		outline: unset;
     }
 }
 
-.main {
-    display: flex;
-}
-
 .splash-screen {
     width: 100%;
     height: 100%;
-    position: relative;
+    position: absolute;
+    left: 0;
+    top: 0;
 
     &__spinner {
         @include spinner(5px, 40px, 2s, $spinnerOuterColor, white);
 
         position: absolute;
-        top: 35%;
+        top: 40%;
         left: calc(50% - 20px);
     }
 }

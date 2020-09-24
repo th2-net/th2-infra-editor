@@ -14,9 +14,9 @@
  * limitations under the License.
  ******************************************************************************/
 
- @import './colors';
+@import './colors';
 
- @mixin scrollbar {
+@mixin scrollbar($thumbColor: $scrollbarThumbBackground) {
     &::-webkit-scrollbar {
         background-color: rgba(0, 0, 0, 0.0);
         height: 6px;
@@ -28,7 +28,7 @@
     }
 
     &::-webkit-scrollbar-thumb {
-        background-color: $scrollbarThumbBackground;
+        background-color: $thumbColor;
         border-radius: 40px;
         height: 40px;
     }

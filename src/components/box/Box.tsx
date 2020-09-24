@@ -90,7 +90,6 @@ const Box = ({ box, groupsTopOffset, titleHeight }: Props, ref: React.Ref<BoxMet
 				box.name,
 				pinsRefs.map((pinRef, index) => {
 					const pinClientRect = pinRef.current?.getBoundingClientRect();
-
 					const leftConnection = {
 						connectionOwner: {
 							box: box.name,
@@ -207,11 +206,15 @@ const Box = ({ box, groupsTopOffset, titleHeight }: Props, ref: React.Ref<BoxMet
 			className={boxClass}
 			onMouseOver={() => {
 				if (!schemasStore.activeBox) {
+					schemasStore.setActiveBox(box);
 					setIsBoxActive(true);
 				}
 			}}
 			onMouseLeave={() => {
-				if (!isContextMenuOpen && !isPinConfiguratorOpen) {
+				if (!isContextMenuOpen
+					&& !isPinConfiguratorOpen
+					&& box.name === schemasStore.activeBox?.name) {
+					schemasStore.setActiveBox(null);
 					setIsBoxActive(false);
 				}
 			}}
@@ -256,13 +259,7 @@ const Box = ({ box, groupsTopOffset, titleHeight }: Props, ref: React.Ref<BoxMet
 						selectPin={schemasStore.setActivePin}
 						connectionDirection={getPinDirection(pin)}
 						setConnection={connectionStore.setConnection}
-						onContextMenuStateChange={isOpen => {
-							setIsContextMenuOpen(isOpen);
-							if (isOpen) {
-								schemasStore.setActiveBox(null);
-								schemasStore.setActivePin(null);
-							}
-						}}
+						onContextMenuStateChange={isOpen => setIsContextMenuOpen(isOpen)}
 						onPinConfiguratorStateChange={setIsPinConfiguratorOpen}
 						leftDotVisible={isDotConnected(pin.name, 'left')}
 						rightDotVisible={isDotConnected(pin.name, 'right')}

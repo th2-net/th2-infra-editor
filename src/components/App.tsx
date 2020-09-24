@@ -20,7 +20,7 @@ import Header from './Header';
 import Groups from './groups/Groups';
 import useRootStore from '../hooks/useRootStore';
 import '../styles/root.scss';
-import Outliner from './Outliner';
+import Outliner from './outliner/Outliner';
 import SplashScreen from './SplashScreen';
 
 function App() {
@@ -36,10 +36,10 @@ function App() {
 			{
 				rootStore.schemaStore.isLoading
 					? <SplashScreen />
-					: <div className="main">
+					: <>
 						<Groups />
 						<Outliner />
-					</div>
+					</>
 			}
 		</div>
 	);

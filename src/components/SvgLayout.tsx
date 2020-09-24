@@ -32,12 +32,20 @@ const Arrow = observer(({
 	connection,
 	deleteConnection,
 }: ArrowProps) => {
-	const [showRemoveButton, setShowRemoveButton] = React.useState(false);
-	const arrowRef = React.useRef<SVGGElement>(null);
-
 	const connectionsStore = useConnectionsStore();
 
-	useOutsideClickListener(arrowRef, () => setShowRemoveButton(false));
+	const [showRemoveButton, setShowRemoveButton] = React.useState(false);
+	const [isHighlighted, setIsHighlighted] = React.useState(false);
+	const arrowRef = React.useRef<SVGGElement>(null);
+
+	React.useEffect(() => {
+		setIsHighlighted(connectionsStore.selectedLink === connection.name);
+	}, [connectionsStore.selectedLink]);
+
+	useOutsideClickListener(arrowRef, () => {
+		setShowRemoveButton(false);
+		setIsHighlighted(false);
+	});
 
 	const deleteArrow = () => {
 		// eslint-disable-next-line no-alert
@@ -62,32 +70,32 @@ const Arrow = observer(({
 	const arrowLineClass = createBemElement(
 		'arrow',
 		'line',
-		connectionsStore.selectedLink === connection.name
-			? 'active'
-			: null,
+		isHighlighted ? 'highlighted' : null,
 	);
 
 	const arrowPointerClass = createBemElement(
 		'arrow',
 		'pointer',
-		connectionsStore.selectedLink === connection.name
-			? 'active'
-			: null,
+		isHighlighted ? 'highlighted' : null,
 	);
 
 	const arrowBackgroundClass = createBemElement(
 		'arrow',
 		'background',
-		connectionsStore.selectedLink === connection.name
-			? 'active'
-			: null,
+		isHighlighted ? 'highlighted' : null,
 	);
+
 	return (
 		<>
 			<g
 				ref={arrowRef}
 				className="arrow"
-				onClick={() => setShowRemoveButton(!showRemoveButton)}
+				onClick={() => {
+					setShowRemoveButton(!showRemoveButton);
+					setIsHighlighted(true);
+				}}
+				onMouseOver={() => connectionsStore.setOutlinerSelectedLink(connection.name)}
+				onMouseLeave={() => connectionsStore.setOutlinerSelectedLink(null)}
 				pointerEvents="all"
 			>
 				<path
