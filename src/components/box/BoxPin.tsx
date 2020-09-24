@@ -81,7 +81,6 @@ const BoxPin = React.forwardRef(({
 	React.useEffect(() => {
 		if (activePin?.name !== pin.name) {
 			setContextMenuState('closed');
-			onContextMenuStateChange(false);
 		}
 	}, [activePin]);
 

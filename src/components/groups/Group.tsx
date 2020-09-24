@@ -52,7 +52,12 @@ const Group = React.memo(({
 				{title}
 			</h1>
 			<div className="group__items">
-				<div onScroll={onScroll} className="group__items-scroller">
+				<div
+					onScroll={onScroll}
+					className="group__items-scroller"
+					style={{
+						maxHeight: `${window.innerHeight - 200}px`,
+					}}>
 					{
 						boxes.map((box, index) =>
 							<Box

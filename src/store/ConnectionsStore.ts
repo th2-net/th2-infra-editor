@@ -38,6 +38,9 @@ export default class ConnectionsStore {
 	public selectedLink: string | null = null;
 
 	@observable
+	public outlinerSelectedLink: string | null = null;
+
+	@observable
 	public links: Array<Link> = [];
 
 	@observable
@@ -48,6 +51,10 @@ export default class ConnectionsStore {
 
 	@action setSelectedLink = (link: string | null) => {
 		this.selectedLink = link;
+	};
+
+	@action setOutlinerSelectedLink = (link: string | null) => {
+		this.outlinerSelectedLink = link;
 	};
 
 	@action

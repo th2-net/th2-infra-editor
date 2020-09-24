@@ -15,7 +15,7 @@
         stroke-width: 2;
         fill: none;
 
-        &.active {
+        &.highlighted {
             stroke: rgb(24, 150, 260);
         }
     }
@@ -23,7 +23,7 @@
     &__pointer {
         fill: #00997F;
 
-        &.active {
+        &.highlighted {
             fill: rgb(24, 150, 260);
         }
     }
@@ -33,7 +33,7 @@
         stroke-width: 10px;
         fill: none;
 
-        &.active {
+        &.highlighted {
             stroke-width: 6px;
             stroke: rgb(196, 226, 255);
         }
