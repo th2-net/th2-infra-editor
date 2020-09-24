@@ -36,18 +36,12 @@ module.exports = webpackMerge(commonConfig, {
         host: "0.0.0.0",
         historyApiFallback: true,
         proxy: {
-            '/schemas': {
-                // target: 'http://th2-kuber-node03:31566',
-                target: 'http://localhost:8080',
+            '/backend': {
+                target: 'http://th2-kuber-node03:31566',
+                // target: 'http://localhost:8080',
                 changeOrigin: true,
                 secure: false,
             },
-            '/schema': {
-                // target: 'http://th2-kuber-node03:31566',
-                target: 'http://localhost:8080',
-                changeOrigin: true,
-                secure: false,
-            }
         }
     },
     module: {
