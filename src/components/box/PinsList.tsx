@@ -21,16 +21,14 @@ import Input from '../util/Input';
 
 interface PinsListProps {
 	pins: Pin[];
-	addPinToBox: (pin: Pin, boxName: string) => void;
-	removePinFromBox: (pin: Pin, boxName: string) => void;
-	boxName: string;
+	addPinToBox: (pin: Pin) => void;
+	removePinFromBox: (pin: Pin) => void;
 }
 
 const PinsList = ({
 	pins,
 	addPinToBox,
 	removePinFromBox,
-	boxName,
 }: PinsListProps) => {
 	const [isAddFormOpen, setIsAddFormOpen] = React.useState(false);
 
@@ -55,7 +53,7 @@ const PinsList = ({
 				'connection-type': pinConnectionTypeInput.value,
 				filters: [],
 				attributes: [],
-			}, boxName);
+			});
 			setIsAddFormOpen(false);
 			pinNameInput.setValue('');
 			pinConnectionTypeInput.setValue('');
@@ -63,7 +61,7 @@ const PinsList = ({
 	};
 
 	const removePin = (pin: Pin) => {
-		removePinFromBox(pin, boxName);
+		removePinFromBox(pin);
 		setIsAddFormOpen(false);
 	};
 

@@ -20,15 +20,11 @@ export interface BoxEntity extends FileBase {
 		['custom-config']?: {
 			[prop: string]: string;
 		};
-		pins: Array<Pin>;
-		params?: Array<{
-			name: string;
-			value: string | number | boolean;
-		}>;
 		['image-name']: string;
 		['image-version']: string;
-		['node-port']: number;
+		['node-port']?: number;
 		['dictionaries-relation']?: Array<DictionaryRelation>;
+		pins: Array<Pin>;
 	};
 }
 
@@ -82,4 +78,10 @@ export interface DictionaryRelation {
 		name: string;
 		type: string;
 	};
+}
+
+export function isBoxEntity(object: unknown): object is BoxEntity {
+	return (typeof object === 'object'
+		&& object !== null
+		&& (object as BoxEntity).kind !== undefined);
 }

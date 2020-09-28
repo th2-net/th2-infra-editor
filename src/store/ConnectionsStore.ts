@@ -29,10 +29,17 @@ import { intersection } from '../helpers/array';
 import { convertLinks } from '../helpers/link';
 import SchemasStore from './SchemasStore';
 import RootStore from './RootStore';
+import HistoryStore from './HistoryStore';
+import { Change } from '../models/History';
 
 export default class ConnectionsStore {
-	constructor(private rootStore: RootStore, private api: ApiSchema, private schemasStore: SchemasStore) {
-	}
+	constructor(
+		private rootStore: RootStore,
+		private api: ApiSchema,
+		private schemasStore:
+			SchemasStore,
+		private historyStore: HistoryStore,
+	) { }
 
 	@observable
 	public selectedLink: string | null = null;
@@ -41,7 +48,7 @@ export default class ConnectionsStore {
 	public outlinerSelectedLink: string | null = null;
 
 	@observable
-	public links: Array<Link> = [];
+	public links: Array<Link> = observable.array<Link>([]);
 
 	@observable
 	public linkBox: LinksDefinition | null = null;
@@ -176,58 +183,100 @@ export default class ConnectionsStore {
 	}
 
 	@action
-	public setConnection = async (connectionName: string, pin: Pin, box: BoxEntity) => {
+	public setConnection = async (
+		connectionName: string,
+		pinName: string, connectionType: 'mq' | 'grpc',
+		boxName: string,
+		options?: {
+			createSnapshot?: boolean;
+			fromBox: string;
+			fromPin: string;
+		},
+	) => {
 		if (!this.schemasStore.selectedSchema
-			|| !this.schemasStore.activeBox
-			|| !this.schemasStore.activePin
+			|| (!this.schemasStore.activeBox && (options && !options.fromBox))
+			|| (!this.schemasStore.activePin && (options && !options.fromPin))
 			|| !this.linkBox) return;
 
-		this.links.push({
+		const link = {
 			name: connectionName,
 			from: {
-				box: this.schemasStore.activeBox.name,
-				pin: this.schemasStore.activePin.name,
-				connectionType: pin['connection-type'],
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				box: options?.fromBox ?? this.schemasStore.activeBox!.name,
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				pin: options?.fromPin ?? this.schemasStore.activePin!.name,
+				connectionType,
 			},
 			to: {
-				box: box.name,
-				pin: pin.name,
-				connectionType: pin['connection-type'],
+				box: boxName,
+				pin: pinName,
+				connectionType,
 			},
-		});
+		};
+		this.links.push(link);
+
 		const newConnection = {
 			name: connectionName,
 			from: {
-				box: this.schemasStore.activeBox.name,
-				pin: this.schemasStore.activePin.name,
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				box: options?.fromBox ?? this.schemasStore.activeBox!.name,
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				pin: options?.fromPin ?? this.schemasStore.activePin!.name,
 			},
 			to: {
-				box: box.name,
-				pin: pin.name,
+				box: boxName,
+				pin: pinName,
 			},
 		};
 		if (this.linkBox.spec['links-definition']) {
-			this.linkBox.spec['links-definition'][(`router-${pin['connection-type']}` as 'router-mq' | 'router-grpc')]
+			this.linkBox.spec['links-definition'][(`router-${connectionType}` as 'router-mq' | 'router-grpc')]
 				.push(newConnection);
 		}
 		if (this.linkBox.spec['boxes-relation']) {
-			this.linkBox.spec['boxes-relation'][(`router-${pin['connection-type']}` as 'router-mq' | 'router-grpc')]
+			this.linkBox.spec['boxes-relation'][(`router-${connectionType}` as 'router-mq' | 'router-grpc')]
 				.push(newConnection);
 		}
-		this.schemasStore.saveBoxChanges(this.linkBox);
 		this.schemasStore.activeBox = null;
 		this.schemasStore.activePin = null;
+		this.schemasStore.saveBoxChanges(this.linkBox, 'update');
+		if ((options && options.createSnapshot) || !options) {
+			this.historyStore.addSnapshot({
+				changeList: [
+					{
+						object: connectionName,
+						from: null,
+						to: link,
+					},
+				],
+			});
+		}
 	};
 
 	@action
-	public removeConnectionsFromLinkBox = (pin: Pin, boxName: string, full: boolean) => {
-		this.links = [...this.links.filter(connection => connection.from.box !== boxName
-			|| connection.from.pin !== pin.name)];
+	public removeConnectionsFromLinkBox = (
+		pin: Pin,
+		boxName: string,
+		createSnapshot = true,
+	): Change[] => {
+		if (!this.linkBox) return [];
 
-		if (full) {
-			this.links = [...this.links.filter(connection => connection.to.box !== boxName
-				|| connection.to.pin !== pin.name)];
+		const changes = new Array<Change>();
+
+		if (createSnapshot) {
+			this.links.filter(connection => (connection.from.box === boxName && connection.from.pin === pin.name)
+			|| (connection.to.box === boxName && connection.to.pin === pin.name))
+				.forEach(connection => {
+					changes.push({
+						object: connection.name,
+						from: connection,
+						to: null,
+					});
+				});
 		}
+
+		this.links = [...this.links.filter(connection =>
+			(connection.from.box !== boxName && connection.from.pin !== pin.name)
+			|| (connection.to.box !== boxName && connection.to.pin !== pin.name))];
 
 		if (this.linkBox?.spec['links-definition']) {
 			this.linkBox
@@ -247,10 +296,11 @@ export default class ConnectionsStore {
 						connection.from.pin !== pin.name
 						&& connection.from.box !== boxName)];
 		}
+		return changes;
 	};
 
 	@action
-	public deleteConnection = async (connection: Link) => {
+	public deleteConnection = async (connection: Link, createSnapshot = true) => {
 		if (this.schemasStore.selectedSchema && this.linkBox) {
 			this.links = [...this.links.filter(link => link.from.box !== connection.from.box
 				|| link.to.box !== connection.to.box
@@ -278,7 +328,18 @@ export default class ConnectionsStore {
 					.splice(linkIndex, 1);
 			}
 
-			this.schemasStore.saveBoxChanges(this.linkBox);
+			this.schemasStore.saveBoxChanges(this.linkBox, 'update');
+			if (createSnapshot) {
+				this.historyStore.addSnapshot({
+					changeList: [
+						{
+							object: connection.name,
+							from: connection,
+							to: null,
+						},
+					],
+				});
+			}
 		}
 	};
 }

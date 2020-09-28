@@ -16,7 +16,7 @@
 import React from 'react';
 import { ModalPortal } from '../util/Portal';
 import BoxSettings from '../box/BoxSettings';
-import { BoxEntity, DictionaryRelation, Pin } from '../../models/Box';
+import { BoxEntity, DictionaryRelation } from '../../models/Box';
 import { createBemElement } from '../../helpers/styleCreators';
 
 interface OutlinerBoxListItemProps {
@@ -87,33 +87,18 @@ interface OutlinerBoxListProps {
 	boxList: BoxEntity[];
 	setActiveBox: (box: BoxEntity | null) => void;
 	deleteBox: (boxName: string) => void;
-	setBoxParamValue: (boxName: string, paramName: string, value: string) => Promise<void>;
 	addDictionaryRelation: (dictionaryRelation: DictionaryRelation) => void;
-	changeCustomConfig: (config: {
-		[prop: string]: string;
-	}, boxName: string) => Promise<void>;
-	deleteParam: (paramName: string, boxName: string) => void;
-	setImageInfo: (imageProp: {
-		name: 'image-name' | 'image-version' | 'node-port';
-		value: string;
-	}, boxName: string) => void;
-	addPinToBox: (pin: Pin, boxName: string) => void;
-	removePinFromBox: (pin: Pin, boxName: string) => void;
 	activeBox: BoxEntity | null;
+	configurateBox: (box: BoxEntity) => void;
 }
 
 const OutlinerBoxList = ({
 	boxList,
 	setActiveBox,
 	deleteBox,
-	setBoxParamValue,
 	addDictionaryRelation,
-	changeCustomConfig,
-	deleteParam,
-	setImageInfo,
-	addPinToBox,
-	removePinFromBox,
 	activeBox,
+	configurateBox,
 }: OutlinerBoxListProps) => {
 	const [editableBox, setEditableBox] = React.useState<BoxEntity | null>(null);
 	const [isBoxCreateModalOpen, setIsBoxCreateModalOpen] = React.useState(false);
@@ -139,14 +124,9 @@ const OutlinerBoxList = ({
 				&& <ModalPortal isOpen={isBoxCreateModalOpen}>
 					<BoxSettings
 						box={editableBox}
-						onParamValueChange={setBoxParamValue}
+						configurateBox={configurateBox}
 						onClose={() => setIsBoxCreateModalOpen(false)}
 						addDictionaryRelation={addDictionaryRelation}
-						changeCustomConfig={changeCustomConfig}
-						deleteParam={deleteParam}
-						setImageInfo={setImageInfo}
-						addPinToBox={addPinToBox}
-						removePinFromBox={removePinFromBox}
 					/>
 				</ModalPortal>
 			}

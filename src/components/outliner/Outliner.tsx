@@ -28,31 +28,23 @@ const Outliner = () => {
 
 	return (
 		<>
-			{
-				schemasStore.boxes.length > 0
-				&& <div className="outliner">
-					<OutlinerBoxList
-						boxList={schemasStore.boxes}
-						setActiveBox={schemasStore.setActiveBox}
-						deleteBox={schemasStore.deleteBox}
-						setBoxParamValue={schemasStore.setBoxParamValue}
-						addDictionaryRelation={schemasStore.addDictionaryRelation}
-						changeCustomConfig={schemasStore.changeCustomConfig}
-						deleteParam={schemasStore.deleteParam}
-						setImageInfo={schemasStore.setImageInfo}
-						addPinToBox={schemasStore.addPinToBox}
-						removePinFromBox={schemasStore.removePinFromBox}
-						activeBox={schemasStore.activeBox}
-					/>
-					<OutlinerLinkList
-						linkList={connectionStore.links}
-						setSelectedLink={connectionStore.setSelectedLink}
-						deleteConnection={connectionStore.deleteConnection}
-						outlinerSelectedLink={connectionStore.outlinerSelectedLink}
-						boxes={schemasStore.boxes}
-					/>
-				</div>
-			}
+			<div className="outliner">
+				<OutlinerBoxList
+					boxList={schemasStore.boxes.sort((a, b) => (a.kind >= b.kind ? 1 : -1))}
+					setActiveBox={schemasStore.setActiveBox}
+					deleteBox={schemasStore.deleteBox}
+					addDictionaryRelation={schemasStore.addDictionaryRelation}
+					activeBox={schemasStore.activeBox}
+					configurateBox={schemasStore.configurateBox}
+				/>
+				<OutlinerLinkList
+					linkList={connectionStore.links.sort((a, b) => (a.from.box >= b.from.box ? 1 : -1))}
+					setSelectedLink={connectionStore.setSelectedLink}
+					deleteConnection={connectionStore.deleteConnection}
+					outlinerSelectedLink={connectionStore.outlinerSelectedLink}
+					boxes={schemasStore.boxes}
+				/>
+			</div>
 		</>
 	);
 };

@@ -1,0 +1,108 @@
+/******************************************************************************
+ * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
+ @import './common/vars';
+
+.history {
+	&-view {
+		width: 350px;
+		height: 100%;
+		grid-area: history;
+		background-color: #ECF4F9;
+        border-left: 1px solid #00997F;
+        border-right: 1px solid #00997F;
+		padding: 10px 20px;
+
+		&__controls {
+			display: flex;
+			justify-content: center;
+			margin-bottom: 15px;
+		}
+
+		&__control-button {
+			padding: 5px 7px;
+			border-radius: 4px;
+			margin: 0;
+			border: none;
+			background-color: #6d6dfc;
+			color: white;
+			font-weight: 600;
+			cursor: pointer;
+			outline: none;
+
+			&:nth-child(2) {
+				margin-left: 10px;
+			}
+		}
+	}
+
+	&-list {
+		@include scrollbar;
+
+		overflow-y: auto;
+		
+		&__title {
+			text-align: center;
+			margin-top: 10px;
+		}
+	}
+
+	&-item {
+		border-radius: 6px;
+		background-color: white;
+		border: 1px solid #00997F;
+		margin-bottom: 10px;
+
+		&.applied {
+			border-color: rgb(24, 150, 260);
+			box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 
+			0px 8px 10px 1px rgba(0, 0, 0, 0.14), 
+			0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+		}
+
+		&-object {
+			padding: 10px;
+			color: #333333;
+			font-weight: 600;
+			font-size: 18px;
+			overflow-wrap: break-word;
+		}
+
+		&-change {
+			padding: 10px;
+			
+			&-key, &-value {
+				color: #333333;
+				font-size: 14px;
+			}
+	
+			&-key {
+				display: inline-block;
+				margin-right: 5px;
+				font-weight: 600;
+			}
+	
+			&-value {
+				border-radius: 6px;
+				border: 1px solid #00997F;
+				padding: 5px;
+				font-weight: 400;
+				overflow-wrap: break-word;
+				white-space: pre-wrap;
+				word-wrap: break-word;
+			}
+		}
+	}
+}

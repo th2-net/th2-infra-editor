@@ -71,7 +71,8 @@ export const useInput = ({
 		bind: {
 			value,
 			onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-			  setValue(event.target.value);
+				setIsDirty(true);
+				setValue(event.target.value);
 			},
 			id,
 			name,

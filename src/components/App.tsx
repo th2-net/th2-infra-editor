@@ -22,6 +22,7 @@ import useRootStore from '../hooks/useRootStore';
 import '../styles/root.scss';
 import Outliner from './outliner/Outliner';
 import SplashScreen from './SplashScreen';
+import HistoryView from './historyView/HistoryView';
 
 function App() {
 	const { rootStore } = useRootStore();
@@ -36,8 +37,10 @@ function App() {
 			{
 				rootStore.schemaStore.isLoading
 					? <SplashScreen />
-					: <>
+					: rootStore.schemaStore.boxes.length > 0
+					&& <>
 						<Groups />
+						<HistoryView />
 						<Outliner />
 					</>
 			}

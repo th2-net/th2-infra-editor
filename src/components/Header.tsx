@@ -50,7 +50,7 @@ const Header = () => {
 	const saveButtonClass = createBemElement(
 		'header',
 		'button',
-		schemasStore.changedBoxes.length === 0 ? 'disable' : null,
+		schemasStore.preparedRequests.length === 0 ? 'disable' : null,
 	);
 
 	return (

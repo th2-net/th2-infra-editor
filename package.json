@@ -23,6 +23,7 @@
     "@types/uuid": "^8.3.0",
     "core-js": "^3.6.5",
     "cross-env": "^6.0.3",
+    "deep-object-diff": "^1.1.0",
     "framer-motion": "^1.11.1",
     "js-yaml": "^3.14.0",
     "mobx": "^5.15.2",

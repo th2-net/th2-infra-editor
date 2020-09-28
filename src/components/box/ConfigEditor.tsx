@@ -20,14 +20,17 @@ import { useInput } from '../../hooks/useInput';
 
 interface ConfigEditor {
 	config?: {[prop: string]: string};
-	changeCustomConfig: (config: {[prop: string]: string}, boxName: string) => void;
-	boxName: string;
+	setCustomConfig: (customConfig: {
+		value: {
+			[prop: string]: string;
+		};
+		isValid: boolean;
+	}) => void;
 }
 
 const ConfigEditor = ({
 	config,
-	changeCustomConfig,
-	boxName,
+	setCustomConfig,
 }: ConfigEditor) => {
 	const configInput = useInput({
 		initialValue: JSON.stringify(config, null, 4),
@@ -51,9 +54,10 @@ const ConfigEditor = ({
 	);
 
 	const onBlur = () => {
-		if (configInput.isValid) {
-			changeCustomConfig(JSON.parse(configInput.value), boxName);
-		}
+		setCustomConfig({
+			value: JSON.parse(configInput.value),
+			isValid: configInput.isValid,
+		});
 	};
 
 	return (

@@ -28,9 +28,11 @@ import {
 	DictionaryRelation,
 	Pin,
 } from '../models/Box';
-import FileBase from '../models/FileBase';
+import { RequestModel } from '../models/FileBase';
+import { Change } from '../models/History';
 import LinksDefinition, { isLinksDefinition } from '../models/LinksDefinition';
 import ConnectionsStore from './ConnectionsStore';
+import HistoryStore from './HistoryStore';
 import RootStore from './RootStore';
 
 export default class SchemasStore {
@@ -51,8 +53,8 @@ export default class SchemasStore {
 		},
 	];
 
-	constructor(private rootStore: RootStore, private api: ApiSchema) {
-		this.connectionStore = new ConnectionsStore(rootStore, api, this);
+	constructor(private rootStore: RootStore, private api: ApiSchema, private historyStore: HistoryStore) {
+		this.connectionStore = new ConnectionsStore(rootStore, api, this, historyStore);
 
 		reaction(
 			() => this.boxes.map(box => box.kind),
@@ -62,6 +64,7 @@ export default class SchemasStore {
 		reaction(
 			() => this.selectedSchema,
 			selectedSchema => {
+				this.historyStore.clearHistory();
 				this.connectionStore.connectionCoords = [];
 				this.activeBox = null;
 				this.activePin = null;
@@ -95,7 +98,7 @@ export default class SchemasStore {
 	public kinds: Array<string> = [];
 
 	@observable
-	public changedBoxes: Array<FileBase> = [];
+	public preparedRequests: RequestModel[] = [];
 
 	@action
 	public addBox = (box: BoxEntity) => {
@@ -103,7 +106,7 @@ export default class SchemasStore {
 	};
 
 	@action
-	public createNewBox = (newBox: BoxEntity) => {
+	public createNewBox = (newBox: BoxEntity, createSnapshot = true) => {
 		if (!this.selectedSchema) return;
 
 		if (this.boxes.find(box => box.name === newBox.name)) {
@@ -111,15 +114,19 @@ export default class SchemasStore {
 			alert(`Box "${newBox.name}" already exists`);
 			return;
 		}
-
-		this.api.sendSchemaRequest(this.selectedSchema, [{
-			operation: 'add',
-			payload: newBox,
-		}]).then(res => {
-			if (res) {
-				this.addBox(newBox);
-			}
-		});
+		this.addBox(newBox);
+		this.saveBoxChanges(newBox, 'add');
+		if (createSnapshot) {
+			this.historyStore.addSnapshot({
+				changeList: [
+					{
+						object: newBox.name,
+						from: null,
+						to: newBox,
+					},
+				],
+			});
+		}
 	};
 
 	@action setActiveBox = (box: BoxEntity | null) => {
@@ -157,31 +164,14 @@ export default class SchemasStore {
 	}
 
 	@action
-	public setBoxParamValue = async (boxName: string, paramName: string, value: string) => {
-		const targetBox = this.boxes.find(box => box.name === boxName);
-
-		if (targetBox) {
-			const paramIndex = targetBox.spec.params?.findIndex(param => param.name === paramName);
-
-			if (paramIndex && targetBox.spec.params) {
-				targetBox.spec.params[paramIndex].value = value;
-			}
-			this.saveBoxChanges(targetBox);
-		}
-	};
-
-	@action
 	public saveChanges = async () => {
-		if (!this.selectedSchema || this.changedBoxes.length === 0) return;
+		if (!this.selectedSchema || this.preparedRequests.length === 0) return;
 		try {
 			await this.api.sendSchemaRequest(
 				this.selectedSchema,
-				this.changedBoxes.map(box => ({
-					operation: 'update',
-					payload: box,
-				})),
+				this.preparedRequests,
 			);
-			this.changedBoxes = [];
+			this.preparedRequests = [];
 			// eslint-disable-next-line no-alert
 			alert('Changes saved');
 		} catch (error) {
@@ -202,82 +192,79 @@ export default class SchemasStore {
 		const targetBox = this.boxes.find(box => box.name === dictionaryRelation.box);
 		if (!targetBox) return;
 		if (!targetBox.spec) set(targetBox, 'spec', {});
+		const oldValue = (JSON.parse(JSON.stringify(targetBox)) as BoxEntity);
 		if (!targetBox.spec['dictionaries-relation']) {
 			set(targetBox.spec, 'dictionaries-relation', [dictionaryRelation]);
 			return;
 		}
 		targetBox.spec['dictionaries-relation'].push(dictionaryRelation);
+		const newValue = (JSON.parse(JSON.stringify(targetBox)) as BoxEntity);
+		this.historyStore.addSnapshot({
+			changeList: [
+				{
+					object: oldValue.name,
+					from: oldValue,
+					to: newValue,
+				},
+			],
+		});
 	};
 
 	@action
-	public changeCustomConfig = async (config: { [prop: string]: string }, boxName: string) => {
-		const targetBox = this.boxes.find(box => box.name === boxName);
-		if (targetBox) {
-			targetBox.spec['custom-config'] = config;
-		}
-	};
-
-	@action
-	public deleteParam = (paramName: string, boxName: string) => {
-		const targetBox = this.boxes.find(box => box.name === boxName);
-		if (targetBox && targetBox.spec.params) {
-			const paramIndex = targetBox?.spec.params.findIndex(param => param.name === paramName);
-
-			if (paramIndex >= 0) {
-				const params = [...targetBox?.spec.params.filter(param => param.name !== paramName)];
-				const boxIndex = this.boxes.findIndex(box => box.name === boxName);
-				this.boxes[boxIndex] = {
-					...targetBox,
-					spec: {
-						pins: targetBox.spec.pins,
-						'image-name': targetBox.spec['image-name'],
-						'image-version': targetBox.spec['image-version'],
-						'node-port': targetBox.spec['node-port'],
-						params,
-					},
-				};
-
-				this.saveBoxChanges(targetBox);
-			}
-		}
-	};
-
-	@action
-	public setImageInfo = (imageProp: {
-		name: 'image-name' | 'image-version' | 'node-port';
-		value: string;
-	}, boxName: string) => {
-		const boxIndex = this.boxes.findIndex(box => box.name === boxName);
-
-		if (boxIndex >= 0) {
-			this.boxes[boxIndex].spec[imageProp.name] = (imageProp.name === 'node-port'
-				? parseInt(imageProp.value) : imageProp.value) as never;
-
-			this.saveBoxChanges(this.boxes[boxIndex]);
-		}
-	};
-
-	@action
-	public deleteBox = async (boxName: string) => {
+	public deleteBox = async (boxName: string, createSnapshot = true) => {
 		if (!this.selectedSchema) return;
+
 		const removableBox = this.boxes.find(box => box.name === boxName);
+
 		if (!removableBox) return;
-		const isSuccess = await this.api.sendSchemaRequest(this.selectedSchema, [{
-			operation: 'remove',
-			payload: removableBox,
-		}]);
-		if (isSuccess) {
-			removableBox.spec.pins
-				.forEach(pin => this.connectionStore.removeConnectionsFromLinkBox(pin, boxName, true));
-			this.boxes = observable.array(this.boxes.filter(box => box.name !== boxName));
+
+		const changes = new Array<Change>();
+
+		removableBox.spec.pins
+			.forEach(pin => changes
+				.push(...this.connectionStore.removeConnectionsFromLinkBox(pin, boxName, createSnapshot)));
+
+		this.boxes = observable.array(this.boxes.filter(box => box.name !== boxName));
+
+		this.saveBoxChanges(removableBox, 'remove');
+		if (createSnapshot) {
+			this.historyStore.addSnapshot({
+				changeList: [
+					{
+						object: removableBox.name,
+						from: removableBox,
+						to: null,
+					},
+					...changes,
+				],
+			});
 		}
 	};
 
 	@action
-	public saveBoxChanges = (updatedBox: BoxEntity | LinksDefinition) => {
-		if (!this.changedBoxes.includes(updatedBox)) {
-			this.changedBoxes.push(updatedBox);
+	public saveBoxChanges = (updatedBox: BoxEntity | LinksDefinition, operation: 'add' | 'update' | 'remove') => {
+		if (!this.preparedRequests.some(request => request.payload === updatedBox && request.operation === operation)) {
+			this.preparedRequests.push({
+				operation,
+				payload: updatedBox,
+			});
 		}
+	};
+
+	@action
+	public configurateBox = (updatedBox: BoxEntity) => {
+		const oldValue = JSON.parse(JSON.stringify(this.boxes.find(box => box.name === updatedBox.name)));
+		const newValue = JSON.parse(JSON.stringify(updatedBox));
+		this.boxes = observable.array([...this.boxes.filter(box => box.name !== updatedBox.name), updatedBox]);
+		this.historyStore.addSnapshot({
+			changeList: [
+				{
+					object: updatedBox.name,
+					from: oldValue,
+					to: newValue,
+				},
+			],
+		});
 	};
 
 	@action
@@ -285,6 +272,7 @@ export default class SchemasStore {
 		const targetBox = this.boxes.find(box => box.name === boxName);
 
 		if (targetBox) {
+			const oldValue = (JSON.parse(JSON.stringify(targetBox)) as BoxEntity);
 			const pinIndex = targetBox.spec.pins.findIndex(boxPin => boxPin.name === pin.name);
 
 			if (pinIndex >= 0) {
@@ -293,38 +281,27 @@ export default class SchemasStore {
 					pin,
 					...targetBox.spec.pins.slice(pinIndex + 1, targetBox.spec.pins.length),
 				];
-				this.saveBoxChanges(targetBox);
+				this.saveBoxChanges(targetBox, 'update');
+				const newValue = (JSON.parse(JSON.stringify(targetBox)) as BoxEntity);
+				this.historyStore.addSnapshot({
+					changeList: [
+						{
+							object: oldValue.name,
+							from: oldValue,
+							to: newValue,
+						},
+					],
+				});
 			}
-		}
-	};
-
-	@action
-	public addPinToBox = (pin: Pin, boxName: string) => {
-		const targetBox = this.boxes.find(box => box.name === boxName);
-
-		if (targetBox) {
-			targetBox.spec.pins = [...targetBox.spec.pins, pin];
-			this.saveBoxChanges(targetBox);
-		}
-	};
-
-	@action
-	public removePinFromBox = (pin: Pin, boxName: string) => {
-		const targetBox = this.boxes.find(box => box.name === boxName);
-
-		if (targetBox) {
-			targetBox.spec.pins = [...targetBox.spec.pins.filter(boxPin => boxPin.name !== pin.name)];
-			this.connectionStore.removeConnectionsFromLinkBox(pin, boxName, true);
-			this.saveBoxChanges(targetBox);
 		}
 	};
 
 	@action
 	public deletePinConnections = async (pin: Pin, boxName: string) => {
 		if (this.selectedSchema && this.connectionStore.linkBox) {
-			this.connectionStore.removeConnectionsFromLinkBox(pin, boxName, false);
+			this.connectionStore.removeConnectionsFromLinkBox(pin, boxName);
 
-			this.saveBoxChanges(this.connectionStore.linkBox);
+			this.saveBoxChanges(this.connectionStore.linkBox, 'update');
 		}
 	};
 }

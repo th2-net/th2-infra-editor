@@ -13,26 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
+import React from 'react';
 
-import ApiSchema from '../api/ApiSchema';
-import HistoryStore from './HistoryStore';
-import SchemasStore from './SchemasStore';
+export function useKeyPress(targetKey: string) {
+	const [isKeyPressed, setIsKeyPressed] = React.useState(false);
 
-export default class RootStore {
-	public schemaStore: SchemasStore;
-
-	public historyStore: HistoryStore;
-
-	constructor(private api: ApiSchema) {
-		this.historyStore = new HistoryStore(this);
-		this.schemaStore = new SchemasStore(this, this.api, this.historyStore);
-	}
-
-	async init() {
-		await this.schemaStore.fetchSchemas();
-		if (this.schemaStore.schemas.length) {
-			this.schemaStore.setSelectedSchema(this.schemaStore.schemas[0]);
-			await this.schemaStore.fetchSchemaState(this.schemaStore.schemas[0]);
+	function downHandler(e: KeyboardEvent) {
+		if (e.key === targetKey) {
+			setIsKeyPressed(true);
 		}
 	}
+
+	const upHandler = (e: KeyboardEvent) => {
+		if (e.key === targetKey) {
+			setIsKeyPressed(false);
+		}
+	};
+
+	React.useEffect(() => {
+		window.addEventListener('keydown', downHandler);
+		window.addEventListener('keyup', upHandler);
+		return () => {
+			window.removeEventListener('keydown', downHandler);
+			window.removeEventListener('keyup', upHandler);
+		};
+	}, []);
+
+	return isKeyPressed;
 }
