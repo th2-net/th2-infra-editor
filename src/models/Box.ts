@@ -1,3 +1,4 @@
+import { DictionaryRelation } from './Dictionary';
 /** *****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
@@ -24,6 +25,7 @@ export interface BoxEntity extends FileBase {
 		['image-version']: string;
 		['node-port']?: number;
 		['dictionaries-relation']?: Array<DictionaryRelation>;
+		data?: string;
 		pins: Array<Pin>;
 	};
 }
@@ -69,15 +71,6 @@ export interface ConnectionArrow {
 	name: string;
 	start: Connection;
 	end: Connection;
-}
-
-export interface DictionaryRelation {
-	name: string;
-	box: string;
-	dictionary: {
-		name: string;
-		type: string;
-	};
 }
 
 export function isBoxEntity(object: unknown): object is BoxEntity {

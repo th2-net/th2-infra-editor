@@ -357,7 +357,7 @@
 		overflow: scroll;
 	}
 
-	&__props-list {
+	&__dictionary-list {
 		@include scrollbar;
 
 		width: 50%;
@@ -388,6 +388,53 @@
 
 		&:hover {
 			color: $primaryColor;
+		}
+	}
+
+	&__dictionary-relation {
+		border: 1px solid #808080;
+		border-radius: 4px;
+		padding: 10px 45px 10px 10px;
+		position: relative;
+
+		&:not(:last-child) {
+			margin-bottom: 10px;
+		}
+
+		&-prop {
+			&:not(:last-child) {
+				margin-bottom: 10px;
+			}
+
+			&-value {
+				font-size: 14px;
+				overflow-wrap: break-word;
+			}
+		}
+
+		&-button {
+			width: 25px;
+            height: 25px;
+            padding: 0;
+            margin: 0;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+            border-radius: 4px;
+            cursor: pointer;
+			outline: none;
+			position: absolute;
+			top: 50%;
+			transform: translateY(-50%);
+			right: 10px;
+			
+			&-icon {
+				&.delete {
+					@include icon(url(../../resources/icons/trash-grey.svg), 16px, 16px);
+				}
+			}
 		}
 	}
 
@@ -436,7 +483,7 @@
 		font-size: 22px;
 		margin-bottom: 15px;
 	}
-	
+
 	&__info-list {
 		margin-bottom: 10px;
 	}

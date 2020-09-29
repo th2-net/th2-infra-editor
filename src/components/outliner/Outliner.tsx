@@ -33,9 +33,13 @@ const Outliner = () => {
 					boxList={schemasStore.boxes.sort((a, b) => (a.kind >= b.kind ? 1 : -1))}
 					setActiveBox={schemasStore.setActiveBox}
 					deleteBox={schemasStore.deleteBox}
-					addDictionaryRelation={schemasStore.addDictionaryRelation}
 					activeBox={schemasStore.activeBox}
 					configurateBox={schemasStore.configurateBox}
+					dictionaryLinks={
+						schemasStore.dictionaryLinksEntity
+							? schemasStore.dictionaryLinksEntity.spec['dictionaries-relation']
+							: []
+					}
 				/>
 				<OutlinerLinkList
 					linkList={connectionStore.links.sort((a, b) => (a.from.box >= b.from.box ? 1 : -1))}

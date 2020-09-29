@@ -62,7 +62,7 @@ export default class HistoryStore {
 
 	@action
 	private rollbackChange = (change: Change) => {
-		if (!change.from && change.to) { // was added
+		if (!change.from && change.to) {
 			if (isBoxEntity(change.to)) {
 				this.rootStore.schemaStore.deleteBox(change.to.name, false);
 			}
@@ -71,7 +71,7 @@ export default class HistoryStore {
 			}
 			return;
 		}
-		if (!change.to && change.from) { // was deleted
+		if (!change.to && change.from) {
 			if (isBoxEntity(change.from)) {
 				this.rootStore.schemaStore.createNewBox(change.from, false);
 			} else {
@@ -90,7 +90,7 @@ export default class HistoryStore {
 			}
 			return;
 		}
-		if (isBoxEntity(change.from) && isBoxEntity(change.to)) { // was changed
+		if (isBoxEntity(change.from) && isBoxEntity(change.to)) {
 			this.rootStore.schemaStore.boxes = observable.array([
 				...this.rootStore.schemaStore.boxes.filter(box => box.name !== change.from?.name),
 				change.from,
@@ -100,7 +100,7 @@ export default class HistoryStore {
 
 	@action
 	private applyChange = (change: Change) => {
-		if (!change.from) { // was added
+		if (!change.from) {
 			if (isBoxEntity(change.to)) {
 				this.rootStore.schemaStore.createNewBox(change.to, false);
 			}
@@ -120,7 +120,7 @@ export default class HistoryStore {
 			}
 			return;
 		}
-		if (!change.to) { // was deleted
+		if (!change.to) {
 			if (isBoxEntity(change.from)) {
 				this.rootStore.schemaStore.deleteBox(change.from.name, false);
 			} else {
@@ -128,7 +128,7 @@ export default class HistoryStore {
 			}
 			return;
 		}
-		if (isBoxEntity(change.from) && isBoxEntity(change.to)) { // was changed
+		if (isBoxEntity(change.from) && isBoxEntity(change.to)) {
 			this.rootStore.schemaStore.boxes = observable.array([
 				...this.rootStore.schemaStore.boxes.filter(box => box.name !== change.from?.name),
 				change.to,

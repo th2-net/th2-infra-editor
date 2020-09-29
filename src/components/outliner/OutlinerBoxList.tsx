@@ -16,8 +16,9 @@
 import React from 'react';
 import { ModalPortal } from '../util/Portal';
 import BoxSettings from '../box/BoxSettings';
-import { BoxEntity, DictionaryRelation } from '../../models/Box';
+import { BoxEntity } from '../../models/Box';
 import { createBemElement } from '../../helpers/styleCreators';
+import { DictionaryRelation } from '../../models/Dictionary';
 
 interface OutlinerBoxListItemProps {
 	box: BoxEntity;
@@ -87,18 +88,18 @@ interface OutlinerBoxListProps {
 	boxList: BoxEntity[];
 	setActiveBox: (box: BoxEntity | null) => void;
 	deleteBox: (boxName: string) => void;
-	addDictionaryRelation: (dictionaryRelation: DictionaryRelation) => void;
 	activeBox: BoxEntity | null;
-	configurateBox: (box: BoxEntity) => void;
+	configurateBox: (box: BoxEntity, dictionaryRelation: DictionaryRelation[]) => void;
+	dictionaryLinks: DictionaryRelation[];
 }
 
 const OutlinerBoxList = ({
 	boxList,
 	setActiveBox,
 	deleteBox,
-	addDictionaryRelation,
 	activeBox,
 	configurateBox,
+	dictionaryLinks,
 }: OutlinerBoxListProps) => {
 	const [editableBox, setEditableBox] = React.useState<BoxEntity | null>(null);
 	const [isBoxCreateModalOpen, setIsBoxCreateModalOpen] = React.useState(false);
@@ -126,7 +127,7 @@ const OutlinerBoxList = ({
 						box={editableBox}
 						configurateBox={configurateBox}
 						onClose={() => setIsBoxCreateModalOpen(false)}
-						addDictionaryRelation={addDictionaryRelation}
+						relatedDictionary={dictionaryLinks.filter(link => link.box === editableBox.name)}
 					/>
 				</ModalPortal>
 			}

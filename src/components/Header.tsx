@@ -51,6 +51,7 @@ const Header = () => {
 		'header',
 		'button',
 		schemasStore.preparedRequests.length === 0 ? 'disable' : null,
+		schemasStore.isSaving ? 'loading' : null,
 	);
 
 	return (

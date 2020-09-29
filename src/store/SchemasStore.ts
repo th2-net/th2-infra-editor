@@ -1,3 +1,4 @@
+import { diff } from 'deep-object-diff';
 /** *****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
@@ -19,15 +20,21 @@ import {
 	IObservableArray,
 	observable,
 	reaction,
-	set,
 } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
+import { rightJoin } from '../helpers/array';
 import { isValidBox } from '../helpers/box';
 import {
 	BoxEntity,
-	DictionaryRelation,
 	Pin,
 } from '../models/Box';
+import {
+	DictionaryEntity,
+	DictionaryLinksEntity,
+	DictionaryRelation,
+	isDictionaryEntity,
+	isDictionaryLinksEntity,
+} from '../models/Dictionary';
 import { RequestModel } from '../models/FileBase';
 import { Change } from '../models/History';
 import LinksDefinition, { isLinksDefinition } from '../models/LinksDefinition';
@@ -80,6 +87,9 @@ export default class SchemasStore {
 	public isLoading = false;
 
 	@observable
+	public isSaving = false;
+
+	@observable
 	public schemas: string[] = [];
 
 	@observable
@@ -99,6 +109,12 @@ export default class SchemasStore {
 
 	@observable
 	public preparedRequests: RequestModel[] = [];
+
+	@observable
+	public dictionaryList: DictionaryRelation[] = [];
+
+	@observable
+	public dictionaryLinksEntity: DictionaryLinksEntity | null = null;
 
 	@action
 	public addBox = (box: BoxEntity) => {
@@ -155,6 +171,10 @@ export default class SchemasStore {
 		const links = result.resources.filter(resItem => isLinksDefinition(resItem)) as LinksDefinition[];
 		this.connectionStore.linkBox = links[0];
 		this.connectionStore.setLinks(links);
+		const dictionaryEntity = result.resources.filter(resItem => isDictionaryEntity(resItem));
+		this.setDictionaryList(dictionaryEntity[0] as DictionaryEntity);
+		const dictionaryLinksEntity = result.resources.filter(resItem => isDictionaryLinksEntity(resItem));
+		this.setDictionaryLinks(dictionaryLinksEntity[0] as DictionaryLinksEntity);
 		this.isLoading = false;
 	}
 
@@ -167,16 +187,17 @@ export default class SchemasStore {
 	public saveChanges = async () => {
 		if (!this.selectedSchema || this.preparedRequests.length === 0) return;
 		try {
+			this.isSaving = true;
 			await this.api.sendSchemaRequest(
 				this.selectedSchema,
 				this.preparedRequests,
 			);
 			this.preparedRequests = [];
-			// eslint-disable-next-line no-alert
-			alert('Changes saved');
 		} catch (error) {
 			// eslint-disable-next-line no-alert
 			alert('Could\'nt save changes');
+		} finally {
+			this.isSaving = false;
 		}
 	};
 
@@ -188,26 +209,13 @@ export default class SchemasStore {
 	};
 
 	@action
-	public addDictionaryRelation = (dictionaryRelation: DictionaryRelation) => {
-		const targetBox = this.boxes.find(box => box.name === dictionaryRelation.box);
-		if (!targetBox) return;
-		if (!targetBox.spec) set(targetBox, 'spec', {});
-		const oldValue = (JSON.parse(JSON.stringify(targetBox)) as BoxEntity);
-		if (!targetBox.spec['dictionaries-relation']) {
-			set(targetBox.spec, 'dictionaries-relation', [dictionaryRelation]);
-			return;
-		}
-		targetBox.spec['dictionaries-relation'].push(dictionaryRelation);
-		const newValue = (JSON.parse(JSON.stringify(targetBox)) as BoxEntity);
-		this.historyStore.addSnapshot({
-			changeList: [
-				{
-					object: oldValue.name,
-					from: oldValue,
-					to: newValue,
-				},
-			],
-		});
+	setDictionaryList = (dictionaryEntity: DictionaryEntity) => {
+		new DOMParser().parseFromString(dictionaryEntity.spec.data, 'text/xml');
+	};
+
+	@action
+	setDictionaryLinks = (dictionaryLinksEntity: DictionaryLinksEntity) => {
+		this.dictionaryLinksEntity = dictionaryLinksEntity;
 	};
 
 	@action
@@ -242,7 +250,10 @@ export default class SchemasStore {
 	};
 
 	@action
-	public saveBoxChanges = (updatedBox: BoxEntity | LinksDefinition, operation: 'add' | 'update' | 'remove') => {
+	public saveBoxChanges = (
+		updatedBox: BoxEntity | LinksDefinition | DictionaryLinksEntity,
+		operation: 'add' | 'update' | 'remove',
+	) => {
 		if (!this.preparedRequests.some(request => request.payload === updatedBox && request.operation === operation)) {
 			this.preparedRequests.push({
 				operation,
@@ -252,19 +263,62 @@ export default class SchemasStore {
 	};
 
 	@action
-	public configurateBox = (updatedBox: BoxEntity) => {
+	public configurateBox = (updatedBox: BoxEntity, dictionaryRelations: DictionaryRelation[]) => {
 		const oldValue = JSON.parse(JSON.stringify(this.boxes.find(box => box.name === updatedBox.name)));
 		const newValue = JSON.parse(JSON.stringify(updatedBox));
 		this.boxes = observable.array([...this.boxes.filter(box => box.name !== updatedBox.name), updatedBox]);
+		const changeList = this.configurateBoxDictionaryRelations(dictionaryRelations);
+
+		if (Object.entries(diff(oldValue, newValue)).length !== 0) {
+			this.saveBoxChanges(updatedBox, 'update');
+			changeList.unshift({
+				object: updatedBox.name,
+				from: oldValue,
+				to: newValue,
+			});
+		}
 		this.historyStore.addSnapshot({
-			changeList: [
+			changeList,
+		});
+	};
+
+	@action
+	public configurateBoxDictionaryRelations = (dictionaryRelations: DictionaryRelation[]): Change[] => {
+		if (!this.dictionaryLinksEntity) return [];
+
+		let operation: 'add' | 'remove' = 'add';
+
+		let relations = rightJoin(this.dictionaryLinksEntity.spec['dictionaries-relation'], dictionaryRelations);
+		if (!relations.length) {
+			relations = rightJoin(dictionaryRelations, this.dictionaryLinksEntity.spec['dictionaries-relation']);
+			operation = 'remove';
+		}
+
+		const oldValue = JSON.parse(JSON.stringify(this.dictionaryLinksEntity));
+		if (operation === 'add') {
+			this.dictionaryLinksEntity.spec['dictionaries-relation'].push(...relations);
+		} else {
+			this.dictionaryLinksEntity.spec['dictionaries-relation'] = this.dictionaryLinksEntity
+				.spec['dictionaries-relation']
+				.filter(dictionaryRelation => !relations.find(relation =>
+					relation.box === dictionaryRelation.box
+					&& relation.name === dictionaryRelation.name
+					&& relation.dictionary.name === dictionaryRelation.dictionary.name
+					&& relation.dictionary.type === dictionaryRelation.dictionary.type));
+		}
+		const newValue = JSON.parse(JSON.stringify(this.dictionaryLinksEntity));
+
+		if (Object.entries(diff(oldValue, newValue)).length !== 0) {
+			this.saveBoxChanges(this.dictionaryLinksEntity, 'update');
+			return [
 				{
-					object: updatedBox.name,
+					object: this.dictionaryLinksEntity.name,
 					from: oldValue,
 					to: newValue,
 				},
-			],
-		});
+			];
+		}
+		return [];
 	};
 
 	@action
