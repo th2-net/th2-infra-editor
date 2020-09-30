@@ -23,12 +23,14 @@ interface PinsListProps {
 	pins: Pin[];
 	addPinToBox: (pin: Pin) => void;
 	removePinFromBox: (pin: Pin) => void;
+	setEditablePin: (pin: Pin) => void;
 }
 
 const PinsList = ({
 	pins,
 	addPinToBox,
 	removePinFromBox,
+	setEditablePin,
 }: PinsListProps) => {
 	const [isAddFormOpen, setIsAddFormOpen] = React.useState(false);
 
@@ -83,8 +85,11 @@ const PinsList = ({
 								<span className="pins-list__pin-info-value">{pin['connection-type']}</span>
 							</div>
 							<button
+								onClick={() => setEditablePin(pin)}
+								className="pins-list__button edit"/>
+							<button
 								onClick={() => removePin(pin)}
-								className="pins-list__delete-button"/>
+								className="pins-list__button delete"/>
 						</div>
 					))
 				}

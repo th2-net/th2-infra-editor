@@ -20,7 +20,7 @@ import { InputConfig } from '../../hooks/useInput';
 import { createBemElement } from '../../helpers/styleCreators';
 
 interface InputProps {
-    inputConfig: InputConfig;
+	inputConfig: InputConfig;
 }
 
 const Input = ({
@@ -41,10 +41,18 @@ const Input = ({
 				{inputConfig.label}
 			</label>
 			<input
-				id={inputConfig.bind.id}
+				{...inputConfig.bind}
 				type="text"
 				className={inputClass}
-				{...inputConfig.bind}/>
+				list={inputConfig.autocomplete?.datalistKey}/>
+			{
+				(inputConfig.autocomplete && inputConfig.value.length > 0)
+				&& <datalist id={inputConfig.autocomplete.datalistKey}>
+					{inputConfig.autocomplete.variants.map((variant, index) => (
+						<option key={index} value={variant} />
+					))}
+				</datalist>
+			}
 		</div>);
 };
 export default Input;

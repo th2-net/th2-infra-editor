@@ -111,7 +111,7 @@ export default class SchemasStore {
 	public preparedRequests: RequestModel[] = [];
 
 	@observable
-	public dictionaryList: DictionaryRelation[] = [];
+	public dictionaryList: DictionaryEntity[] = [];
 
 	@observable
 	public dictionaryLinksEntity: DictionaryLinksEntity | null = null;
@@ -167,14 +167,19 @@ export default class SchemasStore {
 		}
 		this.schemaAbortController = new AbortController();
 		const result = await this.api.fetchSchemaState(schemaName, this.schemaAbortController.signal);
+
 		this.boxes = observable.array(result.resources.filter(resItem => isValidBox(resItem)));
+
 		const links = result.resources.filter(resItem => isLinksDefinition(resItem)) as LinksDefinition[];
 		this.connectionStore.linkBox = links[0];
 		this.connectionStore.setLinks(links);
-		const dictionaryEntity = result.resources.filter(resItem => isDictionaryEntity(resItem));
-		this.setDictionaryList(dictionaryEntity[0] as DictionaryEntity);
+
+		this.dictionaryList = (result.resources
+			.filter(resItem => isDictionaryEntity(resItem)) as DictionaryEntity[]);
+
 		const dictionaryLinksEntity = result.resources.filter(resItem => isDictionaryLinksEntity(resItem));
 		this.setDictionaryLinks(dictionaryLinksEntity[0] as DictionaryLinksEntity);
+
 		this.isLoading = false;
 	}
 
@@ -206,11 +211,6 @@ export default class SchemasStore {
 		await this.api.createNewSchema(schemaName);
 		this.schemas.push(schemaName);
 		this.selectedSchema = schemaName;
-	};
-
-	@action
-	setDictionaryList = (dictionaryEntity: DictionaryEntity) => {
-		new DOMParser().parseFromString(dictionaryEntity.spec.data, 'text/xml');
 	};
 
 	@action

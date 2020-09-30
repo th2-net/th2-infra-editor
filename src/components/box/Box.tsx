@@ -25,6 +25,7 @@ import BoxSettings from './BoxSettings';
 import '../../styles/box.scss';
 import BoxPin from './BoxPin';
 import useConnectionsStore from '../../hooks/useConnectionsStore';
+import PinConfigurator from '../pin-configurator/PinConfigurator';
 
 interface Props {
 	box: BoxEntity;
@@ -44,7 +45,7 @@ const Box = ({ box, groupsTopOffset, titleHeight }: Props, ref: React.Ref<BoxMet
 	const [isModalOpen, setIsModalOpen] = React.useState(false);
 	const [isBoxActive, setIsBoxActive] = React.useState(false);
 	const [isContextMenuOpen, setIsContextMenuOpen] = React.useState(false);
-	const [isPinConfiguratorOpen, setIsPinConfiguratorOpen] = React.useState(false);
+	const [editablePin, setEditablePin] = React.useState<Pin | null>(null);
 
 	const boxRef = React.useRef<HTMLDivElement>(null);
 	const [pinsRefs, setPinsRefs] = React.useState<React.RefObject<HTMLDivElement>[]>([]);
@@ -212,7 +213,7 @@ const Box = ({ box, groupsTopOffset, titleHeight }: Props, ref: React.Ref<BoxMet
 			}}
 			onMouseLeave={() => {
 				if (!isContextMenuOpen
-					&& !isPinConfiguratorOpen
+					&& !editablePin
 					&& box.name === schemasStore.activeBox?.name) {
 					schemasStore.setActiveBox(null);
 					setIsBoxActive(false);
@@ -253,14 +254,13 @@ const Box = ({ box, groupsTopOffset, titleHeight }: Props, ref: React.Ref<BoxMet
 						ref={pinsRefs[index]}
 						pin={pin}
 						box={box}
-						configuratePin={schemasStore.configuratePin}
 						deletePinConnections={schemasStore.deletePinConnections}
 						selectBox={schemasStore.setActiveBox}
 						selectPin={schemasStore.setActivePin}
 						connectionDirection={getPinDirection(pin)}
 						setConnection={connectionStore.setConnection}
 						onContextMenuStateChange={isOpen => setIsContextMenuOpen(isOpen)}
-						onPinConfiguratorStateChange={setIsPinConfiguratorOpen}
+						setEditablePin={setEditablePin}
 						leftDotVisible={isDotConnected(pin.name, 'left')}
 						rightDotVisible={isDotConnected(pin.name, 'right')}
 						activeBox={schemasStore.activeBox}
@@ -280,8 +280,26 @@ const Box = ({ box, groupsTopOffset, titleHeight }: Props, ref: React.Ref<BoxMet
 								.spec['dictionaries-relation'].filter(link => link.box === box.name)
 							: []
 					}
+					dictionaryNamesList={schemasStore.dictionaryList.map(dictionary => dictionary.name)}
+					setEditablePin={pin => {
+						setEditablePin(pin);
+						setIsModalOpen(false);
+					}}
 				/>
 			</ModalPortal>
+			{
+				editablePin
+				&& <ModalPortal isOpen={Boolean(editablePin)}>
+					<PinConfigurator
+						pin={editablePin}
+						configuratePin={schemasStore.configuratePin}
+						boxName={box.name}
+						onClose={() => {
+							setEditablePin(null);
+						}}
+					/>
+				</ModalPortal>
+			}
 		</div>
 	);
 };

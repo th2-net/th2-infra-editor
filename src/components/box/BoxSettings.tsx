@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { BoxEntity } from '../../models/Box';
+import { BoxEntity, Pin } from '../../models/Box';
 import BoxImageInfo from './BoxImageInfo';
 import useOutsideClickListener from '../../hooks/useOutsideClickListener';
 import BoxDictionaryConfigurator from './BoxDictionaryConfigurator';
@@ -28,6 +28,8 @@ interface BoxSettingsProps {
 	configurateBox: (box: BoxEntity, dictionaryRelation: DictionaryRelation[]) => void;
 	onClose: () => void;
 	relatedDictionary: DictionaryRelation[];
+	dictionaryNamesList: string[];
+	setEditablePin: (pin: Pin) => void;
 }
 
 const BoxSettings = ({
@@ -35,6 +37,8 @@ const BoxSettings = ({
 	configurateBox,
 	onClose,
 	relatedDictionary,
+	dictionaryNamesList,
+	setEditablePin,
 }: BoxSettingsProps) => {
 	const modalRef = React.useRef<HTMLDivElement>(null);
 
@@ -76,7 +80,7 @@ const BoxSettings = ({
 		isValid: true,
 	});
 
-	const [dictionaryList, setDictionaryList] = React.useState<DictionaryRelation[]>(relatedDictionary);
+	const [relatedDictionaryList, setRelatedDictionaryList] = React.useState<DictionaryRelation[]>(relatedDictionary);
 
 	const [pinList, setPinList] = React.useState(box.spec.pins);
 
@@ -99,7 +103,7 @@ const BoxSettings = ({
 					pins: pinList,
 				},
 			},
-			dictionaryList);
+			relatedDictionaryList);
 			onClose();
 		}
 	};
@@ -152,23 +156,25 @@ const BoxSettings = ({
 								.filter(pin => pin.name !== removablePin.name));
 							setIsBoxModified(true);
 						}}
+						setEditablePin={setEditablePin}
 					/>
 				</div>
 				<div className="box-modal__dictionary-list">
 					<BoxDictionaryConfigurator
 						isAddFormOpen={showDictionaryConfigurator}
 						addDictionaryRelation={relation => {
-							setDictionaryList([...dictionaryList, relation]);
+							setRelatedDictionaryList([...relatedDictionaryList, relation]);
 							setIsBoxModified(true);
 						}}
 						removeDictionaryRelation={relation => {
-							setDictionaryList(dictionaryList
+							setRelatedDictionaryList(relatedDictionaryList
 								.filter(dictionaryRelation => dictionaryRelation !== relation));
 							setIsBoxModified(true);
 						}}
 						boxName={box.name}
 						closeAddForm={() => isShowAddForm(false)}
-						relatedDictionary={dictionaryList} />
+						relatedDictionary={relatedDictionaryList}
+						dictionaryNamesList={dictionaryNamesList} />
 				</div>
 			</div>
 			<div className="box-modal__buttons">

@@ -522,19 +522,26 @@
 		}
 	}
 
-	&__delete-button {
-		@include icon(url(../../resources/icons/trash-grey.svg), 16px, 16px);
-		
+	&__button {		
 		display: inline-block;
 		position: absolute;
 		top: 50%;
 		transform: translateY(-50%);
-		right: 5%;
 		padding: 0;
 		margin: 0;
 		border: none;
 		background-color: transparent;
 		cursor: pointer;
 		outline: none;
+
+		&.delete {
+			@include icon(url(../../resources/icons/trash-grey.svg), 16px, 16px);
+			right: 5%;
+		}
+
+		&.edit {
+			@include icon(url(../../resources/icons/settings.svg), 16px, 16px);
+			right: 13%;
+		}
 	}
 }
