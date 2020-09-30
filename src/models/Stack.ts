@@ -14,25 +14,41 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import ApiSchema from '../api/ApiSchema';
-import HistoryStore from './HistoryStore';
-import SchemasStore from './SchemasStore';
+import { observable } from 'mobx';
 
-export default class RootStore {
-	public schemaStore: SchemasStore;
-
-	public historyStore: HistoryStore;
-
-	constructor(private api: ApiSchema) {
-		this.historyStore = new HistoryStore(this);
-		this.schemaStore = new SchemasStore(this, this.api, this.historyStore);
+export default class Stack<T> {
+	constructor() {
+		this.storage = [];
+		this.pointer = -1;
 	}
 
-	async init() {
-		await this.schemaStore.fetchSchemas();
-		if (this.schemaStore.schemas.length) {
-			this.schemaStore.setSelectedSchema(this.schemaStore.schemas[0]);
-			await this.schemaStore.fetchSchemaState(this.schemaStore.schemas[0]);
+	@observable
+	public storage: T[];
+
+	public pointer: number;
+
+	push(value: T) {
+		if (this.pointer === this.storage.length - 1) {
+			this.storage.push(value);
+			this.pointer++;
+		} else {
+			this.storage = [...this.storage.slice(0, this.pointer + 1), value];
+			this.pointer++;
 		}
+	}
+
+	getPreviousElement(): T | null {
+		if (this.pointer - 1 < -1) return null;
+		return this.storage[this.pointer--];
+	}
+
+	getNextElement(): T | null {
+		if (this.pointer + 1 >= this.storage.length) return null;
+		return this.storage[++this.pointer];
+	}
+
+	clear() {
+		this.storage = [];
+		this.pointer = -1;
 	}
 }

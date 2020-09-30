@@ -38,7 +38,7 @@
 		padding: 7px 7px;
 		margin-left: 20px;
 		border-radius: 4px;
-		background-color: rgb(109, 109, 252);
+		background-color: #6d6dfc;
 		color: White;
 		font-weight: 600;
 		outline: none;
@@ -48,6 +48,20 @@
 		&.disable {
 			background-color: rgb(151, 151, 151);
 			cursor: auto;
+		}
+
+		&.loading {
+			position: relative;
+			padding-right: 36px;
+
+			&:before {
+				@include spinner(3px, 12px, 2s, white, transparent);
+
+				content: '';
+				position: absolute;
+				top: calc(50% - 10px);
+				right: 10px;
+			}
 		}
 	}
 	

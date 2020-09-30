@@ -24,6 +24,8 @@
 		
 		position: relative;
 		overflow-x: scroll;
+		grid-row: 2 / 3;
+		grid-column: 1 / 2;
 	}
 	
 	&__list {

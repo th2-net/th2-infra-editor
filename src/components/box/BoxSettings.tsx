@@ -15,45 +15,93 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { BoxEntity, DictionaryRelation, Pin } from '../../models/Box';
+import { BoxEntity } from '../../models/Box';
 import BoxImageInfo from './BoxImageInfo';
 import useOutsideClickListener from '../../hooks/useOutsideClickListener';
 import BoxDictionaryConfigurator from './BoxDictionaryConfigurator';
 import ConfigEditor from './ConfigEditor';
 import PinsList from './PinsList';
+import { DictionaryRelation } from '../../models/Dictionary';
 
 interface BoxSettingsProps {
 	box: BoxEntity;
-	onParamValueChange: (boxName: string, paramName: string, value: string) => void;
+	configurateBox: (box: BoxEntity, dictionaryRelation: DictionaryRelation[]) => void;
 	onClose: () => void;
-	addDictionaryRelation: (dictionaryRelation: DictionaryRelation) => void;
-	changeCustomConfig: (config: {[prop: string]: string}, boxName: string) => void;
-	deleteParam: (paramName: string, boxName: string) => void;
-	setImageInfo: (imageProp: {
-		name: 'image-name' | 'image-version' | 'node-port';
-		value: string;
-	}, boxName: string) => void;
-	addPinToBox: (pin: Pin, boxName: string) => void;
-	removePinFromBox: (pin: Pin, boxName: string) => void;
+	relatedDictionary: DictionaryRelation[];
 }
 
 const BoxSettings = ({
 	box,
-	onParamValueChange,
+	configurateBox,
 	onClose,
-	addDictionaryRelation,
-	changeCustomConfig,
-	deleteParam,
-	setImageInfo,
-	addPinToBox,
-	removePinFromBox,
+	relatedDictionary,
 }: BoxSettingsProps) => {
 	const modalRef = React.useRef<HTMLDivElement>(null);
 
 	const [showDictionaryConfigurator, isShowAddForm] = React.useState(false);
 
-	const onBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-		onParamValueChange(box.name, e.target.name, e.target.value);
+	const [isBoxModified, setIsBoxModified] = React.useState(false);
+
+	const [imageName, setImageName] = React.useState<{
+		value: string;
+		isValid: boolean;
+	}>({
+		value: box.spec['image-name'],
+		isValid: true,
+	});
+
+	const [imageVersion, setImageVersion] = React.useState<{
+		value: string;
+		isValid: boolean;
+	}>({
+		value: box.spec['image-version'],
+		isValid: true,
+	});
+
+	const [nodePort, setNodePort] = React.useState<{
+		value: string;
+		isValid: boolean;
+	}>({
+		value: box.spec['node-port'] ? box.spec['node-port'].toString() : '',
+		isValid: true,
+	});
+
+	const [customConfig, setCustomConfig] = React.useState<{
+		value: {
+			[prop: string]: string;
+		};
+		isValid: boolean;
+	}>({
+		value: box.spec['custom-config'] ?? {},
+		isValid: true,
+	});
+
+	const [dictionaryList, setDictionaryList] = React.useState<DictionaryRelation[]>(relatedDictionary);
+
+	const [pinList, setPinList] = React.useState(box.spec.pins);
+
+	const saveChanges = () => {
+		if (
+			imageName.isValid
+			&& imageVersion.isValid
+			&& nodePort.isValid
+			&& customConfig.isValid
+			&& isBoxModified
+		) {
+			configurateBox({
+				name: box.name,
+				kind: box.kind,
+				spec: {
+					'image-name': imageName.value,
+					'image-version': imageVersion.value,
+					'node-port': nodePort.value ? parseInt(nodePort.value) : undefined,
+					'custom-config': customConfig.value,
+					pins: pinList,
+				},
+			},
+			dictionaryList);
+			onClose();
+		}
 	};
 
 	useOutsideClickListener(modalRef, () => {
@@ -68,66 +116,78 @@ const BoxSettings = ({
 			<div className="box-modal__box-settings">
 				<div className="box-modal__image-info">
 					<BoxImageInfo
-						setImageInfo={setImageInfo}
 						spec={{
-							'image-name': box.spec['image-name'],
-							'image-version': box.spec['image-version'],
-							'node-port': box.spec['node-port'],
+							imageName: imageName.value,
+							imageVersion: imageVersion.value,
+							nodePort: nodePort.value,
 						}}
-						boxName={box.name}
+						setImageName={value => {
+							setImageName(value);
+							setIsBoxModified(true);
+						}}
+						setImageVersion={value => {
+							setImageVersion(value);
+							setIsBoxModified(true);
+						}}
+						setNodePort={value => {
+							setNodePort(value);
+							setIsBoxModified(true);
+						}}
 					/>
 					<ConfigEditor
-						config={box.spec['custom-config']}
-						changeCustomConfig={changeCustomConfig}
-						boxName={box.name}
+						config={customConfig.value}
+						setCustomConfig={value => {
+							setCustomConfig(value);
+							setIsBoxModified(true);
+						}}
 					/>
 					<PinsList
-						pins={box.spec.pins}
-						boxName={box.name}
-						addPinToBox={addPinToBox}
-						removePinFromBox={removePinFromBox}
+						pins={pinList}
+						addPinToBox={pin => {
+							setPinList([...pinList, pin]);
+							setIsBoxModified(true);
+						}}
+						removePinFromBox={removablePin => {
+							setPinList(pinList
+								.filter(pin => pin.name !== removablePin.name));
+							setIsBoxModified(true);
+						}}
 					/>
 				</div>
-				<div className="box-modal__props-list">
-					{
-						box.spec.params
-						&& box.spec.params.map(param => (
-							<div className="box-settings__group" key={param.name}>
-								<div className="box-modal__wrapper">
-									<label htmlFor={param.name} className="box-settings__label">
-										{param.name}
-									</label>
-									<button
-										onClick={() => deleteParam(param.name, box.name)}
-										className="box-modal__delete-button" />
-								</div>
-								<input
-									id={param.name}
-									type="text"
-									className="box-settings__input"
-									defaultValue={param.value.toString()}
-									onBlur={onBlur}
-									name={param.name}/>
-							</div>
-						))
-					}
-					{
-						showDictionaryConfigurator
-						&& <BoxDictionaryConfigurator
-							addDictionaryRelation={addDictionaryRelation}
-							boxName={box.name}
-							closeAddForm={() => isShowAddForm(false)}/>
-					}
+				<div className="box-modal__dictionary-list">
+					<BoxDictionaryConfigurator
+						isAddFormOpen={showDictionaryConfigurator}
+						addDictionaryRelation={relation => {
+							setDictionaryList([...dictionaryList, relation]);
+							setIsBoxModified(true);
+						}}
+						removeDictionaryRelation={relation => {
+							setDictionaryList(dictionaryList
+								.filter(dictionaryRelation => dictionaryRelation !== relation));
+							setIsBoxModified(true);
+						}}
+						boxName={box.name}
+						closeAddForm={() => isShowAddForm(false)}
+						relatedDictionary={dictionaryList} />
 				</div>
 			</div>
 			<div className="box-modal__buttons">
+				<button
+					onClick={saveChanges}
+					className='box-modal__button'>
+						Save changes
+				</button>
 				{
 					!showDictionaryConfigurator
-					&& <button className="box-modal__button" onClick={() => isShowAddForm(true)}>
+					&& <button
+						className="box-modal__button"
+						onClick={() => isShowAddForm(true)}>
 						Add Dictionary
 					</button>
 				}
-				<button onClick={onClose} className="box-modal__button">
+				<button
+					onClick={onClose}
+					className="box-modal__button">
 					Close
 				</button>
 			</div>

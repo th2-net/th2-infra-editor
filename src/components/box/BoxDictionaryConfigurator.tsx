@@ -16,20 +16,26 @@
 
 import React from 'react';
 import { useInput } from '../../hooks/useInput';
-import { DictionaryRelation } from '../../models/Box';
+import { DictionaryRelation } from '../../models/Dictionary';
 import Input from '../util/Input';
 
-interface BoxAddFormProps {
+interface BoxDictionaryConfiguratorProps {
+	isAddFormOpen: boolean;
 	addDictionaryRelation: (dictionaryRelation: DictionaryRelation) => void;
+	removeDictionaryRelation: (dictionaryRelation: DictionaryRelation) => void;
 	closeAddForm: () => void;
 	boxName: string;
+	relatedDictionary: DictionaryRelation[];
 }
 
 const BoxDictionaryConfigurator = ({
+	isAddFormOpen,
 	addDictionaryRelation,
+	removeDictionaryRelation,
 	boxName,
 	closeAddForm,
-}: BoxAddFormProps) => {
+	relatedDictionary,
+}: BoxDictionaryConfiguratorProps) => {
 	const nameInput = useInput({
 		initialValue: '',
 		label: 'Name',
@@ -74,18 +80,54 @@ const BoxDictionaryConfigurator = ({
 	};
 
 	return (
-		<div className='box-modal__add-form'>
-			<Input inputConfig={nameInput}/>
-			<Input inputConfig={dictionaryNameInput}/>
-			<Input inputConfig={dictionaryTypeInput}/>
-			<div className="box-modal__buttons">
-				<button className='box-modal__button' onClick={addRelation}>
-					Save
-				</button>
-				<button className="box-modal__button" onClick={closeForm}>
-					Cancel
-				</button>
-			</div>
+		<div className='box-modal__dictionary-configurator'>
+			{
+				relatedDictionary.map(relation => (
+					<div
+						key={relation.name}
+						className='box-modal__dictionary-relation'>
+						<div className="box-modal__dictionary-relation-prop">
+							<div className="box-settings__label">Name</div>
+							<div className="box-modal__dictionary-relation-prop-value">
+								{relation.name}
+							</div>
+						</div>
+						<div className="box-modal__dictionary-relation-prop">
+							<div className="box-settings__label">Dictionary name</div>
+							<div className="box-modal__dictionary-relation-prop-value">
+								{relation.dictionary.name}
+							</div>
+						</div>
+						<div className="box-modal__dictionary-relation-prop">
+							<div className="box-settings__label">Dictionary type</div>
+							<div className="box-modal__dictionary-relation-prop-value">
+								{relation.dictionary.type}
+							</div>
+						</div>
+						<button
+							onClick={() => removeDictionaryRelation(relation)}
+							className="box-modal__dictionary-relation-button">
+							<i className="box-modal__dictionary-relation-button-icon delete"/>
+						</button>
+					</div>
+				))
+			}
+			{
+				isAddFormOpen
+				&& <div className="box-modal__add-form">
+					<Input inputConfig={nameInput}/>
+					<Input inputConfig={dictionaryNameInput}/>
+					<Input inputConfig={dictionaryTypeInput}/>
+					<div className="box-modal__buttons">
+						<button className='box-modal__button' onClick={addRelation}>
+							Save
+						</button>
+						<button className="box-modal__button" onClick={closeForm}>
+							Cancel
+						</button>
+					</div>
+				</div>
+			}
 		</div>
 	);
 };

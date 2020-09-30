@@ -17,3 +17,13 @@
 export function intersection<T>(arr1: T[], arr2: T[]): T[] {
 	return arr1.filter(item => arr2.includes(item));
 }
+
+export function rightJoin<T>(arr1: T[], arr2: T[]): T[] {
+	const array = new Array<T>();
+	arr2.forEach(item => {
+		if (!arr1.includes(item)) {
+			array.push(item);
+		}
+	});
+	return array;
+}

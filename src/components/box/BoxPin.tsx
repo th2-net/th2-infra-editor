@@ -30,7 +30,11 @@ interface BoxPinProps {
 	selectBox: (box: BoxEntity | null) => void;
 	selectPin: (pin: Pin | null) => void;
 	connectionDirection: 'left' | 'right' | 'both' | 'none';
-	setConnection: (connectionName: string, pin: Pin, box: BoxEntity) => void;
+	setConnection: (
+		connectionName: string,
+		pinName: string, connectionType: 'mq' | 'grpc',
+		boxName: string,
+	) => void;
 	onContextMenuStateChange: (isOpen: boolean) => void;
 	onPinConfiguratorStateChange: (isOpen: boolean) => void;
 	leftDotVisible: boolean;
@@ -113,7 +117,11 @@ const BoxPin = React.forwardRef(({
 			// eslint-disable-next-line no-alert
 			const connectionName = prompt('Connection name');
 			if (connectionName) {
-				setConnection(connectionName, pin, box);
+				setConnection(
+					connectionName,
+					pin.name, pin['connection-type'] as 'mq' | 'grpc',
+					box.name,
+				);
 			}
 			selectBox(null);
 			selectPin(null);

@@ -14,25 +14,15 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import ApiSchema from '../api/ApiSchema';
-import HistoryStore from './HistoryStore';
-import SchemasStore from './SchemasStore';
+import { BoxEntity } from './Box';
+import { Link } from './LinksDefinition';
 
-export default class RootStore {
-	public schemaStore: SchemasStore;
+export interface Snapshot {
+	changeList: Change[];
+}
 
-	public historyStore: HistoryStore;
-
-	constructor(private api: ApiSchema) {
-		this.historyStore = new HistoryStore(this);
-		this.schemaStore = new SchemasStore(this, this.api, this.historyStore);
-	}
-
-	async init() {
-		await this.schemaStore.fetchSchemas();
-		if (this.schemaStore.schemas.length) {
-			this.schemaStore.setSelectedSchema(this.schemaStore.schemas[0]);
-			await this.schemaStore.fetchSchemaState(this.schemaStore.schemas[0]);
-		}
-	}
+export interface Change {
+	object: string;
+	from: BoxEntity | Link | null;
+	to: BoxEntity | Link | null;
 }

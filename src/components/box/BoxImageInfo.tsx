@@ -20,39 +20,46 @@ import Input from '../util/Input';
 
 interface BoxImageInfoProps {
 	spec: {
-		['image-name']: string;
-		['image-version']: string;
-		['node-port']?: number;
+		imageName: string;
+		imageVersion: string;
+		nodePort: string;
 	};
-	setImageInfo: (imageProp: {
-		name: 'image-name' | 'image-version' | 'node-port';
+	setImageName: (imageName: {
 		value: string;
-	}, boxName: string) => void;
-	boxName: string;
+		isValid: boolean;
+	}) => void;
+	setImageVersion: (imageVersion: {
+		value: string;
+		isValid: boolean;
+	}) => void;
+	setNodePort: (nodePort: {
+		value: string;
+		isValid: boolean;
+	}) => void;
 }
 
 const BoxImageInfo = ({
 	spec,
-	setImageInfo,
-	boxName,
+	setImageName,
+	setImageVersion,
+	setNodePort,
 }: BoxImageInfoProps) => {
 	const imageNameInput = useInput({
-		initialValue: spec['image-name'],
+		initialValue: spec.imageName,
 		label: 'image-name',
 		name: 'image-name',
 		id: 'image-name',
 	});
 
 	const imageVersionInput = useInput({
-		initialValue: spec['image-version'],
+		initialValue: spec.imageVersion,
 		label: 'image-version',
 		name: 'image-version',
 		id: 'image-version',
-		validate: value => value.split('.').every(number => /^\d+$/.test(number)),
 	});
 
 	const nodePortInput = useInput({
-		initialValue: typeof spec['node-port'] === 'number' ? spec['node-port'].toString() : '',
+		initialValue: spec.nodePort,
 		label: 'node-port',
 		name: 'node-port',
 		id: 'node-port',
@@ -60,15 +67,31 @@ const BoxImageInfo = ({
 	});
 
 	React.useEffect(() => {
-		[imageNameInput, imageVersionInput, nodePortInput]
-			.filter(input => input.isValid)
-			.forEach(input => {
-				setImageInfo({
-					name: input.bind.name as 'image-name' | 'image-version' | 'node-port',
-					value: input.value,
-				}, boxName);
+		if (imageNameInput.isDirty) {
+			setImageName({
+				value: imageNameInput.value,
+				isValid: imageNameInput.isValid,
 			});
-	}, [imageNameInput, imageVersionInput, nodePortInput]);
+		}
+	}, [imageNameInput.value]);
+
+	React.useEffect(() => {
+		if (imageVersionInput.isDirty) {
+			setImageVersion({
+				value: imageVersionInput.value,
+				isValid: imageVersionInput.isValid,
+			});
+		}
+	}, [imageVersionInput.value]);
+
+	React.useEffect(() => {
+		if (nodePortInput.isDirty) {
+			setNodePort({
+				value: nodePortInput.value,
+				isValid: nodePortInput.isValid,
+			});
+		}
+	}, [nodePortInput.value]);
 
 	return (
 		<div className="box-settings__image-info">

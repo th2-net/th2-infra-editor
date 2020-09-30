@@ -271,14 +271,15 @@ const Box = ({ box, groupsTopOffset, titleHeight }: Props, ref: React.Ref<BoxMet
 			<ModalPortal isOpen={isModalOpen}>
 				<BoxSettings
 					box={box}
-					onParamValueChange={schemasStore.setBoxParamValue}
+					configurateBox={schemasStore.configurateBox}
 					onClose={() => setIsModalOpen(false)}
-					addDictionaryRelation={schemasStore.addDictionaryRelation}
-					changeCustomConfig={schemasStore.changeCustomConfig}
-					deleteParam={schemasStore.deleteParam}
-					setImageInfo={schemasStore.setImageInfo}
-					addPinToBox={schemasStore.addPinToBox}
-					removePinFromBox={schemasStore.removePinFromBox}
+					relatedDictionary={
+						schemasStore.dictionaryLinksEntity
+							? schemasStore
+								.dictionaryLinksEntity
+								.spec['dictionaries-relation'].filter(link => link.box === box.name)
+							: []
+					}
 				/>
 			</ModalPortal>
 		</div>
