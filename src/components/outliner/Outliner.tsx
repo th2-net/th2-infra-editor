@@ -21,6 +21,7 @@ import useSchemasStore from '../../hooks/useSchemasStore';
 import useConnectionsStore from '../../hooks/useConnectionsStore';
 import OutlinerBoxList from './OutlinerBoxList';
 import OutlinerLinkList from './OutlinerLinkList';
+import OutlinerDictionaryList from './OutlinerDictionaryList';
 
 const Outliner = () => {
 	const schemasStore = useSchemasStore();
@@ -40,14 +41,16 @@ const Outliner = () => {
 							? schemasStore.dictionaryLinksEntity.spec['dictionaries-relation']
 							: []
 					}
-				/>
+					dictionaryNamesList={schemasStore.dictionaryList.map(dictionary => dictionary.name)}
+					configuratePin={schemasStore.configuratePin}/>
 				<OutlinerLinkList
 					linkList={connectionStore.links.sort((a, b) => (a.from.box >= b.from.box ? 1 : -1))}
 					setSelectedLink={connectionStore.setSelectedLink}
 					deleteConnection={connectionStore.deleteConnection}
 					outlinerSelectedLink={connectionStore.outlinerSelectedLink}
-					boxes={schemasStore.boxes}
-				/>
+					boxes={schemasStore.boxes} />
+				<OutlinerDictionaryList
+					dictionaryList={schemasStore.dictionaryList} />
 			</div>
 		</>
 	);

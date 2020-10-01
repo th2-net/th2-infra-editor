@@ -21,6 +21,10 @@ interface UseInputProps {
 	label?: string;
 	id: string;
 	name?: string;
+	autocomplete?: {
+		datalistKey: string;
+		variants: string[];
+	};
 	validate?: (value: string) => boolean;
 }
 
@@ -31,10 +35,14 @@ export interface InputConfig {
 	reset: () => void;
 	isValid: boolean;
 	isDirty: boolean;
+	autocomplete?: {
+		datalistKey: string;
+		variants: string[];
+	};
 	bind: {
 		value: string;
 		onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-		id?: string;
+		id: string;
 		name?: string;
 	};
 }
@@ -45,6 +53,7 @@ export const useInput = ({
 	validate,
 	id,
 	name,
+	autocomplete,
 }: UseInputProps): InputConfig => {
 	const [value, setValue] = React.useState(initialValue);
 	const [isValid, setIsValid] = React.useState(true);
@@ -68,6 +77,7 @@ export const useInput = ({
 		reset: () => setValue(''),
 		isValid,
 		isDirty,
+		autocomplete,
 		bind: {
 			value,
 			onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

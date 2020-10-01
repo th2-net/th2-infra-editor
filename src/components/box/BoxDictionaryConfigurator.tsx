@@ -26,6 +26,7 @@ interface BoxDictionaryConfiguratorProps {
 	closeAddForm: () => void;
 	boxName: string;
 	relatedDictionary: DictionaryRelation[];
+	dictionaryNamesList: string[];
 }
 
 const BoxDictionaryConfigurator = ({
@@ -35,6 +36,7 @@ const BoxDictionaryConfigurator = ({
 	boxName,
 	closeAddForm,
 	relatedDictionary,
+	dictionaryNamesList,
 }: BoxDictionaryConfiguratorProps) => {
 	const nameInput = useInput({
 		initialValue: '',
@@ -47,6 +49,10 @@ const BoxDictionaryConfigurator = ({
 		label: 'Dictionary name',
 		id: 'dictionary-name',
 		validate: value => value.trim().length !== 0,
+		autocomplete: {
+			variants: dictionaryNamesList,
+			datalistKey: 'add-form__dictionary-name',
+		},
 	});
 
 	const dictionaryTypeInput = useInput({

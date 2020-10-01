@@ -15,15 +15,12 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { ModalPortal } from '../util/Portal';
-import PinConfigurator from '../pin-configurator/PinConfigurator';
 import { Pin, BoxEntity } from '../../models/Box';
 import useOutsideClickListener from '../../hooks/useOutsideClickListener';
 import ContextMenu from './ContextMenu';
 import { createBemElement } from '../../helpers/styleCreators';
 
 interface BoxPinProps {
-	configuratePin: (pin: Pin, boxName: string) => void;
 	pin: Pin;
 	box: BoxEntity;
 	deletePinConnections: (pin: Pin, boxName: string) => void;
@@ -36,7 +33,7 @@ interface BoxPinProps {
 		boxName: string,
 	) => void;
 	onContextMenuStateChange: (isOpen: boolean) => void;
-	onPinConfiguratorStateChange: (isOpen: boolean) => void;
+	setEditablePin: (pin: Pin) => void;
 	leftDotVisible: boolean;
 	rightDotVisible: boolean;
 	activeBox: BoxEntity | null;
@@ -44,7 +41,6 @@ interface BoxPinProps {
 }
 
 const BoxPin = React.forwardRef(({
-	configuratePin,
 	pin,
 	box,
 	deletePinConnections,
@@ -53,13 +49,12 @@ const BoxPin = React.forwardRef(({
 	connectionDirection,
 	setConnection,
 	onContextMenuStateChange,
-	onPinConfiguratorStateChange,
+	setEditablePin,
 	leftDotVisible,
 	rightDotVisible,
 	activeBox,
 	activePin,
 }: BoxPinProps, ref: React.Ref<HTMLDivElement>) => {
-	const [isPinConfiguratorOpen, setIsPinConfiguratorOpen] = React.useState(false);
 	const [contextMenuState, setContextMenuState] = React.useState<'left' | 'right' | 'closed'>('closed');
 
 	const pinRef = React.useRef<HTMLDivElement>(null);
@@ -134,47 +129,33 @@ const BoxPin = React.forwardRef(({
 	};
 
 	return (
-		<>
+		<div
+			ref={ref}
+			className='pin'>
 			<div
-				ref={ref}
-				className='pin'>
-				<div
-					ref={pinRef}
-					onClick={() => clickHandler('left')}
-					className={leftDotClass}/>
-				<div className="pin__info">
-					<div className="pin__info-value">{pin.name}</div>
-					<div className="pin__info-value">{pin['connection-type']}</div>
-				</div>
-				<div
-					ref={pinRef}
-					onClick={() => clickHandler('right')}
-					className={rightDotClass}/>
-				<ContextMenu
-					state={contextMenuState}
-					togglePinConfigurator={() => {
-						setIsPinConfiguratorOpen(!isPinConfiguratorOpen);
-						onPinConfiguratorStateChange(false);
-					}}
-					closeContextMenu={() => {
-						setContextMenuState('closed');
-						onContextMenuStateChange(false);
-					}}
-					deletePinConnections={() => deletePinConnections(pin, box.name)}
-				/>
+				ref={pinRef}
+				onClick={() => clickHandler('left')}
+				className={leftDotClass}/>
+			<div className="pin__info">
+				<div className="pin__info-value">{pin.name}</div>
+				<div className="pin__info-value">{pin['connection-type']}</div>
 			</div>
-			<ModalPortal isOpen={isPinConfiguratorOpen}>
-				<PinConfigurator
-					pin={pin}
-					configuratePin={configuratePin}
-					boxName={box.name}
-					onClose={() => {
-						setIsPinConfiguratorOpen(false);
-						onPinConfiguratorStateChange(false);
-					}}
-				/>
-			</ModalPortal>
-		</>
+			<div
+				ref={pinRef}
+				onClick={() => clickHandler('right')}
+				className={rightDotClass}/>
+			<ContextMenu
+				state={contextMenuState}
+				togglePinConfigurator={() => {
+					setEditablePin(pin);
+				}}
+				closeContextMenu={() => {
+					setContextMenuState('closed');
+					onContextMenuStateChange(false);
+				}}
+				deletePinConnections={() => deletePinConnections(pin, box.name)}
+			/>
+		</div>
 	);
 });
 

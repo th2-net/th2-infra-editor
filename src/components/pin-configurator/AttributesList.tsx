@@ -65,7 +65,6 @@ const Attribute = ({
 					: (
 						<>
 							<input
-								id={attributeInput.bind.id}
 								type="text"
 								className='box-settings__input'
 								{...attributeInput.bind}/>
@@ -147,7 +146,6 @@ const AttributesList = ({
 						isAddAttributeFormOpen
 						&& <div className="pin-configurator__attribute">
 							<input
-								id={addInput.bind.id}
 								type="text"
 								className='box-settings__input'
 								{...addInput.bind}/>

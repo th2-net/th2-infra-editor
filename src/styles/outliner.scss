@@ -7,7 +7,7 @@
     &__list {
         @include scrollbar;
 
-        height: 50%;
+        height: calc(100% / 3);
         background-color: #ECF4F9;
         overflow-y: auto;
         border: 1px solid #00997F;
@@ -97,7 +97,11 @@
 				
 				&.delete {
 					@include icon(url(../../resources/icons/trash-grey.svg), 16px, 16px);
-				}
+                }
+                
+                &.download {
+					@include icon(url(../../resources/icons/download.svg), 16px, 16px);
+                }
             }
         }
     }

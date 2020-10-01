@@ -16,9 +16,10 @@
 import React from 'react';
 import { ModalPortal } from '../util/Portal';
 import BoxSettings from '../box/BoxSettings';
-import { BoxEntity } from '../../models/Box';
+import { BoxEntity, Pin } from '../../models/Box';
 import { createBemElement } from '../../helpers/styleCreators';
 import { DictionaryRelation } from '../../models/Dictionary';
+import PinConfigurator from '../pin-configurator/PinConfigurator';
 
 interface OutlinerBoxListItemProps {
 	box: BoxEntity;
@@ -91,6 +92,8 @@ interface OutlinerBoxListProps {
 	activeBox: BoxEntity | null;
 	configurateBox: (box: BoxEntity, dictionaryRelation: DictionaryRelation[]) => void;
 	dictionaryLinks: DictionaryRelation[];
+	dictionaryNamesList: string[];
+	configuratePin: (pin: Pin, boxName: string) => void;
 }
 
 const OutlinerBoxList = ({
@@ -100,8 +103,14 @@ const OutlinerBoxList = ({
 	activeBox,
 	configurateBox,
 	dictionaryLinks,
+	dictionaryNamesList,
+	configuratePin,
 }: OutlinerBoxListProps) => {
 	const [editableBox, setEditableBox] = React.useState<BoxEntity | null>(null);
+	const [editablePin, setEditablePin] = React.useState<{
+		pin: Pin;
+		box: string;
+	} | null>(null);
 	const [isBoxCreateModalOpen, setIsBoxCreateModalOpen] = React.useState(false);
 
 	return (
@@ -128,6 +137,27 @@ const OutlinerBoxList = ({
 						configurateBox={configurateBox}
 						onClose={() => setIsBoxCreateModalOpen(false)}
 						relatedDictionary={dictionaryLinks.filter(link => link.box === editableBox.name)}
+						dictionaryNamesList={dictionaryNamesList}
+						setEditablePin={pin => {
+							setEditablePin({
+								pin,
+								box: editableBox.name,
+							});
+							setIsBoxCreateModalOpen(false);
+						}}
+					/>
+				</ModalPortal>
+			}
+			{
+				editablePin !== null
+				&& <ModalPortal isOpen={Boolean(editablePin)}>
+					<PinConfigurator
+						pin={editablePin.pin}
+						configuratePin={configuratePin}
+						boxName={editablePin.box}
+						onClose={() => {
+							setEditablePin(null);
+						}}
 					/>
 				</ModalPortal>
 			}
