@@ -40,7 +40,7 @@ export default class Api {
 		return res.json();
 	}
 
-	async createNewSchema(schemaName: string): Promise<Schema> {
+	async createSchema(schemaName: string): Promise<Schema> {
 		const res = await fetch(`backend/schema/${schemaName}`, {
 			method: 'PUT',
 		});

@@ -21,13 +21,15 @@ import { ModalPortal } from './util/Portal';
 import useSchemasStore from '../hooks/useSchemasStore';
 import '../styles/header.scss';
 import { createBemElement } from '../helpers/styleCreators';
+import DictionaryModal from './dictionary/DictionaryModal';
 
 const Header = () => {
 	const schemasStore = useSchemasStore();
 
 	const [isCreateBoxModalOpen, setIsCreateBoxModalOpen] = React.useState(false);
+	const [isCreateDictionaryModalOpen, setIsCreateDictionaryModalOpen] = React.useState(false);
 
-	const createNewSchema = () => {
+	const createSchema = () => {
 		// eslint-disable-next-line no-alert
 		const schemaName = prompt('Schema name');
 		if (schemaName === null) {
@@ -40,7 +42,7 @@ const Header = () => {
 			&& !trimmedValue.includes('_')
 			&& !/[A-Z]/g.test(trimmedValue)
 		) {
-			schemasStore.createNewSchema(schemaName);
+			schemasStore.createSchema(schemaName);
 		} else {
 			// eslint-disable-next-line no-alert
 			alert('Invalid schema name');
@@ -72,18 +74,34 @@ const Header = () => {
 			<button
 				className="header__button"
 				onClick={() => setIsCreateBoxModalOpen(!isCreateBoxModalOpen)}>
-				Create new resource
+				Create resource
 			</button>
-			<button className="header__button" onClick={createNewSchema}>
-				Create new schema
+			<button className="header__button" onClick={createSchema}>
+				Create schema
+			</button>
+			<button
+				className="header__button"
+				onClick={
+					() => setIsCreateDictionaryModalOpen(!isCreateDictionaryModalOpen)
+				}>
+				Create dictionary
 			</button>
 			<button className={saveButtonClass} onClick={schemasStore.saveChanges}>
 				Save changes
 			</button>
-			<ModalPortal isOpen={isCreateBoxModalOpen}>
+			<ModalPortal
+				isOpen={isCreateBoxModalOpen}
+				closeModal={() => setIsCreateBoxModalOpen(false)}>
 				<CreateBoxModal
-					createNewBox={schemasStore.createNewBox}
+					createBox={schemasStore.createBox}
 					onClose={() => setIsCreateBoxModalOpen(false)}
+				/>
+			</ModalPortal>
+			<ModalPortal
+				isOpen={isCreateDictionaryModalOpen}
+				closeModal={() => setIsCreateDictionaryModalOpen(false)} >
+				<DictionaryModal
+					onClose={() => setIsCreateDictionaryModalOpen(false)}
 				/>
 			</ModalPortal>
 		</div>

@@ -50,7 +50,8 @@ const Outliner = () => {
 					outlinerSelectedLink={connectionStore.outlinerSelectedLink}
 					boxes={schemasStore.boxes} />
 				<OutlinerDictionaryList
-					dictionaryList={schemasStore.dictionaryList} />
+					dictionaryList={schemasStore.dictionaryList}
+					deleteDictionary={schemasStore.deleteDictionary} />
 			</div>
 		</>
 	);

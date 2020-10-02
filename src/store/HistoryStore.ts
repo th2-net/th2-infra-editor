@@ -16,6 +16,7 @@
 
 import { action, computed, observable } from 'mobx';
 import { isBoxEntity } from '../models/Box';
+import { isDictionaryEntity } from '../models/Dictionary';
 import { Change, Snapshot } from '../models/History';
 import { isLink } from '../models/LinksDefinition';
 import Stack from '../models/Stack';
@@ -69,12 +70,16 @@ export default class HistoryStore {
 			if (isLink(change.to)) {
 				this.rootStore.schemaStore.connectionStore.deleteConnection(change.to, false);
 			}
+			if (isDictionaryEntity(change.to)) {
+				this.rootStore.schemaStore.deleteDictionary(change.to.name, false);
+			}
 			return;
 		}
 		if (!change.to && change.from) {
 			if (isBoxEntity(change.from)) {
-				this.rootStore.schemaStore.createNewBox(change.from, false);
-			} else {
+				this.rootStore.schemaStore.createBox(change.from, false);
+			}
+			if (isLink(change.from)) {
 				this.rootStore.schemaStore
 					.connectionStore.setConnection(
 						change.object,
@@ -88,6 +93,9 @@ export default class HistoryStore {
 						},
 					);
 			}
+			if (isDictionaryEntity(change.from)) {
+				this.rootStore.schemaStore.createDictionary(change.from, false);
+			}
 			return;
 		}
 		if (isBoxEntity(change.from) && isBoxEntity(change.to)) {
@@ -96,13 +104,16 @@ export default class HistoryStore {
 				change.from,
 			]);
 		}
+		if (isDictionaryEntity(change.from) && isDictionaryEntity(change.to)) {
+			this.rootStore.schemaStore.configurateDictionary(change.from);
+		}
 	};
 
 	@action
 	private applyChange = (change: Change) => {
 		if (!change.from) {
 			if (isBoxEntity(change.to)) {
-				this.rootStore.schemaStore.createNewBox(change.to, false);
+				this.rootStore.schemaStore.createBox(change.to, false);
 			}
 			if (isLink(change.to)) {
 				this.rootStore.schemaStore
@@ -118,13 +129,22 @@ export default class HistoryStore {
 						},
 					);
 			}
+			if (isDictionaryEntity(change.to)) {
+				this.rootStore.schemaStore
+					.createDictionary(change.to, false);
+			}
 			return;
 		}
 		if (!change.to) {
 			if (isBoxEntity(change.from)) {
 				this.rootStore.schemaStore.deleteBox(change.from.name, false);
-			} else {
+			}
+			if (isLink(change.from)) {
 				this.rootStore.schemaStore.connectionStore.deleteConnection(change.from, false);
+			}
+			if (isDictionaryEntity(change.from)) {
+				this.rootStore.schemaStore
+					.deleteDictionary(change.from.name, false);
 			}
 			return;
 		}
@@ -133,6 +153,9 @@ export default class HistoryStore {
 				...this.rootStore.schemaStore.boxes.filter(box => box.name !== change.from?.name),
 				change.to,
 			]);
+		}
+		if (isDictionaryEntity(change.from) && isDictionaryEntity(change.to)) {
+			this.rootStore.schemaStore.configurateDictionary(change.to);
 		}
 	};
 

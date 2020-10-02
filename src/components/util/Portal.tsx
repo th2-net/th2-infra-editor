@@ -16,6 +16,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useKeyPress } from '../../hooks/useKeyPress';
 
 const modalRoot = document.getElementById('modal-root');
 
@@ -42,14 +43,24 @@ interface ModalPortalProps {
 	closeDelay?: number;
 	children: React.ReactNode;
 	isOpen: boolean;
+	closeModal?: () => void;
 }
 
 export const ModalPortal = ({
 	closeDelay = 0,
 	children,
 	isOpen,
+	closeModal,
 }: ModalPortalProps) => {
 	const [isShown, setIsShown] = React.useState(false);
+
+	const isEscPressed = useKeyPress('Escape');
+
+	React.useEffect(() => {
+		if (isEscPressed && closeModal) {
+			closeModal();
+		}
+	}, [isEscPressed]);
 
 	React.useEffect(() => {
 		if (!isOpen && closeDelay !== 0) {

@@ -122,7 +122,7 @@ export default class SchemasStore {
 	};
 
 	@action
-	public createNewBox = (newBox: BoxEntity, createSnapshot = true) => {
+	public createBox = (newBox: BoxEntity, createSnapshot = true) => {
 		if (!this.selectedSchema) return;
 
 		if (this.boxes.find(box => box.name === newBox.name)) {
@@ -151,6 +151,43 @@ export default class SchemasStore {
 
 	@action setActivePin = (pin: Pin | null) => {
 		this.activePin = pin;
+	};
+
+	@action
+	public createDictionary = (dictionary: DictionaryEntity, createSnapshot = true) => {
+		this.dictionaryList.push(dictionary);
+		this.saveBoxChanges(dictionary, 'add');
+		if (createSnapshot) {
+			this.historyStore.addSnapshot({
+				changeList: [
+					{
+						object: dictionary.name,
+						from: null,
+						to: JSON.parse(JSON.stringify(dictionary)),
+					},
+				],
+			});
+		}
+	};
+
+	@action
+	public deleteDictionary = (dictionaryName: string, createSnapshot = true) => {
+		const oldValue = JSON.parse(JSON.stringify(
+			this.dictionaryList.find(dictionary => dictionary.name === dictionaryName),
+		));
+		this.dictionaryList = this.dictionaryList.filter(dictionary => dictionary.name !== dictionaryName);
+
+		if (createSnapshot) {
+			this.historyStore.addSnapshot({
+				changeList: [
+					{
+						object: dictionaryName,
+						from: oldValue,
+						to: null,
+					},
+				],
+			});
+		}
 	};
 
 	@action
@@ -207,8 +244,8 @@ export default class SchemasStore {
 	};
 
 	@action
-	public createNewSchema = async (schemaName: string) => {
-		await this.api.createNewSchema(schemaName);
+	public createSchema = async (schemaName: string) => {
+		await this.api.createSchema(schemaName);
 		this.schemas.push(schemaName);
 		this.selectedSchema = schemaName;
 	};
@@ -251,7 +288,7 @@ export default class SchemasStore {
 
 	@action
 	public saveBoxChanges = (
-		updatedBox: BoxEntity | LinksDefinition | DictionaryLinksEntity,
+		updatedBox: BoxEntity | LinksDefinition | DictionaryLinksEntity | DictionaryEntity,
 		operation: 'add' | 'update' | 'remove',
 	) => {
 		if (!this.preparedRequests.some(request => request.payload === updatedBox && request.operation === operation)) {
@@ -348,6 +385,28 @@ export default class SchemasStore {
 				});
 			}
 		}
+	};
+
+	@action
+	public configurateDictionary = (dictionaryEntity: DictionaryEntity) => {
+		const oldValue = JSON.parse(JSON.stringify(
+			this.dictionaryList.find(dictionary => dictionary.name === dictionaryEntity.name),
+		));
+		this.dictionaryList = [
+			...this.dictionaryList.filter(dictionary => dictionary.name !== dictionaryEntity.name),
+			dictionaryEntity,
+		];
+		const newValue = JSON.parse(JSON.stringify(dictionaryEntity));
+		this.saveBoxChanges(dictionaryEntity, 'update');
+		this.historyStore.addSnapshot({
+			changeList: [
+				{
+					object: dictionaryEntity.name,
+					from: oldValue,
+					to: newValue,
+				},
+			],
+		});
 	};
 
 	@action

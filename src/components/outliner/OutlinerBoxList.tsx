@@ -131,7 +131,9 @@ const OutlinerBoxList = ({
 			</div>
 			{
 				editableBox !== null
-				&& <ModalPortal isOpen={isBoxCreateModalOpen}>
+				&& <ModalPortal
+					isOpen={isBoxCreateModalOpen}
+					closeModal={() => setIsBoxCreateModalOpen(false)}>
 					<BoxSettings
 						box={editableBox}
 						configurateBox={configurateBox}
@@ -150,7 +152,9 @@ const OutlinerBoxList = ({
 			}
 			{
 				editablePin !== null
-				&& <ModalPortal isOpen={Boolean(editablePin)}>
+				&& <ModalPortal
+					isOpen={Boolean(editablePin)}
+					closeModal={() => setEditablePin(null)}>
 					<PinConfigurator
 						pin={editablePin.pin}
 						configuratePin={configuratePin}

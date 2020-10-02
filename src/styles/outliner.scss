@@ -23,12 +23,16 @@
         }
 
         &-item {
+            min-height: 85px;
             background-color: white;
             border-radius: 4px;
             margin-bottom: 10px;
             border: 1px solid #00997F;
             padding: 5px 40px 5px 10px;
             position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
 
             &.highlighted {
                 border-color: rgb(24, 150, 260);

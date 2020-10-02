@@ -21,12 +21,12 @@ import { useInput } from '../../hooks/useInput';
 import Input from '../util/Input';
 
 interface CreateBoxModalProps {
-	createNewBox: (box: BoxEntity) => void;
+	createBox: (box: BoxEntity) => void;
 	onClose: () => void;
 }
 
 const CreateBoxModal = ({
-	createNewBox,
+	createBox,
 	onClose,
 }: CreateBoxModalProps) => {
 	const modalRef = React.useRef<HTMLDivElement>(null);
@@ -75,7 +75,7 @@ const CreateBoxModal = ({
 
 	const inputs = [nameInput, kindInput, imageNameInput, imageVersionInput, nodePortInput];
 
-	const createBox = () => {
+	const createNewBox = () => {
 		if (inputs.every(inputConfig => inputConfig.isValid)) {
 			const inputValues = inputs.map(inputConfig => inputConfig.value.trim());
 			const [
@@ -87,7 +87,7 @@ const CreateBoxModal = ({
 			}
 
 			if (inputValues.every(Boolean) && typeof nodePort === 'number' && nodePort <= 65535) {
-				createNewBox({
+				createBox({
 					name,
 					kind,
 					spec: {
@@ -121,7 +121,7 @@ const CreateBoxModal = ({
 				}
 			</div>
 			<div className="box-modal__buttons">
-				<button onClick={createBox} className="box-modal__button">
+				<button onClick={createNewBox} className="box-modal__button">
 					Submit
 				</button>
 				<button onClick={onClose} className="box-modal__button">
