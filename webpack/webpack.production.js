@@ -23,7 +23,6 @@ const { appBuild, appPath, appSrc } = require('./paths');
 module.exports = webpackMerge(commonConfig, {
     output: {
         path: path.resolve(appBuild, 'out'),
-        publicPath: '/',
         filename: '[name].bundle.js',
         chunkFilename: '[name].bundle.js',
     },
