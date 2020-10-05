@@ -20,6 +20,6 @@ import Schema from '../models/Schema';
 export default interface ApiSchema {
     fetchSchemasList: () => Promise<string[]>;
     fetchSchemaState: (schemaName: string, abortSignal: AbortSignal) => Promise<Schema>;
-    createNewSchema: (schemaName: string) => Promise<Schema>;
+    createSchema: (schemaName: string) => Promise<Schema>;
     sendSchemaRequest: (schemaName: string, schema: RequestModel[]) => Promise<boolean>;
 }

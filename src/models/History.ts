@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import { BoxEntity } from './Box';
+import { DictionaryEntity } from './Dictionary';
 import { Link } from './LinksDefinition';
 
 export interface Snapshot {
@@ -23,6 +24,6 @@ export interface Snapshot {
 
 export interface Change {
 	object: string;
-	from: BoxEntity | Link | null;
-	to: BoxEntity | Link | null;
+	from: BoxEntity | Link | DictionaryEntity | null;
+	to: BoxEntity | Link | DictionaryEntity | null;
 }

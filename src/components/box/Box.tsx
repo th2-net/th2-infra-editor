@@ -67,7 +67,7 @@ const Box = ({ box, groupsTopOffset, titleHeight }: Props, ref: React.Ref<BoxMet
 
 	React.useEffect(() => {
 		sendCoords();
-	}, [pinsRefs, groupsTopOffset, titleHeight]);
+	}, [pinsRefs, groupsTopOffset, titleHeight, schemasStore.boxes]);
 
 	useImperativeHandle(
 		ref,
@@ -268,7 +268,10 @@ const Box = ({ box, groupsTopOffset, titleHeight }: Props, ref: React.Ref<BoxMet
 					/>
 				))}
 			</div>
-			<ModalPortal isOpen={isModalOpen}>
+			<ModalPortal
+				isOpen={isModalOpen}
+				closeModal={() => setIsModalOpen(false)}
+			>
 				<BoxSettings
 					box={box}
 					configurateBox={schemasStore.configurateBox}
@@ -289,7 +292,9 @@ const Box = ({ box, groupsTopOffset, titleHeight }: Props, ref: React.Ref<BoxMet
 			</ModalPortal>
 			{
 				editablePin
-				&& <ModalPortal isOpen={Boolean(editablePin)}>
+				&& <ModalPortal
+					isOpen={Boolean(editablePin)}
+					closeModal={() => setEditablePin(null)}>
 					<PinConfigurator
 						pin={editablePin}
 						configuratePin={schemasStore.configuratePin}

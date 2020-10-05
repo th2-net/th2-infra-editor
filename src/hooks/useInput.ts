@@ -60,6 +60,10 @@ export const useInput = ({
 	const [isDirty, setIsDirty] = React.useState(false);
 
 	React.useEffect(() => {
+		setValue(initialValue);
+	}, [initialValue]);
+
+	React.useEffect(() => {
 		if (validate) {
 			setIsValid(validate(value));
 		}

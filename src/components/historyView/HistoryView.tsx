@@ -19,10 +19,12 @@ import { observer } from 'mobx-react-lite';
 import { diff } from 'deep-object-diff';
 import '../../styles/history.scss';
 import useHistoryStore from '../../hooks/useHistoryStore';
-import { Snapshot } from '../../models/History';
+import { Change, Snapshot } from '../../models/History';
 import { isBoxEntity } from '../../models/Box';
 import { useKeyPress } from '../../hooks/useKeyPress';
 import { createBemBlock } from '../../helpers/styleCreators';
+import { isLink } from '../../models/LinksDefinition';
+import { isDictionaryEntity } from '../../models/Dictionary';
 
 interface HistoryItemProps {
 	snapshot: Snapshot;
@@ -32,51 +34,75 @@ interface HistoryItemProps {
 const HistoryItem = ({
 	snapshot,
 	isLastAppiled,
-}: HistoryItemProps) => (
-	<div
-		className={
-			createBemBlock(
-				'history-item',
-				isLastAppiled ? 'applied' : null,
-			)
-		}>
-		{
-			snapshot.changeList.map(change => (
-				<>
-					<h3
-						style={{
-							borderBottom: (change.from || change.to) ? 'none' : '1px solid #00997F',
-						}}
-						className="history-item-object">
-						{!change.from
-							? `${isBoxEntity(change.to) ? 'Resource' : 'Connection'} "${change.object}" was added`
-							: !change.to
-								? `${isBoxEntity(change.from)
-									? 'Resource' : 'Connection'} "${change.object}" was deleted`
-								: `${isBoxEntity(change.from)
-									? 'Resource' : 'Connection'} "${change.object}"`}
-					</h3>
-					{change.from && change.to && (
-						<div className="history-item-change">
-							<div className="history-item-change-state">
-								<span className="history-item-change-key">From:</span>
-								<pre className="history-item-change-value">
-									{JSON.stringify(diff(change.to, change.from), null, 4)}
-								</pre>
-							</div>
-							<div className="history-item-change-state">
-								<span className="history-item-change-key">To:</span>
-								<pre className="history-item-change-value">
-									{JSON.stringify(diff(change.from, change.to), null, 4)}
-								</pre>
-							</div>
-						</div>
-					)}
-				</>
-			))
+}: HistoryItemProps) => {
+	const getSnapshotTitle = (change: Change) => {
+		if (!change.from) {
+			const titlePart = `"${change.object}" was added`;
+			if (isBoxEntity(change.to)) {
+				return `Resource ${titlePart}`;
+			}
+			if (isLink(change.to)) {
+				return `Connection ${titlePart}`;
+			}
+			return `Dictionary ${titlePart}`;
 		}
-	</div>
-);
+		if (!change.to) {
+			const titlePart = `"${change.object}" was deleted`;
+			if (isBoxEntity(change.from)) {
+				return `Resource ${titlePart}`;
+			}
+			if (isLink(change.from)) {
+				return `Connection ${titlePart}`;
+			}
+			return `Dictionary ${titlePart}`;
+		}
+		if (isDictionaryEntity(change.from)) {
+			return `Dictionary "${change.object}" was changed`;
+		}
+		return `${isBoxEntity(change.from)
+			? 'Resource' : 'Connection'} "${change.object}"`;
+	};
+
+	return (
+		<div
+			className={
+				createBemBlock(
+					'history-item',
+					isLastAppiled ? 'applied' : null,
+				)
+			}>
+			{
+				snapshot.changeList.map((change, index) => (
+					<React.Fragment key={`${change.object}${index}}`}>
+						<h3
+							style={{
+								borderBottom: (change.from || change.to) ? 'none' : '1px solid #00997F',
+							}}
+							className="history-item-object">
+							{getSnapshotTitle(change)}
+						</h3>
+						{change.from && change.to && !isDictionaryEntity(change.from) && (
+							<div className="history-item-change">
+								<div className="history-item-change-state">
+									<span className="history-item-change-key">From:</span>
+									<pre className="history-item-change-value">
+										{JSON.stringify(diff(change.to, change.from), null, 4)}
+									</pre>
+								</div>
+								<div className="history-item-change-state">
+									<span className="history-item-change-key">To:</span>
+									<pre className="history-item-change-value">
+										{JSON.stringify(diff(change.from, change.to), null, 4)}
+									</pre>
+								</div>
+							</div>
+						)}
+					</React.Fragment>
+				))
+			}
+		</div>
+	);
+};
 
 const HistoryView = () => {
 	const historyStore = useHistoryStore();

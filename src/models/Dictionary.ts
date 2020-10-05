@@ -41,13 +41,14 @@ export interface DictionaryLinksEntity extends FileBase {
 	};
 }
 
-export function isDictionaryEntity(file: FileBase): file is DictionaryEntity {
+export function isDictionaryEntity(file: unknown): file is DictionaryEntity {
 	return (typeof file === 'object'
 		&& file !== null
+		&& (file as DictionaryEntity).spec !== undefined
 		&& (file as DictionaryEntity).spec.data !== undefined);
 }
 
-export function isDictionaryLinksEntity(file: FileBase): file is DictionaryEntity {
+export function isDictionaryLinksEntity(file: unknown): file is DictionaryEntity {
 	return (typeof file === 'object'
 		&& file !== null
 		&& (file as DictionaryLinksEntity).spec['dictionaries-relation'] !== undefined);

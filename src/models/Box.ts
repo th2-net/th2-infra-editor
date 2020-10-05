@@ -76,5 +76,6 @@ export interface ConnectionArrow {
 export function isBoxEntity(object: unknown): object is BoxEntity {
 	return (typeof object === 'object'
 		&& object !== null
-		&& (object as BoxEntity).kind !== undefined);
+		&& (object as BoxEntity).kind !== undefined)
+		&& (object as BoxEntity).spec['image-name'] !== undefined;
 }
