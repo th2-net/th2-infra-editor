@@ -14,11 +14,13 @@
  * limitations under the License.
  ******************************************************************************/
 
-$appBackgroundColor: #E1E8ED;
+$appBackgroundColor: #BDCCDB;
 
-$primaryColor: #00997F;
+$headerColor: #7A99B8;
 
-$secondaryColor: #808080;
+$headerSelectBorderColor: #7A99B8;
+
+$primaryColor: #7A99B8;
 
 $scrollbarThumbBackground: rgba(#808080, 0.25);
 
@@ -26,9 +28,16 @@ $scrollbarTrackBackground: rgba(0,0,0,0);
 
 $primaryTextColor: #333333;
 
-$secondaryTextColor: #808080;
+$secondaryTextColor: #666666;
 
-$boxBoderColor: #1481B8;
+$transparentButtonFontColor: #8C8C8C;
+
+$boxHeaderColor: #FF9966;
 
 $spinnerOuterColor: #00997F;
 $spinnerInnerColor: rgba(0, 0, 0, 0.2);
+
+$modalColor: white;
+$modalHeaderColor: #7A99B8;
+$modalBorderColor: #7A99B8;
+$modalTitleColor: white;

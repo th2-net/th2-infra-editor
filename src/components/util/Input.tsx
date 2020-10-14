@@ -17,7 +17,7 @@
 
 import React from 'react';
 import { InputConfig } from '../../hooks/useInput';
-import { createBemElement } from '../../helpers/styleCreators';
+import { createBemBlock } from '../../helpers/styleCreators';
 
 interface InputProps {
 	inputConfig: InputConfig;
@@ -26,18 +26,17 @@ interface InputProps {
 const Input = ({
 	inputConfig,
 }: InputProps) => {
-	const inputClass = createBemElement(
-		'box-settings',
+	const inputClass = createBemBlock(
 		'input',
 		!inputConfig.isValid && inputConfig.isDirty ? 'invalid' : '',
 	);
 
 	return (
 		<div
-			className="box-settings__group">
+			className="input-wrapper">
 			<label
 				htmlFor={inputConfig.bind.id}
-				className="box-settings__label">
+				className="input-label">
 				{inputConfig.label}
 			</label>
 			<input

@@ -17,6 +17,8 @@
 
 import React from 'react';
 import { useInput } from '../../hooks/useInput';
+import FormModal from '../util/FormModal';
+import { ModalPortal } from '../util/Portal';
 
 interface AttributeProps {
 	attribute: string;
@@ -24,78 +26,12 @@ interface AttributeProps {
 	removeAttribute: (attribute: string) => void;
 }
 
-const Attribute = ({
-	attribute,
-	changeAttribute,
-	removeAttribute,
-}: AttributeProps) => {
-	const [isEdited, setIsEdited] = React.useState(false);
-	const [savedValue, setSavedValue] = React.useState('');
-
-	const attributeInput = useInput({
-		initialValue: attribute,
-		id: `attribute-${attribute}`,
-		name: 'attribute',
-	});
-
-	return (
-		<div className="pin-configurator__attribute">
-			{
-				!isEdited
-					? (
-						<>
-							<div className='pin-configurator__attribute-value'>
-								{attributeInput.value}
-							</div>
-							<button
-								onClick={() => {
-									setSavedValue(attributeInput.value);
-									setIsEdited(true);
-								}}
-								className='pin-configurator__attribute-button'>
-								<i className='pin-configurator__attribute-button-icon edit'></i>
-							</button>
-							<button
-								onClick={() => removeAttribute(attribute)}
-								className='pin-configurator__attribute-button'>
-								<i className='pin-configurator__attribute-button-icon delete'></i>
-							</button>
-						</>
-					)
-					: (
-						<>
-							<input
-								type="text"
-								className='box-settings__input'
-								{...attributeInput.bind}/>
-							<button
-								onClick={() => {
-									setIsEdited(false);
-									changeAttribute(attribute, attributeInput.value);
-								}}
-								className='pin-configurator__attribute-button'>
-								<i className='pin-configurator__attribute-button-icon submit'></i>
-							</button>
-							<button
-								onClick={() => {
-									attributeInput.setValue(savedValue);
-									setIsEdited(false);
-								}}
-								className='pin-configurator__attribute-button'>
-								<i className='pin-configurator__attribute-button-icon close'></i>
-							</button>
-						</>
-					)
-			}
-		</div>
-	);
-};
-
 interface AttributesListProps {
 	attributes: string[];
 	addAttribute: (attribute: string) => void;
 	removeAttribute: (attribute: string) => void;
 	changeAttributesList: (attributes: string[]) => void;
+	isFormOpen: boolean;
 }
 
 const AttributesList = ({
@@ -103,73 +39,82 @@ const AttributesList = ({
 	addAttribute,
 	removeAttribute,
 	changeAttributesList,
+	isFormOpen,
 }: AttributesListProps) => {
-	const [isAddAttributeFormOpen, setIsAddAttributeFormOpen] = React.useState(false);
+	const [isAttributeFormOpen, setIsAttributeFormOpen] = React.useState(isFormOpen);
+	const [editableAttribute, setEditableAttribute] = React.useState<string | null>(null);
 
-	const addInput = useInput({
-		initialValue: '',
-		id: 'pin-attribute',
+	React.useEffect(() => {
+		setIsAttributeFormOpen(isFormOpen);
+		if (isFormOpen) {
+			setEditableAttribute(null);
+		}
+	}, [isFormOpen]);
+
+	const attributeInput = useInput({
+		initialValue: editableAttribute ?? '',
+		id: 'attribute-name',
+		label: 'Name',
 	});
 
-	const addNewAttribute = () => {
-		addAttribute(addInput.value);
-		setIsAddAttributeFormOpen(false);
-	};
-
-	const changeAttribute = (oldValue: string, newValue: string) => {
-		const attributeIndex = attributes.findIndex(attribute => attribute === oldValue);
-		changeAttributesList([
-			...attributes.slice(0, attributeIndex),
-			newValue,
-			...attributes.slice(attributeIndex + 1, attributes.length),
-		]);
+	const submitForm = () => {
+		if (editableAttribute) {
+			const attributeIndex = attributes.findIndex(attribute => attribute === editableAttribute);
+			changeAttributesList([
+				...attributes.slice(0, attributeIndex),
+				attributeInput.value,
+				...attributes.slice(attributeIndex + 1, attributes.length),
+			]);
+		} else {
+			addAttribute(attributeInput.value);
+		}
+		setIsAttributeFormOpen(false);
 	};
 
 	return (
-    	<div
-			className="box-settings__group">
-			<span
-				className="box-settings__label">
-				Attributes
-			</span>
-			<div className="pin-configurator__attributes-list-wrapper">
-				<div className="pin-configurator__attributes-list">
-					{
-						attributes && attributes.map(attribute =>
-							<Attribute
+		<>
+			<div className="modal__elements-list">
+				{
+					attributes.length > 0
+						? attributes.map(attribute =>
+							<div
 								key={attribute}
-								attribute={attribute}
-								changeAttribute={changeAttribute}
-								removeAttribute={removeAttribute}/>)
-					}
-					{
-						isAddAttributeFormOpen
-						&& <div className="pin-configurator__attribute">
-							<input
-								type="text"
-								className='box-settings__input'
-								{...addInput.bind}/>
-							<button
-								onClick={() => addNewAttribute()}
-								className='pin-configurator__attribute-button'>
-								<i className='pin-configurator__attribute-button-icon submit'></i>
-							</button>
-							<button
-								onClick={() => setIsAddAttributeFormOpen(false)}
-								className='pin-configurator__attribute-button'>
-								<i className='pin-configurator__attribute-button-icon close'></i>
-							</button>
+								className="modal__elements-item">
+								<span className="modal__elements-item-name">
+									{attribute}
+								</span>
+								<div className="modal__elements-item-buttons-wrapper">
+									<button
+										onClick={() => {
+											setEditableAttribute(attribute);
+											setIsAttributeFormOpen(true);
+										}}
+										className="modal__elements-item-button edit">
+										<i className="modal__elements-item-button-icon" />
+									</button>
+									<button
+										onClick={() => removeAttribute(attribute)}
+										className="modal__elements-item-button delete">
+										<i className="modal__elements-item-button-icon" />
+									</button>
+								</div>
+							</div>)
+						: <div className="modal__empty">
+							Attributes list is empty
 						</div>
-					}
-				</div>
-				<div className="pin-configurator__buttons">
-					<button
-						onClick={() => setIsAddAttributeFormOpen(true)}
-						className="pin-configurator__button"
-					>Add</button>
-				</div>
+				}
 			</div>
-		</div>
+			{
+				<ModalPortal isOpen={isAttributeFormOpen}>
+					<FormModal
+						title={editableAttribute ?? 'Create attribute'}
+						inputConfigList={[attributeInput]}
+						onSubmit={submitForm}
+						onClose={() => setEditableAttribute(null)}
+					/>
+				</ModalPortal>
+			}
+		</>
 	);
 };
 

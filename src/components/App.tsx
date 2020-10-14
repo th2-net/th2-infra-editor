@@ -20,16 +20,32 @@ import Header from './Header';
 import Groups from './groups/Groups';
 import useRootStore from '../hooks/useRootStore';
 import '../styles/root.scss';
-import Outliner from './outliner/Outliner';
 import SplashScreen from './SplashScreen';
-import HistoryView from './historyView/HistoryView';
+import useHistoryStore from '../hooks/useHistoryStore';
+import { useKeyPress } from '../hooks/useKeyPress';
 
 function App() {
 	const { rootStore } = useRootStore();
+	const historyStore = useHistoryStore();
 
 	React.useEffect(() => {
 		rootStore.init();
 	}, []);
+
+	const isCtrlKeyPressed = useKeyPress('Control');
+	const isZKeyPressed = useKeyPress('z');
+	const isYKeyPressed = useKeyPress('y');
+
+	React.useEffect(() => {
+		if (isCtrlKeyPressed) {
+			if (isZKeyPressed) {
+				historyStore.toPreviousSnapshot();
+			}
+			if (isYKeyPressed) {
+				historyStore.toNextSnapshot();
+			}
+		}
+	}, [isCtrlKeyPressed, isZKeyPressed, isYKeyPressed]);
 
 	return (
 		<div className="root">
@@ -38,11 +54,7 @@ function App() {
 				rootStore.schemaStore.isLoading
 					? <SplashScreen />
 					: rootStore.schemaStore.boxes.length > 0
-					&& <>
-						<Groups />
-						<HistoryView />
-						<Outliner />
-					</>
+					&& <Groups />
 			}
 		</div>
 	);

@@ -1,0 +1,239 @@
+/******************************************************************************
+* Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+******************************************************************************/
+
+@import './common/vars';
+
+.element {
+	width: 100%;
+	background-color:  white;
+	flex-shrink: 0;
+	position: relative;
+	z-index: 2;
+	overflow-wrap: break-word;
+	box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.25);
+	border-radius: 9px;
+	margin: 17px 2px;
+    box-sizing: content-box;
+    
+    &:hover &__buttons-wrapper {
+        display: flex;
+    }
+
+	&.active {
+		box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.35);
+		margin: -2px 0;
+		border: 2px solid #ff7733;
+	}
+
+	&.empty &__header {
+		border-radius: 6px;
+	}
+
+	&__header {
+		background: $primaryColor;
+		min-height: 25px;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		align-content: center;
+		padding: 0 10px;
+		border-radius: 6px 6px 0 0;
+
+		&-icon {
+			display: inline-block;
+			margin-right: 5px;
+			
+			&.boxes {
+				@include icon(url('../../resources/icons/box-active.svg'));
+			}
+
+			&.link {
+				@include icon(url('../../resources/icons/link-active.svg'));
+			}
+
+			&.dictionary {
+				@include icon(url('../../resources/icons/dictionary-active.svg'));
+			}
+		}
+	}
+
+	&__title {
+		color: white;
+		font-weight: bold;
+		font-size: 12px;
+		line-height: 15px;
+		max-width: 165px;
+		overflow-wrap: break-word;
+	}
+
+	&__body {
+		padding: 5px 10px;
+	}
+
+	&__info {
+		margin-bottom: 4px;
+		display: flex;
+		align-items: center;
+		margin: 0;
+
+		&-value {
+			font-size: 11px;
+			line-height: 15px;
+			font-weight: 600;
+			color: $primaryTextColor;
+			flex-shrink: 0;
+
+			&.short {
+				max-width: 80px;
+				line-height: 11px;
+				overflow-wrap: break-word;
+			}
+
+			&.from {
+				color: #DF4F4F;
+			}
+
+			&.to {
+				color: #1EB124;
+			}
+
+			&.sub {
+				margin-left: 10px;
+			}
+		}
+
+		&-name {
+			font-size: 10px;
+			line-height: 14px;
+			color: $secondaryTextColor;
+            margin-right: 5px;
+			flex-shrink: 0;
+		}
+
+		&-arrow {
+			width: 15px;
+			height: 6px;
+			margin: 0 5px;
+
+			line {
+				stroke: $secondaryTextColor;
+				stroke-width: 2px;
+			}
+
+			polygon {
+				fill: $secondaryTextColor;
+			}
+		}
+
+		&-icon {
+			margin-right: 5px;
+			display: inline-block;
+			flex-shrink: 0;
+
+			&.boxes {
+				@include icon(url(../../resources/icons/box-grey.svg));
+			}
+
+			&.pin {
+				@include icon(url(../../resources/icons/pin-grey.svg));
+			}
+		}
+	}
+
+	&:first-child {
+		margin-top: 2px;
+
+		&.active {
+			margin-top: 0px;
+		}
+	}
+
+	&:last-child {
+		margin-bottom: 2px;
+
+		&.active {
+			margin-bottom: 0px;
+		}
+	}
+	
+	&__buttons-wrapper {
+		display: none;
+		margin-left: auto;
+		gap: 7.5px;
+		align-items: center;
+	}
+
+	&__button {
+		@include button-transparent(13px, 13px);
+
+		&-icon {
+			display: inline-block;
+		}
+
+		&.settings &-icon {
+			@include icon(url(../../resources/icons/settings.svg), 13px, 13px);
+		}
+		
+		&.settings.active &-icon {
+			@include icon(url(../../resources/icons/settings-active.svg), 13px, 13px);
+		}
+		
+		&.remove &-icon {
+			@include icon(url(../../resources/icons/trash.svg), 13px, 13px);
+		}
+	}
+
+	&__link {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 5px 0;
+		gap: 10px;
+
+		&-state {
+			width: 115px;
+			border-radius: 6px;
+			border: 2px solid;
+			padding: 5px;
+		}
+
+		&-arrow {
+			width: auto;
+			display: flex;
+			flex-direction: column;
+			// justify-content: center;
+			flex-shrink: 1;
+
+			&-svg {
+				width: 40px;
+				height: 6px;
+				margin-top: calc(50% - 3px);
+
+				line {
+					stroke-width: 2px;
+				}
+			}
+
+			&-name {
+				color: $secondaryTextColor;
+				font-size: 11px;
+				line-height: 15px;
+				font-weight: 600;
+				text-align: center;
+			}
+		}
+	}
+}

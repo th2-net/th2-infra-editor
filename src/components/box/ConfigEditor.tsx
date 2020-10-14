@@ -15,59 +15,28 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { createBemElement } from '../../helpers/styleCreators';
-import { useInput } from '../../hooks/useInput';
+import { createBemBlock } from '../../helpers/styleCreators';
+import { InputConfig } from '../../hooks/useInput';
 
 interface ConfigEditor {
-	config?: {[prop: string]: string};
-	setCustomConfig: (customConfig: {
-		value: {
-			[prop: string]: string;
-		};
-		isValid: boolean;
-	}) => void;
+	configInput: InputConfig;
 }
 
 const ConfigEditor = ({
-	config,
-	setCustomConfig,
+	configInput,
 }: ConfigEditor) => {
-	const configInput = useInput({
-		initialValue: JSON.stringify(config, null, 4),
-		label: 'Config',
-		validate: value => {
-			try {
-				JSON.parse(value);
-				return true;
-			} catch {
-				return false;
-			}
-		},
-		name: 'config',
-		id: 'config',
-	});
-
-	const textAreaClass = createBemElement(
-		'box-settings',
+	const textAreaClass = createBemBlock(
 		'textarea',
-		!configInput.isValid ? 'invalid' : '',
+		!configInput.isValid ? 'invalid' : null,
 	);
 
-	const onBlur = () => {
-		setCustomConfig({
-			value: JSON.parse(configInput.value),
-			isValid: configInput.isValid,
-		});
-	};
-
 	return (
-		<div className="box-settings__group">
-			<label htmlFor={configInput.bind.name} className="box-settings__label">
+		<div className="textarea-wrapper">
+			<label htmlFor={configInput.bind.name} className="textarea-label">
 				{configInput.label}
 			</label>
 			<textarea
 				className={textAreaClass}
-				onBlur={onBlur}
 				{...configInput.bind}/>
 		</div>
 	);

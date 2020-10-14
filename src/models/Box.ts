@@ -79,3 +79,9 @@ export function isBoxEntity(object: unknown): object is BoxEntity {
 		&& (object as BoxEntity).kind !== undefined)
 		&& (object as BoxEntity).spec['image-name'] !== undefined;
 }
+
+export function isPin(object: unknown): object is Pin {
+	return (typeof object === 'object'
+	&& object !== null
+	&& (object as Pin)['connection-type'] !== undefined);
+}

@@ -46,7 +46,7 @@ const DictionaryXMLEditor = ({
 	});
 
 	const editorClass = createBemBlock(
-		'xml-editor',
+		'textarea',
 		!xmlInputConfig.isValid ? 'invalid' : null,
 	);
 
@@ -58,9 +58,14 @@ const DictionaryXMLEditor = ({
 	}, [xmlInputConfig.value]);
 
 	return (
-		<textarea
-			{...xmlInputConfig.bind}
-			className={editorClass} />
+		<div className="textarea-wrapper">
+			<label htmlFor={xmlInputConfig.bind.name} className="textarea-label">
+				{xmlInputConfig.label}
+			</label>
+			<textarea
+				className={editorClass}
+				{...xmlInputConfig.bind} />
+		</div>
 	);
 };
 

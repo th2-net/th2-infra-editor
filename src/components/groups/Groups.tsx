@@ -72,7 +72,7 @@ const Groups = () => {
 				<div
 					className="groups__list"
 					style={{
-						gridTemplateColumns: `repeat(${Math.max(schemasStore.kinds.length, 6)}, 250px)`,
+						gridTemplateColumns: `repeat(${Math.max(schemasStore.kinds.length, 6)}, 252px)`,
 					}}>
 					{
 						schemasStore.groups.map(group => {
@@ -82,7 +82,8 @@ const Groups = () => {
 									key={group.title}
 									title={group.title}
 									boxes={boxes.sort((first, second) => (first.name > second.name ? 1 : -1))}
-									groupsTopOffset={groupsRef.current?.getBoundingClientRect().top}/>
+									groupsTopOffset={groupsRef.current?.getBoundingClientRect().top}
+									color={group.color} />
 								: <Fragment key={group.title}></Fragment>;
 						})
 					}
@@ -98,7 +99,7 @@ const Groups = () => {
 									boxes={schemasStore.boxes.filter(box => box.kind === kind)
 										.sort((first, second) => (first.name > second.name ? 1 : -1))}
 									groupsTopOffset={groupsRef.current?.getBoundingClientRect().top}
-								/>
+									color={'#C066CC'} />
 							))
 					}
 				</div>

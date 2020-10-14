@@ -1,0 +1,325 @@
+@import './common/vars';
+
+.modal {
+    width: 360px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -65%);
+    z-index: 3;
+    border: 2px solid $modalBorderColor;
+    box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 
+    0px 8px 10px 1px rgba(0, 0, 0, 0.14), 
+    0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+    border-radius: 9px;
+    background-color: $modalColor;
+    padding-bottom: 20px;
+
+    &__header {
+        height: 35px;
+        background-color: $modalHeaderColor;
+        display: flex;
+        align-items: center;
+        padding: 10px 15px;
+        border-radius: 6px 6px 0 0;
+
+        &-icon {
+            @include icon(url(../../resources/icons/box-active.svg), 15px, 15px);
+
+            margin-right: 12px;
+        }
+        
+        &-title {
+            font-weight: 600;
+            font-size: 14px;
+            line-height: 15px;
+            color: $modalTitleColor;
+        }
+
+        &-close-button {
+            @include button-transparent(15px, 15px);
+
+            margin-left: auto;
+
+            &-icon {
+                display: inline-block;
+
+                @include icon(url(../../resources/icons/cross.svg), 15px, 15px);
+            }
+        }
+    }
+
+    &__content {
+        padding: 10px 15px 0 15px;
+        overflow: visible;
+
+        &-switcher {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+
+            &-button {
+                text-transform: capitalize;
+                border-radius: 24px;
+                color: #0FBDA0;
+                font-weight: 600;
+                font-size: 12px;
+                line-height: 15px;
+                padding: 4px 10px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+
+                &-icon {
+                    margin-right: 6px;
+                }
+
+                &.active {
+                    background-color: #94D1C7;
+                    color: white;
+                }
+
+                &.pins &-icon {
+                    @include icon(url(../../resources/icons/pin-active.svg), 15px, 15px);
+                }
+
+                &.pins.active &-icon {
+                    @include icon(url(../../resources/icons/pin.svg), 15px, 15px);
+                }
+                
+                &.boxes &-icon {
+                    @include icon(url(../../resources/icons/box.svg), 15px, 15px);
+                }
+
+                &.boxes.active &-icon {
+                    @include icon(url(../../resources/icons/box-active.svg), 15px, 15px);
+                }
+
+                &.links &-icon {
+                    @include icon(url(../../resources/icons/link.svg), 15px, 15px);
+                }
+
+                &.links.active &-icon {
+                    @include icon(url(../../resources/icons/link-active.svg), 15px, 15px);
+                }
+
+                &.dictionaries &-icon {
+                    @include icon(url(../../resources/icons/dictionary.svg), 15px, 15px);
+                }
+
+                &.dictionaries.active &-icon {
+                    @include icon(url(../../resources/icons/dictionary-active.svg), 15px, 15px);
+                }
+            }
+        }
+    }
+
+    &__empty {
+        width: 100%;
+        height: 150px;
+        text-align: center;
+        line-height: 150px;
+        font-size: 16px;
+        color: $secondaryTextColor;
+        padding: 2px 15px 5px 15px;
+        margin-top: 10px;
+    }
+
+    &__paragraph {
+        font-size: 16px;
+        color: $primaryTextColor;
+        text-align: center;
+    }
+
+    &__buttons {
+        display: flex;
+        margin: 20px 15px 0 15px;
+    }
+
+    &__button {
+        &-icon {
+            margin-right: 6px;
+            display: inline-block;
+        }
+
+        &.submit {
+            @include button(30px, auto, #0FBDA0, white);
+            margin-left: auto;
+        }
+
+        &.submit &-icon {
+            @include icon(url(../../resources/icons/check.svg));
+        }
+
+        &.pin {
+            @include button(30px, auto, #0FBDA0, white);
+        }
+
+        &.pin &-icon {
+            @include icon(url(../../resources/icons/pin.svg));
+        }
+
+        &.upload {
+            @include button(30px, auto, transparent, $transparentButtonFontColor);
+
+            box-shadow: none;
+        }
+
+        &.upload &-icon {
+            @include icon(url(../../resources/icons/download.svg));
+            
+            transform: rotate(180deg);
+        }
+
+        &.download {
+            @include button(30px, auto, transparent, $transparentButtonFontColor);
+
+            margin-left: 15px;
+            box-shadow: none;
+        }
+
+        &.download &-icon {
+            @include icon(url(../../resources/icons/download.svg));
+        }
+
+        &.sort {
+            @include button(30px, auto, transparent, $transparentButtonFontColor);
+
+            box-shadow: none;
+        }
+
+        &.sort.asc &-icon {
+            @include icon(url(../../resources/icons/arrow-down.svg));
+
+            transform: rotate(180deg);
+        }
+
+        &.sort.desc &-icon {
+            @include icon(url(../../resources/icons/arrow-down.svg));
+        }
+
+        &.add {
+            @include button(30px, auto, transparent, $transparentButtonFontColor);
+
+            box-shadow: none;
+        }
+
+        &.add &-icon {
+            @include icon(url(../../resources/icons/add.svg));
+        }
+
+        &.close {
+            @include button(30px, auto, #0FBDA0, white);
+        }
+
+        &.close &-icon {
+            @include icon(url(../../resources/icons/cross.svg));
+        }
+    }
+
+    &__dragndrop-area {
+        height: 230px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        border: 1px solid #808080;
+
+        &-icon {				
+            @include icon(url(../../resources/icons/download.svg), 80px, 80px);	
+            
+            transform: rotate(180deg);
+            margin-bottom: 20px;
+        }
+
+        &-text {
+            font-size: 16px;
+        }
+    }
+
+    &__elements {
+        &-list {
+            @include scrollbar;
+
+            min-height: 150px;
+            max-height: 350px;
+            overflow-y: scroll;
+            padding: 2px 15px 5px 15px;
+            margin-top: 10px;
+
+            &.long {
+                max-height: calc(100vh - 200px);
+            }
+        }
+
+        &-item {
+            height: 30px;
+            box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.25);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            margin-bottom: 10px;
+
+            &:hover &-buttons-wrapper {
+                display: flex;
+            }
+
+            &-info {
+                margin-bottom: 10px;
+
+                &-name {
+                    color: $secondaryTextColor;
+                    font-size: 13px;
+                    line-height: 14px;
+                    margin-right: 5px;
+                }
+
+                &-value {
+                    color: $primaryTextColor;
+                    font-size: 13px;
+                    line-height: 14px;
+                }
+            }
+
+
+            &-buttons-wrapper {
+                display: none;
+                margin-left: auto;
+                gap: 7.5px;
+                align-items: center;
+            }
+        
+            &-button {
+                &-icon {
+                    display: inline-block;
+                }
+        
+                &.edit, &.delete, &.download {
+                    @include button-transparent(15px, 15px);
+                }
+        
+                &.edit &-icon {
+                    @include icon(url(../../resources/icons/settings-grey.svg));
+                }
+        
+                &.delete &-icon {
+                    @include icon(url(../../resources/icons/trash-grey.svg));
+                }
+
+                &.download &-icon {
+                    @include icon(url(../../resources/icons/download.svg));
+                }
+            }
+        }
+    }
+}
+
+.file-input {
+	width: 0.1px;
+	height: 0.1px;
+	opacity: 0;
+	position: absolute;
+	z-index: -10;
+}

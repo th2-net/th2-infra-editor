@@ -16,12 +16,16 @@
 
 import React from 'react';
 import { BoxEntity, Pin } from '../../models/Box';
-import BoxImageInfo from './BoxImageInfo';
 import useOutsideClickListener from '../../hooks/useOutsideClickListener';
-import BoxDictionaryConfigurator from './BoxDictionaryConfigurator';
-import ConfigEditor from './ConfigEditor';
 import PinsList from './PinsList';
 import { DictionaryRelation } from '../../models/Dictionary';
+import '../../styles/modal.scss';
+import { createBemElement } from '../../helpers/styleCreators';
+import BoxConfig from './BoxConfig';
+import { useInput } from '../../hooks/useInput';
+import { ModalPortal } from '../util/Portal';
+import FormModal from '../util/FormModal';
+import DictionaryList from './DictionaryList';
 
 interface BoxSettingsProps {
 	box: BoxEntity;
@@ -42,64 +46,137 @@ const BoxSettings = ({
 }: BoxSettingsProps) => {
 	const modalRef = React.useRef<HTMLDivElement>(null);
 
-	const [showDictionaryConfigurator, isShowAddForm] = React.useState(false);
+	const [currentSection, setCurrentSection] = React.useState<'config' | 'pins' | 'dictionary'>('config');
 
-	const [isBoxModified, setIsBoxModified] = React.useState(false);
+	const [isAddPinFormOpen, setIsAddPinFormOpen] = React.useState(false);
+	const [isAddDictionaryFormOpen, setIsAddDictionaryFormOpen] = React.useState(false);
 
-	const [imageName, setImageName] = React.useState<{
-		value: string;
-		isValid: boolean;
-	}>({
-		value: box.spec['image-name'],
-		isValid: true,
+	const imageNameInput = useInput({
+		initialValue: box.spec['image-name'],
+		label: 'image-name',
+		name: 'image-name',
+		id: 'image-name',
 	});
 
-	const [imageVersion, setImageVersion] = React.useState<{
-		value: string;
-		isValid: boolean;
-	}>({
-		value: box.spec['image-version'],
-		isValid: true,
+	const imageVersionInput = useInput({
+		initialValue: box.spec['image-version'],
+		label: 'image-version',
+		name: 'image-version',
+		id: 'image-version',
 	});
 
-	const [nodePort, setNodePort] = React.useState<{
-		value: string;
-		isValid: boolean;
-	}>({
-		value: box.spec['node-port'] ? box.spec['node-port'].toString() : '',
-		isValid: true,
+	const nodePortInput = useInput({
+		initialValue: box.spec['node-port']?.toString() ?? '',
+		label: 'node-port',
+		name: 'node-port',
+		id: 'node-port',
+		validate: value => /^\d+$/.test(value),
 	});
 
-	const [customConfig, setCustomConfig] = React.useState<{
-		value: {
-			[prop: string]: string;
-		};
-		isValid: boolean;
-	}>({
-		value: box.spec['custom-config'] ?? {},
-		isValid: true,
+	const boxConfigInput = useInput({
+		initialValue: box.spec['custom-config']
+			? JSON.stringify(box.spec['custom-config'], null, 4)
+			: '',
+		label: 'Config',
+		validate: value => {
+			if (value.length === 0) return true;
+			try {
+				JSON.parse(value);
+				return true;
+			} catch {
+				return false;
+			}
+		},
+		name: 'config',
+		id: 'config',
+	});
+
+	const pinNameConfigInput = useInput({
+		initialValue: '',
+		label: 'Name',
+		id: 'pin-name',
+	});
+
+	const pinTypeConfigInput = useInput({
+		initialValue: '',
+		label: 'Connection type',
+		id: 'pin-connection-type',
+	});
+
+	const relationNameInput = useInput({
+		initialValue: '',
+		label: 'Name',
+		id: 'relation-name',
+	});
+
+	const dictionaryNameInput = useInput({
+		initialValue: '',
+		label: 'Dictionary name',
+		id: 'dictionary-name',
+		validate: value => dictionaryNamesList.includes(value),
+		autocomplete: {
+			datalistKey: 'dictionary-name__datalist-key',
+			variants: dictionaryNamesList,
+		},
+	});
+
+	const dictionaryTypeInput = useInput({
+		initialValue: '',
+		label: 'Dictionary type',
+		id: 'dictionary-type',
 	});
 
 	const [relatedDictionaryList, setRelatedDictionaryList] = React.useState<DictionaryRelation[]>(relatedDictionary);
 
 	const [pinList, setPinList] = React.useState(box.spec.pins);
 
-	const saveChanges = () => {
+	useOutsideClickListener(modalRef, (e: MouseEvent) => {
 		if (
-			imageName.isValid
-			&& imageVersion.isValid
-			&& nodePort.isValid
-			&& customConfig.isValid
-			&& isBoxModified
+			!e.composedPath()
+				.some(
+					elem =>
+						((elem as HTMLElement).className
+							&& (elem as HTMLElement).className.includes)
+							&& ((elem as HTMLElement).className.includes('modal')),
+				)
 		) {
+			onClose();
+		}
+	});
+
+	const configButtonClass = createBemElement(
+		'modal',
+		'content-switcher-button',
+		currentSection === 'config' ? 'active' : 'null',
+	);
+
+	const pinsButtonClass = createBemElement(
+		'modal',
+		'content-switcher-button',
+		'pins',
+		currentSection === 'pins' ? 'active' : 'null',
+	);
+
+	const dictionaryButtonClass = createBemElement(
+		'modal',
+		'content-switcher-button',
+		currentSection === 'dictionary' ? 'active' : 'null',
+	);
+
+	const submit = () => {
+		if ([imageNameInput, imageVersionInput, nodePortInput]
+			.every(config => config.isValid && config.value.trim())
+			&& boxConfigInput.isValid) {
 			configurateBox({
 				name: box.name,
 				kind: box.kind,
 				spec: {
-					'image-name': imageName.value,
-					'image-version': imageVersion.value,
-					'node-port': nodePort.value ? parseInt(nodePort.value) : undefined,
-					'custom-config': customConfig.value,
+					'image-name': imageNameInput.value,
+					'image-version': imageVersionInput.value,
+					'node-port': nodePortInput.value ? parseInt(nodePortInput.value) : undefined,
+					'custom-config': boxConfigInput.value
+						? JSON.parse(boxConfigInput.value)
+						: undefined,
 					pins: pinList,
 				},
 			},
@@ -108,96 +185,126 @@ const BoxSettings = ({
 		}
 	};
 
-	useOutsideClickListener(modalRef, () => {
-		onClose();
-	});
-
 	return (
-		<div ref={modalRef} className="box-modal">
-			<h3 className="box-modal__name">
-				{box.name}
-			</h3>
-			<div className="box-modal__box-settings">
-				<div className="box-modal__image-info">
-					<BoxImageInfo
-						spec={{
-							imageName: imageName.value,
-							imageVersion: imageVersion.value,
-							nodePort: nodePort.value,
-						}}
-						setImageName={value => {
-							setImageName(value);
-							setIsBoxModified(true);
-						}}
-						setImageVersion={value => {
-							setImageVersion(value);
-							setIsBoxModified(true);
-						}}
-						setNodePort={value => {
-							setNodePort(value);
-							setIsBoxModified(true);
-						}}
-					/>
-					<ConfigEditor
-						config={customConfig.value}
-						setCustomConfig={value => {
-							setCustomConfig(value);
-							setIsBoxModified(true);
-						}}
-					/>
-					<PinsList
-						pins={pinList}
-						addPinToBox={pin => {
-							setPinList([...pinList, pin]);
-							setIsBoxModified(true);
-						}}
-						removePinFromBox={removablePin => {
-							setPinList(pinList
-								.filter(pin => pin.name !== removablePin.name));
-							setIsBoxModified(true);
-						}}
-						setEditablePin={setEditablePin}
-					/>
-				</div>
-				<div className="box-modal__dictionary-list">
-					<BoxDictionaryConfigurator
-						isAddFormOpen={showDictionaryConfigurator}
-						addDictionaryRelation={relation => {
-							setRelatedDictionaryList([...relatedDictionaryList, relation]);
-							setIsBoxModified(true);
-						}}
-						removeDictionaryRelation={relation => {
-							setRelatedDictionaryList(relatedDictionaryList
-								.filter(dictionaryRelation => dictionaryRelation !== relation));
-							setIsBoxModified(true);
-						}}
-						boxName={box.name}
-						closeAddForm={() => isShowAddForm(false)}
-						relatedDictionary={relatedDictionaryList}
-						dictionaryNamesList={dictionaryNamesList} />
-				</div>
-			</div>
-			<div className="box-modal__buttons">
-				<button
-					onClick={saveChanges}
-					className='box-modal__button'>
-						Save changes
-				</button>
-				{
-					!showDictionaryConfigurator
-					&& <button
-						className="box-modal__button"
-						onClick={() => isShowAddForm(true)}>
-						Add Dictionary
+		<>
+			<div ref={modalRef} className="modal">
+				<div className="modal__header">
+					<i className="modal__header-icon" />
+					<h3 className="modal__header-title">
+						{box.name}
+					</h3>
+					<button
+						onClick={() => onClose()}
+						className="modal__header-close-button">
+						<i className="modal__header-close-button-icon" />
 					</button>
+				</div>
+				<div className="modal__content">
+					<div className="modal__content-switcher">
+						<div
+							onClick={() => setCurrentSection('config')}
+							className={configButtonClass}>Box config</div>
+						<div
+							onClick={() => setCurrentSection('pins')}
+							className={pinsButtonClass}>
+							<i className="modal__content-switcher-button-icon" />
+							{
+								`${pinList.length} ${pinList.length === 1
+									? 'pin'
+									: 'pins'}`
+							}
+						</div>
+						<div
+							onClick={() => setCurrentSection('dictionary')}
+							className={dictionaryButtonClass}>
+							{
+								`${relatedDictionaryList.length} ${pinList.length === 1
+									? 'dictionary'
+									: 'dictionaries'}`
+							}
+						</div>
+					</div>
+					{
+						currentSection === 'config'
+						&& <BoxConfig
+							imageNameInputConfig={imageNameInput}
+							imageVersionInputConfig={imageVersionInput}
+							nodePortInputConfig={nodePortInput}
+							boxConfigInput={boxConfigInput} />
+					}
+				</div>
+				{
+					currentSection === 'pins'
+					&& <PinsList
+						pins={pinList}
+						removePinFromBox={deletedPin =>
+							setPinList(pinList.filter(pin => pin !== deletedPin))}
+						setEditablePin={pin => setEditablePin(pin)}/>
 				}
-				<button
-					onClick={onClose}
-					className="box-modal__button">
-					Close
-				</button>
+				{
+					currentSection === 'dictionary'
+					&& <DictionaryList
+						dictionaryRelations={relatedDictionaryList}
+						removeDictionaryRelation={deletedRelation =>
+							setRelatedDictionaryList(relatedDictionaryList
+								.filter(relation => relation !== deletedRelation))} />
+				}
+				<div className="modal__buttons">
+					{
+						currentSection === 'pins'
+						&& <button
+							onClick={() => setIsAddPinFormOpen(true)}
+							className="modal__button add">
+							<i className="modal__button-icon" />
+							Add pin
+						</button>
+					}
+					{
+						currentSection === 'dictionary'
+						&& <button
+							onClick={() => setIsAddDictionaryFormOpen(true)}
+							className="modal__button add">
+							<i className="modal__button-icon" />
+							Add dictionary
+						</button>
+					}
+					<button
+						onClick={submit}
+						className="modal__button submit">
+						<i className="modal__button-icon" />
+						Submit
+					</button>
+				</div>
 			</div>
-		</div>
+			<ModalPortal isOpen={isAddPinFormOpen}>
+				<FormModal
+					title={'Add pin'}
+					inputConfigList={[pinNameConfigInput, pinTypeConfigInput]}
+					onSubmit={() => setPinList([...pinList, {
+						name: pinNameConfigInput.value,
+						'connection-type': pinTypeConfigInput.value,
+						attributes: [],
+						filters: [],
+					}])}
+					onClose={() => setIsAddPinFormOpen(false)}
+				/>
+			</ModalPortal>
+			<ModalPortal isOpen={isAddDictionaryFormOpen}>
+				<FormModal
+					title={'Add dictionary'}
+					inputConfigList={[relationNameInput, dictionaryNameInput, dictionaryTypeInput]}
+					onSubmit={() => setRelatedDictionaryList([...relatedDictionaryList, {
+						name: relationNameInput.value,
+						box: box.name,
+						dictionary: {
+							name: dictionaryNameInput.value,
+							type: dictionaryTypeInput.value,
+						},
+					}])}
+					onClose={() => setIsAddDictionaryFormOpen(false)}
+				/>
+			</ModalPortal>
+		</>
 	);
 };
 
