@@ -19,7 +19,6 @@ import { observer } from 'mobx-react-lite';
 import { useInput } from '../../hooks/useInput';
 import { DictionaryEntity } from '../../models/Dictionary';
 import Input from '../util/Input';
-import '../../styles/dictionary.scss';
 import useOutsideClickListener from '../../hooks/useOutsideClickListener';
 import DictionaryXMLEditor from './DictionaryXmlEditor';
 import { downloadFile } from '../../helpers/files';
@@ -117,59 +116,71 @@ const DictionaryModal = ({
 			onDragEnter={() => setIsFileDragging(true)}
 			onDragExit={() => setIsFileDragging(false)}
 			ref={modalRef}
-			className="dictionary-modal">
-			{
-				dictionary
-					? <div className="dictionary-modal__row">
-						<h2 className="dictionary-modal__title">{dictionary.name}</h2>
-						<div className="dictionary-modal__upload-control">
-							<label htmlFor="dictionary-file-input">
-								<i className="dictionary-modal__button upload"/>
-							</label>
-							<input
-								onChange={uploadDictionary}
-								type="file"
-								accept=".xml"
-								id="dictionary-file-input"/>
-						</div>
-						<button
-							onClick={downloadDictionary}
-							className="dictionary-modal__button">
-							<i className="dictionary-modal__button download"/>
-						</button>
-					</div>
-					: <Input
-						inputConfig={dictionaryNameInput} />
-			}
-			{
-				!isFileDragging
-					? <DictionaryXMLEditor
-						setDictionaryData={setDictionaryData}
-						xmlContent={dictionaryData.value} />
-					: <div
-						onDrop={dropDictionaryHandler}
-						className="dictionary-modal__dragndrop-area"
-						draggable="true">
-						<i className="dictionary-modal__dragndrop-area-icon"></i>
-						<span className="dictionary-modal__dragndrop-area-text">
-							Choose a file or drag it here.
-						</span>
-					</div>
-			}
-			<div className="box-modal__buttons">
-				<button
-					onClick={submit}
-					className='box-modal__button'>
+			className="modal">
+			<div className="modal__header">
+				<h3 className="modal__header-title">
 					{
 						dictionary
-							? 'Save changes'
-							: 'Create'
+							? dictionary.name
+							: 'Create dictionary'
 					}
-				</button>
+				</h3>
 				<button
-					onClick={onClose}
-					className="box-modal__button">
-					Close
+					onClick={() => onClose()}
+					className="modal__header-close-button">
+					<i className="modal__header-close-button-icon" />
+				</button>
+			</div>
+			<div className="modal__content">
+				{
+					!dictionary
+					&& <Input inputConfig={dictionaryNameInput} />
+				}
+				{
+					!isFileDragging
+						? <DictionaryXMLEditor
+							setDictionaryData={setDictionaryData}
+							xmlContent={dictionaryData.value} />
+						: <div
+							onDrop={dropDictionaryHandler}
+							className="modal__dragndrop-area"
+							draggable="true">
+							<i className="modal__dragndrop-area-icon"></i>
+							<span className="modal__dragndrop-area-text">
+								Choose a file or drag it here.
+							</span>
+						</div>
+				}
+			</div>
+			<div
+				onClick={submit}
+				className="modal__buttons">
+				<div className="modal__upload-control">
+					<label
+						className="modal__button upload"
+						htmlFor="dictionary-file-input">
+						<i className="modal__button-icon"/>
+						Upload
+					</label>
+					<input
+						onChange={uploadDictionary}
+						type="file"
+						accept=".xml"
+						className="file-input"
+						id="dictionary-file-input"/>
+				</div>
+				{
+					dictionary
+					&& <button
+						onClick={downloadDictionary}
+						className="modal__button download">
+						<i className="modal__button-icon" />
+						Download
+					</button>
+				}
+				<button className="modal__button submit">
+					<i className="modal__button-icon" />
+					Submit
 				</button>
 			</div>
 		</div>

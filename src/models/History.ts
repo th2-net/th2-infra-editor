@@ -19,6 +19,9 @@ import { DictionaryEntity } from './Dictionary';
 import { Link } from './LinksDefinition';
 
 export interface Snapshot {
+	object: string;
+	type: 'box' | 'link' | 'dictionary';
+	operation: 'add' | 'remove' | 'change';
 	changeList: Change[];
 }
 
@@ -26,4 +29,10 @@ export interface Change {
 	object: string;
 	from: BoxEntity | Link | DictionaryEntity | null;
 	to: BoxEntity | Link | DictionaryEntity | null;
+}
+
+export interface DetailedDiff {
+	added: BoxEntity | DictionaryEntity;
+	deleted: BoxEntity | DictionaryEntity;
+	updated: BoxEntity | DictionaryEntity;
 }

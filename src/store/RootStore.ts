@@ -32,7 +32,6 @@ export default class RootStore {
 		await this.schemaStore.fetchSchemas();
 		if (this.schemaStore.schemas.length) {
 			this.schemaStore.setSelectedSchema(this.schemaStore.schemas[0]);
-			await this.schemaStore.fetchSchemaState(this.schemaStore.schemas[0]);
 		}
 	}
 }

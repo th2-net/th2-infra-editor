@@ -49,15 +49,22 @@ export default class SchemasStore {
 		{
 			title: 'Th2Connector',
 			kinds: ['Th2Connector', 'Th2Hand'],
+			color: '#FF9966',
 		},
 		{
 			title: 'Th2Codec',
 			kinds: ['Th2Codec'],
+			color: '#66CC91',
 		},
 		{
 			title: 'Th2Act',
 			kinds: ['Th2Act', 'Th2Verify'],
+			color: '#666DCC',
 		},
+	];
+
+	public readonly connectionTypes = [
+		'grpc', 'mq',
 	];
 
 	constructor(private rootStore: RootStore, private api: ApiSchema, private historyStore: HistoryStore) {
@@ -72,6 +79,7 @@ export default class SchemasStore {
 			() => this.selectedSchema,
 			selectedSchema => {
 				this.historyStore.clearHistory();
+				this.preparedRequests = [];
 				this.connectionStore.connectionCoords = [];
 				this.activeBox = null;
 				this.activePin = null;
@@ -134,6 +142,9 @@ export default class SchemasStore {
 		this.saveBoxChanges(newBox, 'add');
 		if (createSnapshot) {
 			this.historyStore.addSnapshot({
+				object: newBox.name,
+				type: 'box',
+				operation: 'add',
 				changeList: [
 					{
 						object: newBox.name,
@@ -159,6 +170,9 @@ export default class SchemasStore {
 		this.saveBoxChanges(dictionary, 'add');
 		if (createSnapshot) {
 			this.historyStore.addSnapshot({
+				object: dictionary.name,
+				type: 'dictionary',
+				operation: 'add',
 				changeList: [
 					{
 						object: dictionary.name,
@@ -179,6 +193,9 @@ export default class SchemasStore {
 
 		if (createSnapshot) {
 			this.historyStore.addSnapshot({
+				object: dictionaryName,
+				type: 'dictionary',
+				operation: 'remove',
 				changeList: [
 					{
 						object: dictionaryName,
@@ -274,6 +291,9 @@ export default class SchemasStore {
 		this.saveBoxChanges(removableBox, 'remove');
 		if (createSnapshot) {
 			this.historyStore.addSnapshot({
+				object: boxName,
+				type: 'box',
+				operation: 'remove',
 				changeList: [
 					{
 						object: removableBox.name,
@@ -315,6 +335,9 @@ export default class SchemasStore {
 			});
 		}
 		this.historyStore.addSnapshot({
+			object: updatedBox.name,
+			type: 'box',
+			operation: 'change',
 			changeList,
 		});
 	};
@@ -361,7 +384,6 @@ export default class SchemasStore {
 	@action
 	public configuratePin = (pin: Pin, boxName: string) => {
 		const targetBox = this.boxes.find(box => box.name === boxName);
-
 		if (targetBox) {
 			const oldValue = (JSON.parse(JSON.stringify(targetBox)) as BoxEntity);
 			const pinIndex = targetBox.spec.pins.findIndex(boxPin => boxPin.name === pin.name);
@@ -375,6 +397,9 @@ export default class SchemasStore {
 				this.saveBoxChanges(targetBox, 'update');
 				const newValue = (JSON.parse(JSON.stringify(targetBox)) as BoxEntity);
 				this.historyStore.addSnapshot({
+					object: boxName,
+					type: 'box',
+					operation: 'change',
 					changeList: [
 						{
 							object: oldValue.name,
@@ -399,6 +424,9 @@ export default class SchemasStore {
 		const newValue = JSON.parse(JSON.stringify(dictionaryEntity));
 		this.saveBoxChanges(dictionaryEntity, 'update');
 		this.historyStore.addSnapshot({
+			object: dictionaryEntity.name,
+			type: 'dictionary',
+			operation: 'change',
 			changeList: [
 				{
 					object: dictionaryEntity.name,
@@ -416,5 +444,19 @@ export default class SchemasStore {
 
 			this.saveBoxChanges(this.connectionStore.linkBox, 'update');
 		}
+	};
+
+	public getBoxBorderColor = (boxName: string) => {
+		const boxKind = this.boxes.find(box => box.name === boxName)?.kind;
+
+		if (boxKind) {
+			const findedGroup = this.groups.find(group => group.kinds.includes(boxKind));
+
+			if (findedGroup) {
+				return findedGroup.color;
+			}
+			return '#C066CC';
+		}
+		return 'red';
 	};
 }

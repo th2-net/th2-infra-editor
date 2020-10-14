@@ -18,156 +18,50 @@
 import React from 'react';
 import { Filter } from '../../models/Box';
 import { useInput } from '../../hooks/useInput';
-import Input from '../util/Input';
-
-interface PinFilterProps {
-	filter: Filter;
-	changeFilter: (oldValue: Filter, newValue: Filter) => void;
-	removeFilter: (filter: Filter) => void;
-}
-
-const PinFilter = ({
-	filter,
-	changeFilter,
-	removeFilter,
-}: PinFilterProps) => {
-	const [isEdited, setIsEdited] = React.useState(false);
-	const [filedNameValue, setFiledNameValue] = React.useState('');
-	const [expectedValue, setExpectedValue] = React.useState('');
-	const [operation, setOperation] = React.useState('');
-
-	const fieldNameInput = useInput({
-		initialValue: filter.metadata[0]['field-name'],
-		label: 'Field name',
-		name: 'field-name',
-		id: 'field-name',
-	});
-
-	const expectedValueInput = useInput({
-		initialValue: filter.metadata[0]['expected-value'],
-		label: 'Expected value',
-		name: 'expected value',
-		id: 'expected value',
-	});
-
-	const operationInput = useInput({
-		initialValue: filter.metadata[0].operation,
-		label: 'Operation',
-		name: 'operation',
-		id: 'operation',
-	});
-
-	const inputs = [fieldNameInput, expectedValueInput, operationInput];
-
-	return (
-		<div className="pin-configurator__filter">
-			{
-				!isEdited
-					? (
-						<>
-							{
-								inputs.map(inputConfig => (
-									<div
-										key={inputConfig.label}
-										className="pin-configurator__filter-info">
-										<span className="pin-configurator__filter-info-key">{inputConfig.label}</span>
-										<span className="pin-configurator__filter-info-value">{inputConfig.value}</span>
-									</div>
-								))
-							}
-							<div className="pin-configurator__filter-buttons">
-								<button
-									onClick={() => {
-										setFiledNameValue(fieldNameInput.value);
-										setExpectedValue(expectedValueInput.value);
-										setOperation(operationInput.value);
-										setIsEdited(true);
-									}}
-									className="pin-configurator__filter-button">
-									<i className="pin-configurator__filter-button-icon edit"/>
-								</button>
-								<button
-									onClick={() => removeFilter(filter)}
-									className="pin-configurator__filter-button">
-									<i className="pin-configurator__filter-button-icon delete"/>
-								</button>
-							</div>
-						</>
-					)
-					: (
-						<>
-							{
-								inputs.map(inputConfig => (
-									<Input
-										key={inputConfig.label}
-										inputConfig={inputConfig}
-									/>
-								))
-							}
-							<div className="pin-configurator__filter-buttons">
-								<button
-									onClick={() => {
-										setIsEdited(false);
-										changeFilter(filter, {
-											metadata: [{
-												'field-name': fieldNameInput.value,
-												'expected-value': expectedValueInput.value,
-												operation: operationInput.value,
-											}],
-										});
-									}}
-									className="pin-configurator__filter-button">
-									<i className="pin-configurator__filter-button-icon submit"/>
-								</button>
-								<button
-									onClick={() => {
-										fieldNameInput.setValue(filedNameValue);
-										expectedValueInput.setValue(expectedValue);
-										operationInput.setValue(operation);
-										setIsEdited(false);
-									}}
-									className="pin-configurator__filter-button">
-									<i className="pin-configurator__filter-button-icon close"/>
-								</button>
-							</div>
-						</>
-					)
-			}
-		</div>
-	);
-};
+import { ModalPortal } from '../util/Portal';
+import FormModal from '../util/FormModal';
 
 interface FiltersListProps {
 	filters?: Filter[];
 	addFilter: (filter: Filter) => void;
 	removeFilter: (filter: Filter) => void;
 	changeFiltersList: (filters: Filter[]) => void;
+	isFormOpen: boolean;
 }
 
 const FiltersList = ({
 	filters,
 	addFilter,
-	changeFiltersList,
 	removeFilter,
+	changeFiltersList,
+	isFormOpen,
 }: FiltersListProps) => {
-	const [isAddFilterFormOpen, setIsAddFilterFormOpen] = React.useState(false);
+	const [isAddFilterFormOpen, setIsFilterFormOpen] = React.useState(isFormOpen);
+	const [editableFilter, setEditableFilter] = React.useState<Filter | null>(null);
+
+	React.useEffect(() => {
+		setIsFilterFormOpen(isFormOpen);
+		if (isFormOpen) {
+			setEditableFilter(null);
+		}
+	}, [isFormOpen]);
 
 	const fieldNameInput = useInput({
-		initialValue: '',
+		initialValue: editableFilter?.metadata[0]['field-name'] ?? '',
 		label: 'Field name',
 		name: 'field-name',
 		id: 'field-name',
 	});
 
 	const expectedValueInput = useInput({
-		initialValue: '',
+		initialValue: editableFilter?.metadata[0]['expected-value'] ?? '',
 		label: 'Expected value',
 		name: 'expected value',
 		id: 'expected value',
 	});
 
 	const operationInput = useInput({
-		initialValue: '',
+		initialValue: editableFilter?.metadata[0].operation ?? '',
 		label: 'Operation',
 		name: 'operation',
 		id: 'operation',
@@ -175,84 +69,83 @@ const FiltersList = ({
 
 	const inputs = [fieldNameInput, expectedValueInput, operationInput];
 
-	const addNewFilter = () => {
-		addFilter({
-			metadata: [
-				{
-					'field-name': fieldNameInput.value,
-					'expected-value': expectedValueInput.value,
-					operation: operationInput.value,
-				},
-			],
-		});
-	};
+	const submitForm = () => {
+		if (editableFilter && filters) {
+			const filterIndex = filters?.findIndex(filter => filter === editableFilter);
 
-	const changeFilter = (oldValue: Filter, newValue: Filter) => {
-		if (filters) {
-			const filterIndex = filters.findIndex(attribute => attribute === oldValue);
 			changeFiltersList([
-				...filters.slice(0, filterIndex),
-				newValue,
-				...filters.slice(filterIndex + 1, filters.length),
+				...filters?.slice(0, filterIndex),
+				{
+					metadata: [
+						{
+							'field-name': fieldNameInput.value,
+							'expected-value': expectedValueInput.value,
+							operation: operationInput.value,
+						},
+					],
+				},
+				...filters?.slice(filterIndex + 1, filters.length),
 			]);
+		} else {
+			addFilter({
+				metadata: [
+					{
+						'field-name': fieldNameInput.value,
+						'expected-value': expectedValueInput.value,
+						operation: operationInput.value,
+					},
+				],
+			});
 		}
 	};
 
 	return (
-    	<div
-			className="box-settings__group">
-			<span
-				className="box-settings__label">
-				Filters
-			</span>
-			<div className="pin-configurator__filters-list-wrapper">
-				<div className="pin-configurator__filters-list">
-					{
-						filters && filters.map(filter => (
-							<PinFilter
-								key={JSON.stringify(filter.metadata)}
-								filter={filter}
-								changeFilter={changeFilter}
-								removeFilter={removeFilter}
-							/>
-						))
-					}
-					{
-						isAddFilterFormOpen
-						&& <div className="pin-configurator__filter">
-							{
-								inputs.map(inputConfig => (
-									<Input
-										key={inputConfig.label}
-										inputConfig={inputConfig}/>
-								))
-							}
-							<div className="pin-configurator__filter-buttons">
-								<button
-									onClick={() => {
-										addNewFilter();
-										setIsAddFilterFormOpen(false);
-									}}
-									className="pin-configurator__filter-button">
-									<i className="pin-configurator__filter-button-icon submit"/>
-								</button>
-								<button
-									onClick={() => setIsAddFilterFormOpen(false)}
-									className="pin-configurator__filter-button">
-									<i className="pin-configurator__filter-button-icon close"/>
-								</button>
-							</div>
+    	<>
+			<div className="modal__elements-list">
+				{
+					(filters && filters?.length > 0)
+						? filters.map(filter =>
+							<div
+								key={`
+									${filter.metadata[0]['field-name']}
+									${filter.metadata[0]['expected-value']}
+									${filter.metadata[0].operation}
+								`}
+								className="modal__elements-item">
+								<span className="modal__elements-item-name">
+									{
+										filter.metadata[0]['field-name']
+									}
+								</span>
+								<div className="modal__elements-item-buttons-wrapper">
+									<button
+										onClick={() => {
+											setEditableFilter(filter);
+											setIsFilterFormOpen(true);
+										}}
+										className="modal__elements-item-button edit">
+										<i className="modal__elements-item-button-icon" />
+									</button>
+									<button
+										onClick={() => removeFilter(filter)}
+										className="modal__elements-item-button delete">
+										<i className="modal__elements-item-button-icon" />
+									</button>
+								</div>
+							</div>)
+						: <div className="modal__empty">
+							Filters list is empty
 						</div>
-					}
-				</div>
-				<div className="pin-configurator__buttons">
-					<button
-						onClick={() => setIsAddFilterFormOpen(true)}
-						className="pin-configurator__button"
-					>Add</button>
-				</div>
+				}
 			</div>
-		</div>
+			<ModalPortal isOpen={isAddFilterFormOpen}>
+				<FormModal
+					title={'Edit filter'}
+					inputConfigList={inputs}
+					onSubmit={submitForm}
+					onClose={() => setIsFilterFormOpen(false)} />
+			</ModalPortal>
+		</>
 	);
 };
 

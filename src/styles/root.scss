@@ -59,15 +59,7 @@ body {
 .root {
     width: 100%;
     height: 100%;
-    display: grid;
-    grid-template-columns: auto 350px 350px;
-    grid-template-rows: 110px 1fr;
-    column-gap: 20px;
     background-color: $appBackgroundColor;
-
-    grid-template-areas: 
-    "header history outliner"
-    "groups history outliner";
 
     & div:focus {
 		outline: unset;
@@ -88,4 +80,45 @@ body {
         top: 40%;
         left: calc(50% - 20px);
     }
+}
+
+.input, .textarea {
+    width: 100%;
+    background-color: #fff;
+    border: 1px solid #7A99B8;
+    border-radius: 4px;
+    padding: 0 10px;
+    font-size: 13px;
+    line-height: 14px;
+    outline-color: green;
+    color: $primaryTextColor;
+
+    &.invalid {
+        outline: none;
+        border: 2px solid red;
+    }
+
+    &-wrapper {
+		display: flex;
+		flex-direction: column;
+		margin-bottom: 10px;
+    }
+
+    &-label {
+		color: $secondaryTextColor;
+		font-size: 11px;
+		line-height: 14px;
+		margin-bottom: 6px;
+    }
+}
+
+.input {
+    height: 30px;
+}
+
+.textarea {
+    @include scrollbar;
+
+    height: 230px;
+    resize: none;
 }

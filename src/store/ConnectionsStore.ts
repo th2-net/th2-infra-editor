@@ -67,12 +67,6 @@ export default class ConnectionsStore {
 	@action
 	public setLinks = (links: LinksDefinition[]) => {
 		this.links = links.flatMap(link => {
-			if (link.spec['links-definition']) {
-				return [
-					...convertLinks(link.spec['links-definition']['router-mq'], 'mq'),
-					...convertLinks(link.spec['links-definition']['router-grpc'], 'grpc'),
-				];
-			}
 			if (link.spec['boxes-relation']) {
 				return [
 					...convertLinks(link.spec['boxes-relation']['router-mq'], 'mq'),
@@ -228,10 +222,6 @@ export default class ConnectionsStore {
 				pin: pinName,
 			},
 		};
-		if (this.linkBox.spec['links-definition']) {
-			this.linkBox.spec['links-definition'][(`router-${connectionType}` as 'router-mq' | 'router-grpc')]
-				.push(newConnection);
-		}
 		if (this.linkBox.spec['boxes-relation']) {
 			this.linkBox.spec['boxes-relation'][(`router-${connectionType}` as 'router-mq' | 'router-grpc')]
 				.push(newConnection);
@@ -241,6 +231,9 @@ export default class ConnectionsStore {
 		this.schemasStore.saveBoxChanges(this.linkBox, 'update');
 		if ((options && options.createSnapshot) || !options) {
 			this.historyStore.addSnapshot({
+				object: connectionName,
+				type: 'link',
+				operation: 'add',
 				changeList: [
 					{
 						object: connectionName,
@@ -278,15 +271,6 @@ export default class ConnectionsStore {
 			(connection.from.box !== boxName && connection.from.pin !== pin.name)
 			|| (connection.to.box !== boxName && connection.to.pin !== pin.name))];
 
-		if (this.linkBox?.spec['links-definition']) {
-			this.linkBox
-				// eslint-disable-next-line max-len
-				.spec['links-definition'][(`router-${pin['connection-type']}` as 'router-mq' | 'router-grpc')] = [...this.linkBox
-					.spec['links-definition'][(`router-${pin['connection-type']}` as 'router-mq' | 'router-grpc')]
-					.filter(connection =>
-						connection.from.pin !== pin.name
-						&& connection.from.box !== boxName)];
-		}
 		if (this.linkBox?.spec['boxes-relation']) {
 			this.linkBox
 				// eslint-disable-next-line max-len
@@ -307,16 +291,6 @@ export default class ConnectionsStore {
 				|| link.from.pin !== connection.from.pin
 				|| link.to.pin !== connection.to.pin),
 			];
-			if (this.linkBox?.spec['links-definition']) {
-				const linkIndex = this.linkBox
-					.spec['links-definition'][`router-${connection
-						.from.connectionType}` as 'router-mq' | 'router-grpc']
-					.findIndex(link => link.name === connection.name);
-				this.linkBox
-					.spec['links-definition'][`router-${connection
-						.from.connectionType}` as 'router-mq' | 'router-grpc']
-					.splice(linkIndex, 1);
-			}
 			if (this.linkBox?.spec['boxes-relation']) {
 				const linkIndex = this.linkBox
 					.spec['boxes-relation'][`router-${connection
@@ -331,6 +305,9 @@ export default class ConnectionsStore {
 			this.schemasStore.saveBoxChanges(this.linkBox, 'update');
 			if (createSnapshot) {
 				this.historyStore.addSnapshot({
+					object: connection.name,
+					type: 'link',
+					operation: 'remove',
 					changeList: [
 						{
 							object: connection.name,

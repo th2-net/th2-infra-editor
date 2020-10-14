@@ -22,73 +22,131 @@ import useSchemasStore from '../hooks/useSchemasStore';
 import '../styles/header.scss';
 import { createBemElement } from '../helpers/styleCreators';
 import DictionaryModal from './dictionary/DictionaryModal';
+import ElementsListModal from './elementsList/ElementsListModal';
+import FormModal from './util/FormModal';
+import { useInput } from '../hooks/useInput';
+import ChangeLogModal from './changeLog/ChangeLogModal';
 
 const Header = () => {
 	const schemasStore = useSchemasStore();
 
+	const [isAddSchemaModalOpen, setIsAddSchemaModalOpen] = React.useState(false);
 	const [isCreateBoxModalOpen, setIsCreateBoxModalOpen] = React.useState(false);
 	const [isCreateDictionaryModalOpen, setIsCreateDictionaryModalOpen] = React.useState(false);
+	const [isElementListOpen, setIsElementListOpen] = React.useState(false);
+	const [isChangeLogOpen, setIsChangeLogOpen] = React.useState(false);
 
-	const createSchema = () => {
-		// eslint-disable-next-line no-alert
-		const schemaName = prompt('Schema name');
-		if (schemaName === null) {
-			return;
-		}
-		const trimmedValue = schemaName?.trim();
-		if (
-			trimmedValue
-			&& !trimmedValue.includes(' ')
-			&& !trimmedValue.includes('_')
-			&& !/[A-Z]/g.test(trimmedValue)
-		) {
-			schemasStore.createSchema(schemaName);
-		} else {
-			// eslint-disable-next-line no-alert
-			alert('Invalid schema name');
-		}
-	};
+	const headerRef = React.useRef<HTMLDivElement>(null);
+	const elementsListButtonRef = React.useRef<HTMLButtonElement>(null);
+
+	const schemasNameInput = useInput({
+		initialValue: '',
+		id: 'schema-name',
+		label: 'Schema name',
+		validate: value => {
+			const trimmedValue = value.trim();
+			return Boolean(trimmedValue)
+				&& !trimmedValue.includes(' ')
+				&& !trimmedValue.includes('_')
+				&& !/[A-Z]/g.test(trimmedValue);
+		},
+	});
 
 	const saveButtonClass = createBemElement(
 		'header',
 		'button',
+		'save',
 		schemasStore.preparedRequests.length === 0 ? 'disable' : null,
 		schemasStore.isSaving ? 'loading' : null,
 	);
 
+	const elementListClass = createBemElement(
+		'header',
+		'button',
+		'elements',
+		isElementListOpen ? 'active' : null,
+	);
+
+	const changeLogClass = createBemElement(
+		'header',
+		'button',
+		'changes',
+		isChangeLogOpen ? 'active' : null,
+	);
+
 	return (
-		<div className="header">
-			<select
-				className="header__select"
-				onChange={e => schemasStore.setSelectedSchema(e.target.value)}
-				value={schemasStore.selectedSchema || undefined}
-			>
-				{
-					schemasStore.schemas.map(schema => (
-						<option key={schema} value={schema}>
-							{schema}
-						</option>
-					))
-				}
-			</select>
-			<button
-				className="header__button"
-				onClick={() => setIsCreateBoxModalOpen(!isCreateBoxModalOpen)}>
-				Create resource
+		<div
+			ref={headerRef}
+			className="header">
+			<div className="header__select-wrapper">
+				<select
+					className="header__select"
+					onChange={e => schemasStore.setSelectedSchema(e.target.value)}
+					value={schemasStore.selectedSchema || undefined}
+				>
+					{
+						schemasStore.schemas.map(schema => (
+							<option key={schema} value={schema}>
+								{schema}
+							</option>
+						))
+					}
+				</select>
+			</div>
+			<button className={saveButtonClass} onClick={schemasStore.saveChanges}>
+				<i className="header__button-icon" />
+				Save changes
 			</button>
-			<button className="header__button" onClick={createSchema}>
+			<button
+				className="header__button schema"
+				onClick={() => setIsAddSchemaModalOpen(true)}>
+				<i className="header__button-icon" />
 				Create schema
 			</button>
 			<button
-				className="header__button"
+				className="header__button boxes"
+				onClick={() => setIsCreateBoxModalOpen(!isCreateBoxModalOpen)}>
+				<i className="header__button-icon" />
+				Create resource
+			</button>
+			<button
+				className="header__button dictionary"
 				onClick={
 					() => setIsCreateDictionaryModalOpen(!isCreateDictionaryModalOpen)
 				}>
+				<i className="header__button-icon" />
 				Create dictionary
 			</button>
-			<button className={saveButtonClass} onClick={schemasStore.saveChanges}>
-				Save changes
+			<button
+				ref={elementsListButtonRef}
+				className={elementListClass}
+				onClick={
+					() => {
+						setIsChangeLogOpen(false);
+						setIsElementListOpen(!isElementListOpen);
+					}
+				}>
+				<i className="header__button-icon" />
+				Elements list
 			</button>
+			<button
+				className={changeLogClass}
+				onClick={
+					() => {
+						setIsElementListOpen(false);
+						setIsChangeLogOpen(!isChangeLogOpen);
+					}
+				}>
+				<i className="header__button-icon" />
+				Change log
+			</button>
+			<ModalPortal isOpen={isAddSchemaModalOpen}>
+				<FormModal
+					title={'Create schema'}
+					inputConfigList={[schemasNameInput]}
+					onSubmit={() => schemasStore.createSchema(schemasNameInput.value)}
+					onClose={() => setIsAddSchemaModalOpen(false)} />
+			</ModalPortal>
 			<ModalPortal
 				isOpen={isCreateBoxModalOpen}
 				closeModal={() => setIsCreateBoxModalOpen(false)}>
@@ -103,6 +161,29 @@ const Header = () => {
 				<DictionaryModal
 					onClose={() => setIsCreateDictionaryModalOpen(false)}
 				/>
+			</ModalPortal>
+			<ModalPortal
+				isOpen={isElementListOpen}
+				closeModal={() => setIsCreateDictionaryModalOpen(false)} >
+				<ElementsListModal
+					top={headerRef.current?.clientHeight}
+					left={elementsListButtonRef.current?.getBoundingClientRect().left}
+					width={elementsListButtonRef.current
+						? window.innerWidth - elementsListButtonRef.current.getBoundingClientRect().left
+						: undefined
+					}
+					onClose={() => setIsElementListOpen(false)}
+				/>
+			</ModalPortal>
+			<ModalPortal isOpen={isChangeLogOpen}>
+				<ChangeLogModal
+					top={headerRef.current?.clientHeight}
+					left={elementsListButtonRef.current?.getBoundingClientRect().left}
+					width={elementsListButtonRef.current
+						? window.innerWidth - elementsListButtonRef.current.getBoundingClientRect().left
+						: undefined
+					}
+					onClose={() => setIsChangeLogOpen(false)} />
 			</ModalPortal>
 		</div>
 	);

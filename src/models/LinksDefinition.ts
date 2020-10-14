@@ -19,10 +19,6 @@ import { ConnectionOwner } from './Box';
 
 export default interface LinksDefinition extends FileBase {
 	spec: {
-		['links-definition']?: {
-			['router-mq']: Router<MqConnection>[];
-			['router-grpc']: Router<GrpcConnection>[];
-		};
 		['boxes-relation']?: {
 			['router-mq']: Router<MqConnection>[];
 			['router-grpc']: Router<GrpcConnection>[];
@@ -57,12 +53,6 @@ export interface Link {
 export function isLinksDefinition(file: FileBase): file is LinksDefinition {
 	try {
 		const b = file as LinksDefinition;
-		if (b.spec['links-definition']) {
-			return [
-				Array.isArray(b.spec['links-definition']['router-grpc']),
-				Array.isArray(b.spec['links-definition']['router-mq']),
-			].every(Boolean);
-		}
 		if (b.spec['boxes-relation']) {
 			return [
 				Array.isArray(b.spec['boxes-relation']['router-grpc']),

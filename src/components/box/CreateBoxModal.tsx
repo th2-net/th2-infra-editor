@@ -19,6 +19,7 @@ import useOutsideClickListener from '../../hooks/useOutsideClickListener';
 import { BoxEntity } from '../../models/Box';
 import { useInput } from '../../hooks/useInput';
 import Input from '../util/Input';
+import '../../styles/modal.scss';
 
 interface CreateBoxModalProps {
 	createBox: (box: BoxEntity) => void;
@@ -108,9 +109,19 @@ const CreateBoxModal = ({
 	return (
 		<div
 			ref={modalRef}
-			className='create-box-modal'>
-			<h3 className='create-box-modal__title'>Create new box</h3>
-			<div className="create-box-modal__info-list">
+			className='modal'>
+			<div className="modal__header">
+				<i className="modal__header-icon" />
+				<h3 className="modal__header-title">
+					Create box
+				</h3>
+				<button
+					onClick={() => onClose()}
+					className="modal__header-close-button">
+					<i className="modal__header-close-button-icon" />
+				</button>
+			</div>
+			<div className="modal__content">
 				{
 					inputs.map(inputConfig => (
 						<Input
@@ -120,12 +131,12 @@ const CreateBoxModal = ({
 					))
 				}
 			</div>
-			<div className="box-modal__buttons">
-				<button onClick={createNewBox} className="box-modal__button">
+			<div className="modal__buttons">
+				<button
+					onClick={createNewBox}
+					className="modal__button submit">
+					<i className="modal__button-icon" />
 					Submit
-				</button>
-				<button onClick={onClose} className="box-modal__button">
-					Close
 				</button>
 			</div>
 		</div>

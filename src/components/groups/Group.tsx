@@ -23,12 +23,14 @@ interface Props {
 	title: string;
 	boxes: Array<BoxEntity>;
 	groupsTopOffset?: number;
+	color: string;
 }
 
 const Group = React.memo(({
 	title,
 	boxes,
 	groupsTopOffset,
+	color,
 }: Props) => {
 	const [boxRefs, setBoxRefs] = React.useState<React.RefObject<BoxMethods>[]>([]);
 	const titleRef = React.useRef<HTMLHeadingElement>(null);
@@ -56,7 +58,7 @@ const Group = React.memo(({
 					onScroll={onScroll}
 					className="group__items-scroller"
 					style={{
-						maxHeight: `${window.innerHeight - 200}px`,
+						maxHeight: `${window.innerHeight - 150}px`,
 					}}>
 					{
 						boxes.map((box, index) =>
@@ -68,7 +70,8 @@ const Group = React.memo(({
 								titleHeight={titleRef.current
 									? (titleRef.current?.clientHeight
 										+ parseInt(window.getComputedStyle(titleRef.current).marginBottom))
-									: undefined}/>)
+									: undefined}
+								color={color} />)
 					}
 				</div>
 			</div>

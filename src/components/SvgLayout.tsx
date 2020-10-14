@@ -22,6 +22,7 @@ import useOutsideClickListener from '../hooks/useOutsideClickListener';
 import { Link } from '../models/LinksDefinition';
 import { createBemElement } from '../helpers/styleCreators';
 import useConnectionsStore from '../hooks/useConnectionsStore';
+import openConfirmModal from '../helpers/modal';
 
 interface ArrowProps {
 	connection: ConnectionArrow;
@@ -47,9 +48,8 @@ const Arrow = observer(({
 		setIsHighlighted(false);
 	});
 
-	const deleteArrow = () => {
-		// eslint-disable-next-line no-alert
-		if (window.confirm('Are you sure you want '
+	const deleteArrow = async () => {
+		if (await openConfirmModal('Are you sure you want '
 		+ `to delete link "${connection.name}"`)) {
 			deleteConnection({
 				name: connection.name,

@@ -17,91 +17,113 @@
 @import './common/vars';
 
 .box {
-	background-color:  #ECF4F9;
-	border: 1px solid #C0D1DA;
 	width: 100%;
-	max-width: 300px;
-	border-radius: 10px;
-	margin: 20px 0;
-	transition: 0.3s;
+	background-color:  white;
 	flex-shrink: 0;
-	transition: 0.2s;
 	position: relative;
 	z-index: 2;
 	overflow-wrap: break-word;
-	border-color: #00997F;
-	padding-bottom: 10px;
+	padding-bottom: 5px;
+	box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.25);
+	border-radius: 9px;
+	margin: 22px 2px;
+	box-sizing: content-box;
+
+	&.active {
+		box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.35);
+		margin: 20px 0;
+		border: 2px solid #FF7733;
+	}
 
 	&__header {
-		height: 50px;
+		min-height: 25px;
 		width: 100%;
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
 		align-content: center;
 		justify-content: space-between;
-		border-bottom: 1px solid #C0D1DA;
-		padding: 0 20px;
+		padding: 0 10px;
+		border-radius: 6px 6px 0 0;
+	}
+
+	&__title {
+		color: white;
+		font-weight: bold;
+		font-size: 12px;
+		line-height: 15px;
+		max-width: 165px;
+		overflow-wrap: break-word;
+	}
+
+	&__body {
+		padding: 4px 10px 0 10px;
 	}
 
 	&__info {
-		margin-bottom: 10px;
+		margin-bottom: 4px;
 
-		&-list {
-			padding: 10px 20px 0 20px;
-		}
-
-		&-name, &-value {
-			font-size: 12px;
-			// display: inline-block;
+		&-value {
+			font-size: 11px;
+			line-height: 15px;
+			font-weight: 600;
+			color: $primaryTextColor;
 		}
 
 		&-name {
-			min-width: 100px;
-			margin-right: 10px;
-			font-weight: 600;
-			margin-bottom: 5px;
+			font-size: 10px;
+			line-height: 14px;
+			color: $secondaryTextColor;
+		}
+
+		&.short {
+			display: flex;
+			margin: 0;
+		}
+
+		&.short &-name {
+			margin-right: 5px;
 		}
 	}
 
 	&:first-child {
-		margin-top: 0;
-	}
-
-	&:last-child {
-		margin-bottom: 0;
-	}
-
-	&.active {
-		background-color: #FFF;
-		box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.25);
-		border: 1px solid $boxBoderColor;
-	}
-
-	&__title {
-		color: $primaryTextColor;
-	}
-
-	&__button {
-		background: none;
-		border: none;
-		outline: none;
-		cursor: pointer;
-	}
-
-	&__settings-icon {
-		@include icon(url(../../resources/icons/settings.svg), 16px, 16px);
-		display: inline-block;
+		margin-top: 2px;
 
 		&.active {
-			@include icon(url(../../resources/icons/settings-active.svg), 16px, 16px);
-
+			margin-top: 0px;
 		}
 	}
 
-	&__remove-icon {
-		@include icon(url(../../resources/icons/trash-grey.svg), 16px, 16px);
-		display: inline-block;
+	&:last-child {
+		margin-bottom: 2px;
+
+		&.active {
+			margin-bottom: 0px;
+		}
+    }
+
+	&__button {
+		@include button-transparent(13px, 13px);
+		
+		&:nth-child(2) {
+			margin-left: 7.5px;
+		}
+
+		&-icon {
+			display: inline-block;
+		}
+
+		&.settings &-icon {
+			@include icon(url(../../resources/icons/settings.svg), 13px, 13px);
+		}
+		
+		&.settings.active &-icon {
+			@include icon(url(../../resources/icons/settings-active.svg), 13px, 13px);
+		}
+		
+		&.remove &-icon {
+			@include icon(url(../../resources/icons/trash.svg), 13px, 13px);
+		}
 	}
 
 	&__pins {
@@ -248,7 +270,7 @@
 				}
 				
 				&.delete {
-					@include icon(url(../../resources/icons/trash-grey.svg), 16px, 16px);
+					@include icon(url(../../resources/icons/trash.svg), 16px, 16px);
 				}
 			}
 		}
@@ -270,222 +292,6 @@
 		.box__buttons-wrapper {
 			display: block;
 		}
-	}
-}
-
-.box-settings {
-	padding: 15px 20px;
-
-	&__wrapper {
-		transition: max-height 0.2s;
-	}
-
-	&__group {
-		display: flex;
-		flex-direction: column;
-		margin-bottom: 10px;
-	}
-
-	&__input, &__textarea {
-		width: 100%;
-		background-color: #fff;
-		border: 1px solid $secondaryTextColor;
-		border-radius: 6px;
-		padding: 0 10px;
-		outline-color: $primaryColor;
-
-		&.invalid {
-			outline-color: red;
-		}
-	}
-
-	&__input {
-		height: 36px;
-	}
-
-	&__textarea {
-		@include scrollbar;
-
-		resize: none;
-		height: 250px;
-	}
-
-	&__label {
-		color: $primaryTextColor;
-		font-size: 12px;
-		line-height: 16px;
-		margin-bottom: 7px;
-	}
-}
-
-.box-modal {
-	width: 700px;
-	height: 600px;
-	display: flex;
-	flex-direction: column;
-	background-color: white;
-	border-radius: 6px;
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -75%);
-	z-index: 3;
-	padding: 25px 0 25px 25px;
-	box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 
-	0px 8px 10px 1px rgba(0, 0, 0, 0.14), 
-	0px 3px 14px 2px rgba(0, 0, 0, 0.12);
-
-	&__name {
-		font-size: 22px;
-		margin-bottom: 15px;
-	}
-
-	&__box-settings {
-		display: flex;
-		width: 100%;
-	}
-
-	&__image-info {
-		@include scrollbar;
-
-		border-right: 1px solid #ccc;
-		width: 50%;
-		padding-right: 25px;
-		display: flex;
-		flex-direction: column;
-		max-height: 490px;
-		overflow: scroll;
-	}
-
-	&__dictionary-list {
-		@include scrollbar;
-
-		width: 50%;
-		max-height: 450px;
-		padding: 0 25px;
-		overflow-y: scroll;
-	}
-
-	&__buttons {
-		display: flex;
-		justify-content: flex-end;
-		margin-top: auto;
-		padding: 0 15px;
-	}
-
-	&__button {
-		font-size: 12px;
-		line-height: 16px;
-		text-transform: uppercase;
-		background: none;
-		border: none;
-		outline: none;
-		color: $secondaryTextColor;
-		cursor: pointer;
-		transition: color 0.2s;
-		padding: 0;
-		margin-left: 10px;
-
-		&:hover {
-			color: $primaryColor;
-		}
-	}
-
-	&__dictionary-relation {
-		border: 1px solid #808080;
-		border-radius: 4px;
-		padding: 10px 45px 10px 10px;
-		position: relative;
-
-		&:not(:last-child) {
-			margin-bottom: 10px;
-		}
-
-		&-prop {
-			&:not(:last-child) {
-				margin-bottom: 10px;
-			}
-
-			&-value {
-				font-size: 14px;
-				overflow-wrap: break-word;
-			}
-		}
-
-		&-button {
-			width: 25px;
-            height: 25px;
-            padding: 0;
-            margin: 0;
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: white;
-            border-radius: 4px;
-            cursor: pointer;
-			outline: none;
-			position: absolute;
-			top: 50%;
-			transform: translateY(-50%);
-			right: 10px;
-			
-			&-icon {
-				&.delete {
-					@include icon(url(../../resources/icons/trash-grey.svg), 16px, 16px);
-				}
-			}
-		}
-	}
-
-	&__add-form {
-		margin-top: 10px;
-	}
-
-	&__wrapper {
-		display: flex;
-		justify-content: space-between;
-	}
-
-	&__delete-button {
-		@include icon(url(../../resources/icons/trash.svg), 16px, 16px);
-
-		width: 16px;
-		height: 16px;
-		background-color: transparent;
-		margin: 0;
-		padding: 5px;
-		border: none;
-		margin-bottom: 7px;
-		cursor: pointer;
-		outline: none;
-	}
-}
-
-.create-box-modal {
-	width: 300px;
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -75%);
-	display: flex;
-	flex-direction: column;
-	background-color: white;
-	border-radius: 6px;
-	padding: 20px;
-	z-index: 3;
-	box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 
-	0px 8px 10px 1px rgba(0, 0, 0, 0.14), 
-	0px 3px 14px 2px rgba(0, 0, 0, 0.12);
-
-	&__title {
-		margin-bottom: 20px;
-		font-size: 22px;
-		margin-bottom: 15px;
-	}
-
-	&__info-list {
-		margin-bottom: 10px;
 	}
 }
 
@@ -535,7 +341,7 @@
 		outline: none;
 
 		&.delete {
-			@include icon(url(../../resources/icons/trash-grey.svg), 16px, 16px);
+			@include icon(url(../../resources/icons/trash.svg), 16px, 16px);
 			right: 5%;
 		}
 

@@ -17,7 +17,7 @@
 
 import React, { useImperativeHandle } from 'react';
 import { observer } from 'mobx-react-lite';
-import { createBemElement, createBemBlock } from '../../helpers/styleCreators';
+import { createBemBlock } from '../../helpers/styleCreators';
 import { BoxEntity, Pin } from '../../models/Box';
 import useSchemasStore from '../../hooks/useSchemasStore';
 import { ModalPortal } from '../util/Portal';
@@ -26,11 +26,13 @@ import '../../styles/box.scss';
 import BoxPin from './BoxPin';
 import useConnectionsStore from '../../hooks/useConnectionsStore';
 import PinConfigurator from '../pin-configurator/PinConfigurator';
+import openConfirmModal from '../../helpers/modal';
 
 interface Props {
 	box: BoxEntity;
 	groupsTopOffset?: number;
 	titleHeight?: number;
+	color: string;
 }
 
 export interface BoxMethods {
@@ -38,7 +40,12 @@ export interface BoxMethods {
 	kind: string;
 }
 
-const Box = ({ box, groupsTopOffset, titleHeight }: Props, ref: React.Ref<BoxMethods>) => {
+const Box = ({
+	box,
+	groupsTopOffset,
+	titleHeight,
+	color,
+}: Props, ref: React.Ref<BoxMethods>) => {
 	const schemasStore = useSchemasStore();
 	const connectionStore = useConnectionsStore();
 
@@ -135,11 +142,9 @@ const Box = ({ box, groupsTopOffset, titleHeight }: Props, ref: React.Ref<BoxMet
 
 	const boxClass = createBemBlock('box', isBoxActive ? 'active' : null);
 
-	const settingsIconClassName = createBemElement('box', 'settings-icon', isModalOpen ? 'active' : null);
-
-	const deleteBoxHandler = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+	const deleteBoxHandler = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 		e.stopPropagation();
-		if (window.confirm(`Are you sure you want to delete resource "${box.name}"`)) {
+		if (await openConfirmModal(`Are you sure you want to delete resource "${box.name}"?`)) {
 			schemasStore.deleteBox(box.name);
 		}
 	};
@@ -202,71 +207,78 @@ const Box = ({ box, groupsTopOffset, titleHeight }: Props, ref: React.Ref<BoxMet
 	};
 
 	return (
-		<div
-			ref={boxRef}
-			className={boxClass}
-			onMouseOver={() => {
-				if (!schemasStore.activeBox) {
-					schemasStore.setActiveBox(box);
-					setIsBoxActive(true);
-				}
-			}}
-			onMouseLeave={() => {
-				if (!isContextMenuOpen
-					&& !editablePin
-					&& box.name === schemasStore.activeBox?.name) {
-					schemasStore.setActiveBox(null);
-					setIsBoxActive(false);
-				}
-			}}
-		>
-			<div className="box__header">
-				<span className="box__title">{box.name}</span>
-				<div className="box__buttons-wrapper">
-					<button
-						className="box__button"
-						onClick={e => {
-							e.stopPropagation();
-							setIsModalOpen(!isModalOpen);
-						}}
-					>
-						<i className={settingsIconClassName} />
-					</button>
-					<button className="box__button" onClick={deleteBoxHandler}>
-						<i className="box__remove-icon" />
-					</button>
+		<>
+			<div
+				ref={boxRef}
+				className={boxClass}
+				onMouseOver={() => {
+					if (!schemasStore.activeBox) {
+						schemasStore.setActiveBox(box);
+						setIsBoxActive(true);
+					}
+				}}
+				onMouseLeave={() => {
+					if (!isContextMenuOpen
+						&& !editablePin
+						&& box.name === schemasStore.activeBox?.name) {
+						schemasStore.setActiveBox(null);
+						setIsBoxActive(false);
+					}
+				}}
+			>
+				<div
+					style={{
+						backgroundColor: color,
+					}}
+					className="box__header">
+					<span className="box__title">{box.name}</span>
+					<div className="box__buttons-wrapper">
+						<button className="box__button remove" onClick={deleteBoxHandler}>
+							<i className="box__button-icon" />
+						</button>
+						<button
+							className="box__button settings"
+							onClick={e => {
+								e.stopPropagation();
+								setIsModalOpen(!isModalOpen);
+							}}>
+							<i className="box__button-icon" />
+						</button>
+					</div>
 				</div>
-			</div>
-			<div className="box__info-list">
-				<div className="box__info">
-					<div className="box__info-name">Kind</div>
-					<div className="box__info-value">{box.kind}</div>
+				<div className="box__body">
+					<div className="box__info-list">
+						<div className="box__info">
+							<div className="box__info-name">Kind</div>
+							<div className="box__info-value">{box.kind}</div>
+						</div>
+						<div className="box__info">
+							<div className="box__info-name">Image name</div>
+							<div className="box__info-value">{box.spec['image-name']}</div>
+						</div>
+					</div>
+					<div className="box__pins">
+						{box.spec.pins.map((pin, index) => (
+							<BoxPin
+								key={pin.name}
+								ref={pinsRefs[index]}
+								pin={pin}
+								box={box}
+								deletePinConnections={schemasStore.deletePinConnections}
+								selectBox={schemasStore.setActiveBox}
+								selectPin={schemasStore.setActivePin}
+								connectionDirection={getPinDirection(pin)}
+								setConnection={connectionStore.setConnection}
+								onContextMenuStateChange={isOpen => setIsContextMenuOpen(isOpen)}
+								setEditablePin={setEditablePin}
+								leftDotVisible={isDotConnected(pin.name, 'left')}
+								rightDotVisible={isDotConnected(pin.name, 'right')}
+								activeBox={schemasStore.activeBox}
+								activePin={schemasStore.activePin}
+							/>
+						))}
+					</div>
 				</div>
-				<div className="box__info">
-					<div className="box__info-name">Image name</div>
-					<div className="box__info-value">{box.spec['image-name']}</div>
-				</div>
-			</div>
-			<div className="box__pins">
-				{box.spec.pins.map((pin, index) => (
-					<BoxPin
-						key={pin.name}
-						ref={pinsRefs[index]}
-						pin={pin}
-						box={box}
-						deletePinConnections={schemasStore.deletePinConnections}
-						selectBox={schemasStore.setActiveBox}
-						selectPin={schemasStore.setActivePin}
-						connectionDirection={getPinDirection(pin)}
-						setConnection={connectionStore.setConnection}
-						onContextMenuStateChange={isOpen => setIsContextMenuOpen(isOpen)}
-						setEditablePin={setEditablePin}
-						leftDotVisible={isDotConnected(pin.name, 'left')}
-						rightDotVisible={isDotConnected(pin.name, 'right')}
-						activeBox={schemasStore.activeBox}
-						activePin={schemasStore.activePin}
-					/>
-				))}
 			</div>
 			<ModalPortal
 				isOpen={isModalOpen}
@@ -299,13 +311,14 @@ const Box = ({ box, groupsTopOffset, titleHeight }: Props, ref: React.Ref<BoxMet
 						pin={editablePin}
 						configuratePin={schemasStore.configuratePin}
 						boxName={box.name}
+						connectionTypes={schemasStore.connectionTypes}
 						onClose={() => {
 							setEditablePin(null);
 						}}
 					/>
 				</ModalPortal>
 			}
-		</div>
+		</>
 	);
 };
 

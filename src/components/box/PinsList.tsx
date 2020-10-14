@@ -16,118 +16,48 @@
 
 import React from 'react';
 import { Pin } from '../../models/Box';
-import { useInput } from '../../hooks/useInput';
-import Input from '../util/Input';
 
 interface PinsListProps {
 	pins: Pin[];
-	addPinToBox: (pin: Pin) => void;
 	removePinFromBox: (pin: Pin) => void;
 	setEditablePin: (pin: Pin) => void;
 }
 
 const PinsList = ({
 	pins,
-	addPinToBox,
 	removePinFromBox,
 	setEditablePin,
-}: PinsListProps) => {
-	const [isAddFormOpen, setIsAddFormOpen] = React.useState(false);
-
-	const pinNameInput = useInput({
-		initialValue: '',
-		label: 'Name',
-		id: 'pin-name',
-		name: 'name',
-	});
-
-	const pinConnectionTypeInput = useInput({
-		initialValue: '',
-		label: 'Type',
-		id: 'pin-type',
-		name: 'type',
-	});
-
-	const addPin = () => {
-		if (pinNameInput.value.trim() && pinConnectionTypeInput.value.trim()) {
-			addPinToBox({
-				name: pinNameInput.value,
-				'connection-type': pinConnectionTypeInput.value,
-				filters: [],
-				attributes: [],
-			});
-			setIsAddFormOpen(false);
-			pinNameInput.setValue('');
-			pinConnectionTypeInput.setValue('');
-		}
-	};
-
-	const removePin = (pin: Pin) => {
-		removePinFromBox(pin);
-		setIsAddFormOpen(false);
-	};
-
-	return (
-		<div className="box-settings__group">
-			<label className="box-setting__label">Pins list</label>
-			<div className='pins-list'>
-				{
-					pins.map(pin => (
-						<div
-							key={pin.name}
-							className="pins-list__pin">
-							<div className="pins-list__pin-info">
-								<span className="pins-list__pin-info-title">Name: </span>
-								<span className="pins-list__pin-info-value">{pin.name}</span>
-							</div>
-							<div className="pins-list__pin-info">
-								<span className="pins-list__pin-info-title">Connection type: </span>
-								<span className="pins-list__pin-info-value">{pin['connection-type']}</span>
-							</div>
+}: PinsListProps) => (
+	<div className="modal__elements-list">
+		{
+			pins.length > 0
+				? pins.map(pin =>
+					<div
+						key={pin.name}
+						className='modal__elements-item'>
+						<span className="modal__elements-item-name">
+							{pin.name}
+						</span>
+						<div className="modal__elements-item-buttons-wrapper">
 							<button
-								onClick={() => setEditablePin(pin)}
-								className="pins-list__button edit"/>
+								onClick={() => {
+									setEditablePin(pin);
+								}}
+								className="modal__elements-item-button edit">
+								<i className="modal__elements-item-button-icon" />
+							</button>
 							<button
-								onClick={() => removePin(pin)}
-								className="pins-list__button delete"/>
+								onClick={() => removePinFromBox(pin)}
+								className="modal__elements-item-button delete">
+								<i className="modal__elements-item-button-icon" />
+							</button>
 						</div>
-					))
-				}
-				{
-					isAddFormOpen
-					&& (
-						<div className="box-modal__add-form">
-							{
-								[pinNameInput, pinConnectionTypeInput].map(inputConfig =>
-									<Input
-										key={inputConfig.bind.id}
-										inputConfig={inputConfig}
-									/>)
-							}
-						</div>
-					)
-				}
-				<div className="box-modal__buttons">
-					{
-						!isAddFormOpen
-							? (<button
-								onClick={() => setIsAddFormOpen(true)}
-								className="box-modal__button">Add pin</button>)
-							: (
-								<>
-									<button
-										onClick={addPin}
-										className="box-modal__button">Save</button>
-									<button
-										onClick={() => setIsAddFormOpen(false)}
-										className="box-modal__button">Close</button>
-								</>
-							)
-					}
+					</div>)
+				: <div className="modal__empty">
+					Pins list is empty
 				</div>
-			</div>
-		</div>
-	);
-};
+		}
+	</div>
+);
 
 export default PinsList;
