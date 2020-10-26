@@ -23,11 +23,13 @@ import '../../styles/modal.scss';
 
 interface CreateBoxModalProps {
 	createBox: (box: BoxEntity) => void;
+	typeVariants: string[];
 	onClose: () => void;
 }
 
 const CreateBoxModal = ({
 	createBox,
+	typeVariants,
 	onClose,
 }: CreateBoxModalProps) => {
 	const modalRef = React.useRef<HTMLDivElement>(null);
@@ -40,11 +42,15 @@ const CreateBoxModal = ({
 		validate: (value: string) => !value.includes('_'),
 	});
 
-	const kindInput = useInput({
+	const typeInput = useInput({
 		initialValue: '',
-		label: 'Kind',
-		id: 'kind',
-		name: 'kind',
+		label: 'Type',
+		id: 'type',
+		name: 'type',
+		autocomplete: {
+			variants: typeVariants,
+			datalistKey: 'create-box-modal__box-type',
+		},
 	});
 
 	const imageNameInput = useInput({
@@ -74,13 +80,13 @@ const CreateBoxModal = ({
 		onClose();
 	});
 
-	const inputs = [nameInput, kindInput, imageNameInput, imageVersionInput, nodePortInput];
+	const inputs = [nameInput, typeInput, imageNameInput, imageVersionInput, nodePortInput];
 
 	const createNewBox = () => {
 		if (inputs.every(inputConfig => inputConfig.isValid)) {
 			const inputValues = inputs.map(inputConfig => inputConfig.value.trim());
 			const [
-				name, kind, imageName, imageVersion, nodePortString,
+				name, type, imageName, imageVersion, nodePortString,
 			] = inputValues;
 			let nodePort;
 			if (nodePortString) {
@@ -90,12 +96,13 @@ const CreateBoxModal = ({
 			if (inputValues.every(Boolean) && typeof nodePort === 'number' && nodePort <= 65535) {
 				createBox({
 					name,
-					kind,
+					kind: 'Th2GenericBox',
 					spec: {
 						pins: [],
 						'image-name': imageName,
 						'image-version': imageVersion,
 						'node-port': nodePort,
+						type,
 					},
 				});
 				onClose();

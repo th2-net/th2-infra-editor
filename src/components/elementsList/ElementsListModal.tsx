@@ -125,7 +125,7 @@ const ElementsListModal = ({
 							className={linkButtonClass}>
 							<i className="modal__content-switcher-button-icon" />
 							{
-								`${connectionsStore.connections.length} ${connectionsStore.connections.length === 1
+								`${connectionsStore.links.length} ${connectionsStore.links.length === 1
 									? 'link'
 									: 'links'}`
 							}
@@ -145,7 +145,7 @@ const ElementsListModal = ({
 						onClick={() => setSortDicrection(sortDirection === 'asc' ? 'desc' : 'asc')}
 						className={sortButtonClass}>
 						<i className="modal__button-icon" />
-						Sort by {currentSection === 'boxes' ? 'Kind' : 'Name'}
+						Sort by {currentSection === 'boxes' ? 'Type' : 'Name'}
 					</button>
 				</div>
 				<div className="modal__elements-list">
@@ -154,10 +154,10 @@ const ElementsListModal = ({
 						&& (schemasStore.boxes.length > 0
 							? schemasStore.boxes
 								.sort((a, b) =>
-									(a.kind > b.kind
+									(a.spec.type > b.spec.type
 										? sortDirection === 'asc'
 											? -1 : 1
-										: a.kind < b.kind
+										: a.spec.type < b.spec.type
 											? sortDirection === 'asc'
 												? 1 : -1
 											: 0
@@ -193,7 +193,7 @@ const ElementsListModal = ({
 									<ElementsListLinkItem
 										key={connection.name}
 										link={connection}
-										deleteConnection={connectionsStore.deleteConnection}
+										deleteConnection={connectionsStore.deleteLink}
 										getBoxBorderColor={schemasStore.getBoxBorderColor} />
 								))
 							: <div className="modal__empty">

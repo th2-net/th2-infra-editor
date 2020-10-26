@@ -152,6 +152,7 @@ const Header = () => {
 				closeModal={() => setIsCreateBoxModalOpen(false)}>
 				<CreateBoxModal
 					createBox={schemasStore.createBox}
+					typeVariants={schemasStore.groups.flatMap(group => group.types)}
 					onClose={() => setIsCreateBoxModalOpen(false)}
 				/>
 			</ModalPortal>

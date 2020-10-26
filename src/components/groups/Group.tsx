@@ -15,10 +15,12 @@
  ***************************************************************************** */
 
 import React from 'react';
-import Box, { BoxMethods } from '../box/Box';
+import Box from '../box/Box';
 import { BoxEntity } from '../../models/Box';
 import '../../styles/group.scss';
+import { PinsContainerMethods } from '../box/BoxPinsContainer';
 
+const GROUP_OFFSET = 150;
 interface Props {
 	title: string;
 	boxes: Array<BoxEntity>;
@@ -32,47 +34,46 @@ const Group = React.memo(({
 	groupsTopOffset,
 	color,
 }: Props) => {
-	const [boxRefs, setBoxRefs] = React.useState<React.RefObject<BoxMethods>[]>([]);
+	const boxRefsObject = React.useRef<{
+		[key: string]: React.RefObject<PinsContainerMethods>;
+	}>({});
 	const titleRef = React.useRef<HTMLHeadingElement>(null);
 
-	const arrLength = boxes.length;
-
 	React.useEffect(() => {
-		setBoxRefs(boxRef => (
-			Array(arrLength).fill('').map((_, i) => boxRef[i] || React.createRef())
-		));
+		boxes.forEach(box => boxRefsObject.current[box.name] = boxRefsObject.current[box.name] || React.createRef());
 	}, [boxes]);
 
 	const onScroll = () => {
-		boxRefs
-			.forEach(boxRef => boxRef.current?.updateCoords());
+		Object.values(boxRefsObject.current).forEach(boxRef => boxRef.current?.updateConnections());
 	};
 
 	return (
-		<div className="group">
-			<h1 ref={titleRef} className="group__title">
-				{title}
-			</h1>
-			<div className="group__items">
-				<div
-					onScroll={onScroll}
-					className="group__items-scroller"
-					style={{
-						maxHeight: `${window.innerHeight - 150}px`,
-					}}>
-					{
-						boxes.map((box, index) =>
-							<Box
-								key={`${box.name}-${index}`}
-								box={box}
-								ref={boxRefs[index]}
-								groupsTopOffset={groupsTopOffset}
-								titleHeight={titleRef.current
-									? (titleRef.current?.clientHeight
-										+ parseInt(window.getComputedStyle(titleRef.current).marginBottom))
-									: undefined}
-								color={color} />)
-					}
+		<div className="group-wrapper">
+			<div className="group">
+				<h1 ref={titleRef} className="group__title">
+					{title}
+				</h1>
+				<div className="group__items">
+					<div
+						onScroll={onScroll}
+						className="group__items-scroller"
+						style={{
+							maxHeight: `${window.innerHeight - GROUP_OFFSET}px`,
+						}}>
+						{
+							boxes.map((box, index) =>
+								<Box
+									key={`${box.name}-${index}`}
+									box={box}
+									ref={boxRefsObject.current[box.name]}
+									groupsTopOffset={groupsTopOffset}
+									titleHeight={titleRef.current
+										? (titleRef.current?.clientHeight
+											+ parseInt(window.getComputedStyle(titleRef.current).marginBottom))
+										: undefined}
+									color={color} />)
+						}
+					</div>
 				</div>
 			</div>
 		</div>

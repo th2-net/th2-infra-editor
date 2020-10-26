@@ -163,6 +163,36 @@ const BoxSettings = ({
 		currentSection === 'dictionary' ? 'active' : 'null',
 	);
 
+	const addPinToList = () => {
+		if (!pinList.find(pin => pin.name === pinNameConfigInput.value)) {
+			setPinList([...pinList, {
+				name: pinNameConfigInput.value,
+				'connection-type': pinTypeConfigInput.value as 'mq' | 'grpc',
+				attributes: [],
+				filters: [],
+			}]);
+		} else {
+			// eslint-disable-next-line no-alert
+			window.alert(`Pin ${pinNameConfigInput.value} already exists`);
+		}
+	};
+
+	const addDictionaryToList = () => {
+		if (!relatedDictionaryList.find(dictionary => dictionary.name === relationNameInput.value)) {
+			setRelatedDictionaryList([...relatedDictionaryList, {
+				name: relationNameInput.value,
+				box: box.name,
+				dictionary: {
+					name: dictionaryNameInput.value,
+					type: dictionaryTypeInput.value,
+				},
+			}]);
+		} else {
+			// eslint-disable-next-line no-alert
+			window.alert(`Dictionary ${relationNameInput.value} already exists`);
+		}
+	};
+
 	const submit = () => {
 		if ([imageNameInput, imageVersionInput, nodePortInput]
 			.every(config => config.isValid && config.value.trim())
@@ -178,6 +208,7 @@ const BoxSettings = ({
 						? JSON.parse(boxConfigInput.value)
 						: undefined,
 					pins: pinList,
+					type: box.spec.type,
 				},
 			},
 			relatedDictionaryList);
@@ -238,7 +269,7 @@ const BoxSettings = ({
 					&& <PinsList
 						pins={pinList}
 						removePinFromBox={deletedPin =>
-							setPinList(pinList.filter(pin => pin !== deletedPin))}
+							setPinList(pinList.filter(pin => pin.name !== deletedPin.name))}
 						setEditablePin={pin => setEditablePin(pin)}/>
 				}
 				{
@@ -247,7 +278,7 @@ const BoxSettings = ({
 						dictionaryRelations={relatedDictionaryList}
 						removeDictionaryRelation={deletedRelation =>
 							setRelatedDictionaryList(relatedDictionaryList
-								.filter(relation => relation !== deletedRelation))} />
+								.filter(relation => relation.name !== deletedRelation.name))} />
 				}
 				<div className="modal__buttons">
 					{
@@ -280,12 +311,7 @@ const BoxSettings = ({
 				<FormModal
 					title={'Add pin'}
 					inputConfigList={[pinNameConfigInput, pinTypeConfigInput]}
-					onSubmit={() => setPinList([...pinList, {
-						name: pinNameConfigInput.value,
-						'connection-type': pinTypeConfigInput.value,
-						attributes: [],
-						filters: [],
-					}])}
+					onSubmit={addPinToList}
 					onClose={() => setIsAddPinFormOpen(false)}
 				/>
 			</ModalPortal>
@@ -293,14 +319,7 @@ const BoxSettings = ({
 				<FormModal
 					title={'Add dictionary'}
 					inputConfigList={[relationNameInput, dictionaryNameInput, dictionaryTypeInput]}
-					onSubmit={() => setRelatedDictionaryList([...relatedDictionaryList, {
-						name: relationNameInput.value,
-						box: box.name,
-						dictionary: {
-							name: dictionaryNameInput.value,
-							type: dictionaryTypeInput.value,
-						},
-					}])}
+					onSubmit={addDictionaryToList}
 					onClose={() => setIsAddDictionaryFormOpen(false)}
 				/>
 			</ModalPortal>

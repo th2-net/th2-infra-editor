@@ -15,18 +15,19 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useImperativeHandle } from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { createBemBlock } from '../../helpers/styleCreators';
+import { createStyleSelector } from '../../helpers/styleCreators';
 import { BoxEntity, Pin } from '../../models/Box';
 import useSchemasStore from '../../hooks/useSchemasStore';
 import { ModalPortal } from '../util/Portal';
 import BoxSettings from './BoxSettings';
 import '../../styles/box.scss';
-import BoxPin from './BoxPin';
-import useConnectionsStore from '../../hooks/useConnectionsStore';
 import PinConfigurator from '../pin-configurator/PinConfigurator';
-import openConfirmModal from '../../helpers/modal';
+import { openConfirmModal } from '../../helpers/modal';
+import BoxPinsContainer, { PinsContainerMethods } from './BoxPinsContainer';
+import useConnectionsStore from '../../hooks/useConnectionsStore';
+import useOutsideClickListener from '../../hooks/useOutsideClickListener';
 
 interface Props {
 	box: BoxEntity;
@@ -35,112 +36,23 @@ interface Props {
 	color: string;
 }
 
-export interface BoxMethods {
-	updateCoords: () => void;
-	kind: string;
-}
-
 const Box = ({
 	box,
 	groupsTopOffset,
 	titleHeight,
 	color,
-}: Props, ref: React.Ref<BoxMethods>) => {
+}: Props, ref: React.Ref<PinsContainerMethods>) => {
 	const schemasStore = useSchemasStore();
-	const connectionStore = useConnectionsStore();
+	const connectionsStore = useConnectionsStore();
 
 	const [isModalOpen, setIsModalOpen] = React.useState(false);
-	const [isBoxActive, setIsBoxActive] = React.useState(false);
-	const [isContextMenuOpen, setIsContextMenuOpen] = React.useState(false);
 	const [editablePin, setEditablePin] = React.useState<Pin | null>(null);
 
 	const boxRef = React.useRef<HTMLDivElement>(null);
-	const [pinsRefs, setPinsRefs] = React.useState<React.RefObject<HTMLDivElement>[]>([]);
 
-	React.useEffect(() => {
-		setPinsRefs(pinRef =>
-			Array(box.spec.pins.length)
-				.fill('')
-				.map((_, i) => pinRef[i] || React.createRef()));
-	}, [box.spec.pins]);
+	const isBoxActive = schemasStore.activeBox?.name === box.name;
 
-	React.useEffect(() => {
-		if (schemasStore.activeBox === box) {
-			setIsBoxActive(true);
-		} else {
-			setIsBoxActive(false);
-		}
-	}, [schemasStore.activeBox]);
-
-	React.useEffect(() => {
-		sendCoords();
-	}, [pinsRefs, groupsTopOffset, titleHeight, schemasStore.boxes]);
-
-	useImperativeHandle(
-		ref,
-		() => ({
-			updateCoords: () => {
-				sendCoords();
-			},
-			kind: box.kind,
-		}),
-		[groupsTopOffset],
-	);
-
-	const isBoxConnectable = React.useMemo(
-		() => Boolean(connectionStore.connectionChain.find(wrapperBox => wrapperBox.box.name === box.name)),
-		[schemasStore.activePin],
-	);
-
-	const sendCoords = () => {
-		if (pinsRefs.length === box.spec.pins.length) {
-			connectionStore.addCoords(
-				box.name,
-				pinsRefs.map((pinRef, index) => {
-					const pinClientRect = pinRef.current?.getBoundingClientRect();
-					const leftConnection = {
-						connectionOwner: {
-							box: box.name,
-							pin: box.spec.pins[index].name,
-							pinDirection: 'left' as 'left',
-							connectionType: box.spec.pins[index]['connection-type'],
-						},
-						left: pinClientRect ? pinClientRect.left - 20 : 0,
-						top: pinClientRect
-							? pinClientRect.top
-							+ pinClientRect?.height / 2
-								- (groupsTopOffset ?? 0)
-								- (titleHeight ?? 0)
-							: 0,
-					};
-					const rightConnection = {
-						connectionOwner: {
-							box: box.name,
-							pin: box.spec.pins[index].name,
-							pinDirection: 'right' as 'right',
-							connectionType: box.spec.pins[index]['connection-type'],
-						},
-						left: pinClientRect ? pinClientRect.left + pinClientRect.width + 20 : 0,
-						top: pinClientRect
-							? pinClientRect.top
-								+ pinClientRect?.height / 2
-								- (groupsTopOffset ?? 0)
-								- (titleHeight ?? 0)
-							: 0,
-					};
-					return {
-						pin: box.spec.pins[index].name,
-						connections: {
-							leftConnection,
-							rightConnection,
-						},
-					};
-				}),
-			);
-		}
-	};
-
-	const boxClass = createBemBlock('box', isBoxActive ? 'active' : null);
+	const boxClass = createStyleSelector('box', isBoxActive ? 'active' : null);
 
 	const deleteBoxHandler = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 		e.stopPropagation();
@@ -149,62 +61,16 @@ const Box = ({
 		}
 	};
 
-	const getPinDirection = (pin: Pin) => {
-		if (isBoxActive) return 'both';
-
-		if (isBoxConnectable) {
-			const findedBox = connectionStore.connectionChain.find(wrapperBox => wrapperBox.box.name === box.name);
-			if (findedBox) {
-				return pin['connection-type'] === schemasStore.activePin?.['connection-type']
-					&& !connectionStore.links.some(
-						link =>
-							link.from.box === schemasStore.activeBox?.name
-							&& link.from.pin === schemasStore.activePin?.name
-							&& link.to.box === box.name
-							&& link.to.pin === pin.name,
-					) ? findedBox.direction
-					: 'none';
-			}
+	useOutsideClickListener(boxRef, e => {
+		if (!e.composedPath().some(
+			elem =>
+				((elem as HTMLElement).className
+					&& (elem as HTMLElement).className.includes)
+					&& ((elem as HTMLElement).className.includes('box')),
+		)) {
+			schemasStore.setActiveBox(null);
 		}
-		return 'none';
-	};
-
-	const isDotConnected = (pinName: string, direction: 'left' | 'right') => {
-		const pinArrows = connectionStore.connections.filter(
-			arrow =>
-				(arrow.start.connectionOwner.box === box.name && arrow.start.connectionOwner.pin === pinName)
-				|| (arrow.end.connectionOwner.box === box.name && arrow.end.connectionOwner.pin === pinName),
-		);
-		if (direction === 'left') {
-			return connectionStore.connectionCoords.some(
-				coord =>
-					coord[0].box === box.name
-					&& coord[0].pin === pinName
-					&& pinArrows.some(
-						arrow =>
-							(arrow.start.left === coord[1].leftConnection.left
-								&& arrow.start.top === coord[1].leftConnection.top)
-							|| (arrow.end.left === coord[1].leftConnection.left
-								&& arrow.end.top === coord[1].leftConnection.top),
-					),
-			);
-		}
-		if (direction === 'right') {
-			return connectionStore.connectionCoords.some(
-				coord =>
-					coord[0].box === box.name
-					&& coord[0].pin === pinName
-					&& pinArrows.some(
-						arrow =>
-							(arrow.start.left === coord[1].rightConnection.left
-								&& arrow.start.top === coord[1].rightConnection.top)
-							|| (arrow.end.left === coord[1].rightConnection.left
-								&& arrow.end.top === coord[1].rightConnection.top),
-					),
-			);
-		}
-		return false;
-	};
+	});
 
 	return (
 		<>
@@ -212,17 +78,15 @@ const Box = ({
 				ref={boxRef}
 				className={boxClass}
 				onMouseOver={() => {
-					if (!schemasStore.activeBox) {
+					if (!schemasStore.activeBox && !connectionsStore.draggableLink) {
 						schemasStore.setActiveBox(box);
-						setIsBoxActive(true);
 					}
 				}}
 				onMouseLeave={() => {
-					if (!isContextMenuOpen
-						&& !editablePin
-						&& box.name === schemasStore.activeBox?.name) {
+					if (!editablePin
+						&& isBoxActive
+						&& !schemasStore.activePin) {
 						schemasStore.setActiveBox(null);
-						setIsBoxActive(false);
 					}
 				}}
 			>
@@ -257,27 +121,20 @@ const Box = ({
 							<div className="box__info-value">{box.spec['image-name']}</div>
 						</div>
 					</div>
-					<div className="box__pins">
-						{box.spec.pins.map((pin, index) => (
-							<BoxPin
-								key={pin.name}
-								ref={pinsRefs[index]}
-								pin={pin}
-								box={box}
-								deletePinConnections={schemasStore.deletePinConnections}
-								selectBox={schemasStore.setActiveBox}
-								selectPin={schemasStore.setActivePin}
-								connectionDirection={getPinDirection(pin)}
-								setConnection={connectionStore.setConnection}
-								onContextMenuStateChange={isOpen => setIsContextMenuOpen(isOpen)}
-								setEditablePin={setEditablePin}
-								leftDotVisible={isDotConnected(pin.name, 'left')}
-								rightDotVisible={isDotConnected(pin.name, 'right')}
-								activeBox={schemasStore.activeBox}
-								activePin={schemasStore.activePin}
-							/>
-						))}
-					</div>
+					{
+						box.spec.pins.length > 0
+						&& <BoxPinsContainer
+							ref={ref}
+							pins={box.spec.pins}
+							isBoxActive={schemasStore.activeBox
+								? isBoxActive
+								: false
+							}
+							boxName={box.name}
+							setEditablePin={setEditablePin}
+							groupsTopOffset={groupsTopOffset}
+							titleHeight={titleHeight} />
+					}
 				</div>
 			</div>
 			<ModalPortal

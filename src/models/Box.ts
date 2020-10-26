@@ -21,23 +21,39 @@ export interface BoxEntity extends FileBase {
 		['custom-config']?: {
 			[prop: string]: string;
 		};
+		['extended-settings']?: {
+			['chart-cfg']: {
+				path: string;
+				ref: string;
+			};
+			resources: {
+				limits: {
+					cpu: string;
+					memory: string;
+				};
+				requests: {
+					cpu: string;
+					memory: string;
+				};
+			};
+			service: {
+				enabled: boolean;
+				targetPort: string;
+			};
+		};
 		['image-name']: string;
 		['image-version']: string;
 		['node-port']?: number;
 		['dictionaries-relation']?: Array<DictionaryRelation>;
 		data?: string;
 		pins: Array<Pin>;
+		type: string;
 	};
-}
-
-export interface BoxEntityWrapper {
-	box: BoxEntity;
-	direction: 'left' | 'right';
 }
 
 export interface Pin {
 	attributes: Array<string>;
-	['connection-type']: string;
+	['connection-type']: 'mq' | 'grpc';
 	filters?: Array<Filter>;
 	name: string;
 }
@@ -50,13 +66,18 @@ export interface Filter {
 	}[];
 }
 
-export interface BoxConnections {
-	leftConnection: Connection;
-	rightConnection: Connection;
+export interface Connection {
+	name: string;
+	connectionOwner: ConnectionOwner;
+	coords: ConnectionPoints;
 }
 
-export interface Connection {
-	connectionOwner: ConnectionOwner;
+export interface ConnectionPoints {
+	leftPoint: ConnectionCoord;
+	rightPoint: ConnectionCoord;
+}
+
+export interface ConnectionCoord {
 	left: number;
 	top: number;
 }
@@ -64,13 +85,13 @@ export interface Connection {
 export interface ConnectionOwner {
 	box: string;
 	pin: string;
-	connectionType: string;
+	connectionType: 'mq' | 'grpc';
 }
 
-export interface ConnectionArrow {
+export interface LinkArrow {
 	name: string;
-	start: Connection;
-	end: Connection;
+	start: ConnectionCoord;
+	end: ConnectionCoord;
 }
 
 export function isBoxEntity(object: unknown): object is BoxEntity {

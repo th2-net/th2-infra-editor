@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import React from 'react';
-import openConfirmModal from '../../helpers/modal';
+import { openConfirmModal } from '../../helpers/modal';
 import { createBemBlock } from '../../helpers/styleCreators';
 import { BoxEntity } from '../../models/Box';
 
@@ -75,8 +75,8 @@ const ElementsListBoxItem = ({
 		<div className="element__body">
 			<div className="element__info-list">
 				<div className="element__info">
-					<div className="element__info-name">Kind</div>
-					<div className="element__info-value">{box.kind}</div>
+					<div className="element__info-name">Type</div>
+					<div className="element__info-value">{box.spec.type}</div>
 				</div>
 			</div>
 		</div>
