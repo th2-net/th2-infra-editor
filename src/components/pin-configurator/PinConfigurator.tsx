@@ -102,7 +102,7 @@ const PinConfigurator = ({
 			.every(config => config.isValid && config.value.trim())) {
 			configuratePin({
 				name: nameInput.value,
-				'connection-type': connectionTypeInput.value,
+				'connection-type': connectionTypeInput.value as 'mq' | 'grpc',
 				attributes,
 				filters,
 			}, boxName);

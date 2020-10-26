@@ -35,9 +35,11 @@ const PinsList = ({
 					<div
 						key={pin.name}
 						className='modal__elements-item'>
-						<span className="modal__elements-item-name">
-							{pin.name}
-						</span>
+						<div className="modal__elements-item-info">
+							<span className="modal__elements-item-info-name">
+								{pin.name}
+							</span>
+						</div>
 						<div className="modal__elements-item-buttons-wrapper">
 							<button
 								onClick={() => {

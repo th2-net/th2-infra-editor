@@ -17,8 +17,9 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import ConfirmModal from '../components/util/ConfirmModal';
+import PromptModal from '../components/util/PromptModal';
 
-export default function openConfirmModal(text: string, confirmButtonText?: string) {
+export function openConfirmModal(text: string, confirmButtonText?: string) {
 	return new Promise<boolean>((res, rej) => {
 		const modalRoot = document.getElementById('modal-root');
 		if (!modalRoot) rej();
@@ -32,7 +33,8 @@ export default function openConfirmModal(text: string, confirmButtonText?: strin
 					text={text}
 					confirmButtonText={confirmButtonText}
 					onAnswer={answer => {
-						closeConfirmModal(el);
+						ReactDOM.unmountComponentAtNode(el);
+						modalRoot.removeChild(el);
 						res(answer);
 					}} />,
 				el,
@@ -41,11 +43,25 @@ export default function openConfirmModal(text: string, confirmButtonText?: strin
 	});
 }
 
-function closeConfirmModal(element: HTMLDivElement) {
-	const modalRoot = document.getElementById('modal-root');
+export function openPromptModal(text: string) {
+	return new Promise<string | null>((res, rej) => {
+		const modalRoot = document.getElementById('modal-root');
+		if (!modalRoot) rej();
+		if (modalRoot) {
+			const el = document.createElement('div');
 
-	if (modalRoot && element) {
-		ReactDOM.unmountComponentAtNode(element);
-		modalRoot.removeChild(element);
-	}
+			modalRoot.appendChild(el);
+
+			ReactDOM.render(
+				<PromptModal
+					text={text}
+					onAnswer={answer => {
+						ReactDOM.unmountComponentAtNode(el);
+						modalRoot.removeChild(el);
+						res(answer);
+					}} />,
+				el,
+			);
+		}
+	});
 }

@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import React from 'react';
-import openConfirmModal from '../../helpers/modal';
+import { openConfirmModal } from '../../helpers/modal';
 import { Link } from '../../models/LinksDefinition';
 
 interface ElementsListLinkItemProps {

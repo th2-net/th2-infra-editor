@@ -26,6 +26,7 @@ interface UseInputProps {
 		variants: string[];
 	};
 	validate?: (value: string) => boolean;
+	autoFocus?: boolean;
 }
 
 export interface InputConfig {
@@ -44,6 +45,7 @@ export interface InputConfig {
 		onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 		id: string;
 		name?: string;
+		autoFocus?: boolean;
 	};
 }
 
@@ -54,6 +56,7 @@ export const useInput = ({
 	id,
 	name,
 	autocomplete,
+	autoFocus,
 }: UseInputProps): InputConfig => {
 	const [value, setValue] = React.useState(initialValue);
 	const [isValid, setIsValid] = React.useState(true);
@@ -94,6 +97,7 @@ export const useInput = ({
 			},
 			id,
 			name,
+			autoFocus,
 		},
 	};
 };

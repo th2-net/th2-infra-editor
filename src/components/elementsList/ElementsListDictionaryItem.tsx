@@ -16,7 +16,7 @@
 
 import React from 'react';
 import { downloadFile } from '../../helpers/files';
-import openConfirmModal from '../../helpers/modal';
+import { openConfirmModal } from '../../helpers/modal';
 import { DictionaryEntity } from '../../models/Dictionary';
 
 interface ElementsListDictionaryItemProps {
@@ -31,7 +31,11 @@ const ElementsListDictionaryItem = ({
 	setEditableDictionary,
 }: ElementsListDictionaryItemProps) => (
 	<div className="modal__elements-item">
-		<span className="modal__elements-item-name">{dictionary.name}</span>
+		<div className="modal__elements-item-info">
+			<span className="modal__elements-item-info-name">
+				{dictionary.name}
+			</span>
+		</div>
 		<div className="modal__elements-item-buttons-wrapper">
 			<button
 				onClick={() => setEditableDictionary(dictionary)}

@@ -1,3 +1,5 @@
+@import './common/vars';
+
 #svg-layout {
     width: 100%;
     height: calc(100% - 42px);
@@ -8,34 +10,21 @@
 }
 
 .arrow {
-    cursor: pointer;
-
     &__line {
-        stroke: #00997F;
+        stroke: $primaryColor;
         stroke-width: 2;
         fill: none;
 
         &.highlighted {
-            stroke: rgb(24, 150, 260);
+            stroke: $secondaryColor;
         }
     }
 
     &__pointer {
-        fill: #00997F;
+        fill: #7A99B8;
 
         &.highlighted {
-            fill: rgb(24, 150, 260);
-        }
-    }
-
-    &__background {
-        stroke: none;
-        stroke-width: 10px;
-        fill: none;
-
-        &.highlighted {
-            stroke-width: 6px;
-            stroke: rgb(196, 226, 255);
+            fill: $secondaryColor;
         }
     }
 }

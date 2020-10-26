@@ -126,228 +126,154 @@
 		}
 	}
 
-	&__pins {
-		padding: 0 20px;
-	}
-
-	.pin {
+	&__pins-area {
 		position: relative;
-		display: grid;
-		grid-template-columns: 14px auto 14px;
-		column-gap: 10px;
-		align-items: center;
-		justify-items: center;
-
-		&:not(:last-child) {
-			margin-bottom: 5px;
-		}
-		
-		&__dot {
-			width: 14px;
-			height: 14px;
-			border-radius: 50%;
-			border: 4px solid #757575;
-			background-color: white;
-			cursor: pointer;
-			align-content: center;
-
-			&:nth-child(1) {
-				grid-column-start: 1;
-				grid-column-end: 2;
-			}
-
-			&:nth-child(3) {
-				grid-column-start: 3;
-				grid-column-end: 4;
-			}
-
-			&.active {
-				border-color: #00997F;
-			}
-
-			&.hidden {
-				display: none;
-			}
-
-			&:hover {
-				border-color: #00997F;
-			}
-		}
-
-		&__info {
-			text-align: center;
-			grid-column-start: 2;
-			grid-column-end: 3;
-			word-spacing: 10px;
-			display: flex;
-			justify-content: space-between;
-			flex-wrap: wrap;
-		
-			&-value {
-				max-width: 134px;
-				flex-grow: 1;
-				overflow-wrap: break-word;
-	
-				&:nth-child(2) {
-					margin-left: 10px;
-				}
-			}
-		}
-
-		&__context-menu {
-			display: flex;
-			justify-content: space-between;
-			position: absolute;
-			top: 50%;
-			transform: translateY(-50%);
-			background-color: white;
-			border-radius: 6px;
-			padding: 7px 10px;
-			z-index: 2;
-			box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 
-			0px 8px 10px 1px rgba(0, 0, 0, 0.14),
-			0px 3px 14px 2px rgba(0, 0, 0, 0.12);
-
-			&.left {
-				left: 24px;
-
-				&:before {
-					border-right: 10px solid white;
-					left: -10px;
-				}
-			}
-
-			&.right {
-				right: 24px;
-
-				&:before {
-					border-left: 10px solid white;
-					right: -10px;
-				}
-			}
-
-			&.closed {
-				display: none;
-			}
-
-			&:before {
-				content: '';
-				width: 0; 
-				height: 0; 
-				position: absolute;
-				top: 50%;
-				transform: translateY(-50%);
-				border-top: 10px solid transparent;
-				border-bottom: 10px solid transparent;
-			}
-		}
-
-		&__menu-button {
-			border: none;
-			margin: 0;
-			padding: 0;
-			width: 30px;
-			height: 30px;
-			background-color: transparent;
-			outline: none;
-			cursor: pointer;
-			border-radius: 4px;
-			display: flex;
-			justify-content: center;
-			align-items: center;
-
-			&:hover {
-				background-color: rgb(207, 207, 207);
-			}
-
-			&-icon {
-				width: 25px;
-				height: 25px;
-				flex-shrink: 0;
-
-				&.edit {
-					@include icon(url(../../resources/icons/settings.svg), 16px, 16px);
-				}
-				
-				&.delete {
-					@include icon(url(../../resources/icons/trash.svg), 16px, 16px);
-				}
-			}
-		}
-
-		&__menu-separator {
-			height: 25px;
-			width: 2px;
-			border-radius: 5px;
-			background-color: rgb(230, 230, 230);
-			margin: 0 10px;
-		}
 	}
-
-	&__buttons-wrapper {
-		display: none;
-	}
-
-	&:hover {
-		.box__buttons-wrapper {
-			display: block;
-		}
-	}
-}
-
-.pins-list {
-	border: 1px solid #808080;
-	border-radius: 6px;
-	padding: 10px;
-	margin-top: 10px;
 
 	&__pin {
 		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
-		padding: 10px 5px;
-		margin-bottom: 10px;
-		border-radius: 6px;
-		border: 1px solid #cfcfcf;
-		background-color: white;
+		justify-content: space-between;
+		align-items: center;
+		padding: 6.5px 0;
 		position: relative;
+		cursor: pointer;
+
+		&.active &-dot {
+			background-color: white;
+			border: 2px solid $secondaryColor;
+
+			&:hover {
+				background-color: $pinHoverColor;
+			}
+
+			&.left {
+				left: -17px;
+			}
+
+			&.right {
+				right: -17px;
+			}
+		}
+
+		&.open {
+			justify-content: center;
+			background-color: #FFDDCC;
+			border-radius: 6px;
+			gap: 4px;
+		}
+
+		&.open &-info {
+			background-color: white;
+			border-radius: 12px;
+			cursor: pointer;
+
+			&.active {
+				background-color: $secondaryColor;
+
+				.box__pin-name {
+					color: white;
+				}
+			}
+		}
+
+		&.active &-name, &.active &-counter {
+			color:  $secondaryColor;
+		}
+
+		&.active &-icon {
+			@include icon(url(../../resources/icons/pin-secondary.svg), 14px, 14px);
+		}
+
+		&-dot {
+			width: 8px;
+			height: 8px;
+			background-color: $primaryColor;
+			border-radius: 50%;
+			position: absolute;
+			top: calc(50%);
+			transform: translateY(-50%);
+			box-sizing: content-box;
+			cursor: pointer;
+
+			&.left {
+				left: -15px;
+			}
+
+			&.right {
+				right: -15px;
+			}
+
+			&.open &-delete-btn {
+				display: block;
+			}
+
+			&-delete-btn {
+				@include button-transparent(14px, 14px);
+				@include icon(url(../../resources/icons/trash-grey.svg), 14px, 14px);
+
+				display: none;
+				position: absolute;
+				top: calc(50% - 8px);
+			}
+
+			&.left &-delete-btn {
+				left: 20px;
+			}
+
+			&.right &-delete-btn {
+				right: 20px;
+			}
+		}
 
 		&-info {
-			margin-left: 15px;
-
-			&-title {
-				font-size: 12px;
-				font-weight: 600;
-				color: rgb(34, 34, 34);
-			}
-
-			&-value {
-				font-size: 12px;
-				color: rgb(78, 78, 78);
-			}
-		}
-	}
-
-	&__button {		
-		display: inline-block;
-		position: absolute;
-		top: 50%;
-		transform: translateY(-50%);
-		padding: 0;
-		margin: 0;
-		border: none;
-		background-color: transparent;
-		cursor: pointer;
-		outline: none;
-
-		&.delete {
-			@include icon(url(../../resources/icons/trash.svg), 16px, 16px);
-			right: 5%;
+			height: 18px;
+			display: flex;
+			align-items: center;
+			padding: 2px 8px;
+			transition: background-color 0.1s ease-in-out;
 		}
 
-		&.edit {
-			@include icon(url(../../resources/icons/settings.svg), 16px, 16px);
-			right: 13%;
+		&-name, &-counter {
+			color: $primaryColor;
+			font-size: 11px;
+			line-height: 14px;
+			font-weight: 600;
+		}
+
+		&-icon {
+			display: inline-block;
+			margin-left: 2px;
+
+			@include icon(url(../../resources/icons/pin-primary.svg), 14px, 14px);
+		}
+
+		&-button {
+			@include button-transparent(15px, 15px);
+
+			&-icon {
+				display: inline-block;
+			}
+
+			&.remove &-icon {
+				@include icon(url(../../resources/icons/trash-grey.svg), 14px, 14px);
+			}
+
+			&.settings &-icon {
+				@include icon(url(../../resources/icons/settings-grey.svg), 14px, 14px);
+			}
+		}
+
+		&-connection-name {
+			position: absolute;
+			background-color: white;
+			color: $secondaryDarkColor;
+			font-size: 11px;
+			line-height: 14px;
+			padding: 2px 8px;
+			border-radius: 12px;
+			font-weight: 600;
+			z-index: 2;
+			box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.25);
 		}
 	}
 }

@@ -72,11 +72,13 @@ const Groups = () => {
 				<div
 					className="groups__list"
 					style={{
-						gridTemplateColumns: `repeat(${Math.max(schemasStore.kinds.length, 6)}, 252px)`,
+						gridTemplateColumns: `repeat(${Math.max(schemasStore.types.length, 6)}, 252px)`,
 					}}>
 					{
 						schemasStore.groups.map(group => {
-							const boxes = schemasStore.boxes.filter(box => group.kinds.some(kind => kind === box.kind));
+							const boxes = schemasStore.boxes
+								.filter(box => group.types.some(type => type === box.spec.type));
+
 							return boxes.length > 0
 								? <Group
 									key={group.title}
@@ -87,26 +89,10 @@ const Groups = () => {
 								: <Fragment key={group.title}></Fragment>;
 						})
 					}
-					{
-						schemasStore.kinds
-							.filter(kind => schemasStore
-								.groups.every(group => group.kinds
-									.every(groupKind => groupKind !== kind)))
-							.map(kind => (
-								<Group
-									key={kind}
-									title={kind}
-									boxes={schemasStore.boxes.filter(box => box.kind === kind)
-										.sort((first, second) => (first.name > second.name ? 1 : -1))}
-									groupsTopOffset={groupsRef.current?.getBoundingClientRect().top}
-									color={'#C066CC'} />
-							))
-					}
 				</div>
 			</div>
 			<SvgLayout
-				connections={connectionStore.connections}
-				deleteConnection={connectionStore.deleteConnection}
+				connections={connectionStore.connectionsArrows}
 			/>
 		</div>
 	);

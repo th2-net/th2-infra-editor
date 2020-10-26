@@ -48,18 +48,23 @@ export default class SchemasStore {
 	public readonly groups = [
 		{
 			title: 'Th2Connector',
-			kinds: ['Th2Connector', 'Th2Hand'],
+			types: ['th2-connector'],
 			color: '#FF9966',
 		},
 		{
 			title: 'Th2Codec',
-			kinds: ['Th2Codec'],
+			types: ['th2-codec'],
 			color: '#66CC91',
 		},
 		{
 			title: 'Th2Act',
-			kinds: ['Th2Act', 'Th2Verify'],
+			types: ['th2-act', 'th2-verifier', 'th2-book-checker', 'th2-recon'],
 			color: '#666DCC',
+		},
+		{
+			title: 'Report',
+			types: ['th2-report-data-provider', 'th2-report-data-viewer'],
+			color: '#C066CC',
 		},
 	];
 
@@ -71,8 +76,8 @@ export default class SchemasStore {
 		this.connectionStore = new ConnectionsStore(rootStore, api, this, historyStore);
 
 		reaction(
-			() => this.boxes.map(box => box.kind),
-			kinds => this.kinds = [...new Set(kinds)],
+			() => this.boxes.map(box => box.spec.type),
+			types => this.types = [...new Set(types)],
 		);
 
 		reaction(
@@ -80,7 +85,7 @@ export default class SchemasStore {
 			selectedSchema => {
 				this.historyStore.clearHistory();
 				this.preparedRequests = [];
-				this.connectionStore.connectionCoords = [];
+				this.connectionStore.connections = [];
 				this.activeBox = null;
 				this.activePin = null;
 				this.isLoading = true;
@@ -113,7 +118,7 @@ export default class SchemasStore {
 	public activePin: Pin | null = null;
 
 	@observable
-	public kinds: Array<string> = [];
+	public types: Array<string> = [];
 
 	@observable
 	public preparedRequests: RequestModel[] = [];
@@ -123,6 +128,9 @@ export default class SchemasStore {
 
 	@observable
 	public dictionaryLinksEntity: DictionaryLinksEntity | null = null;
+
+	@observable
+	public expandedBox: BoxEntity | null = null;
 
 	@action
 	public addBox = (box: BoxEntity) => {
@@ -162,6 +170,10 @@ export default class SchemasStore {
 
 	@action setActivePin = (pin: Pin | null) => {
 		this.activePin = pin;
+	};
+
+	@action setExpandedBox = (box: BoxEntity | null) => {
+		this.expandedBox = box;
 	};
 
 	@action
@@ -440,17 +452,23 @@ export default class SchemasStore {
 	@action
 	public deletePinConnections = async (pin: Pin, boxName: string) => {
 		if (this.selectedSchema && this.connectionStore.linkBox) {
-			this.connectionStore.removeConnectionsFromLinkBox(pin, boxName);
+			const changes = this.connectionStore.removeConnectionsFromLinkBox(pin, boxName);
+			this.historyStore.addSnapshot({
+				object: pin.name,
+				type: 'box',
+				operation: 'remove',
+				changeList: changes,
+			});
 
 			this.saveBoxChanges(this.connectionStore.linkBox, 'update');
 		}
 	};
 
 	public getBoxBorderColor = (boxName: string) => {
-		const boxKind = this.boxes.find(box => box.name === boxName)?.kind;
+		const boxType = this.boxes.find(box => box.name === boxName)?.spec.type;
 
-		if (boxKind) {
-			const findedGroup = this.groups.find(group => group.kinds.includes(boxKind));
+		if (boxType) {
+			const findedGroup = this.groups.find(group => group.types.includes(boxType));
 
 			if (findedGroup) {
 				return findedGroup.color;
