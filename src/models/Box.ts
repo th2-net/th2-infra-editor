@@ -46,7 +46,7 @@ export interface BoxEntity extends FileBase {
 		['node-port']?: number;
 		['dictionaries-relation']?: Array<DictionaryRelation>;
 		data?: string;
-		pins: Array<Pin>;
+		pins?: Array<Pin>;
 		type: string;
 	};
 }
@@ -97,7 +97,8 @@ export interface LinkArrow {
 export function isBoxEntity(object: unknown): object is BoxEntity {
 	return (typeof object === 'object'
 		&& object !== null
-		&& (object as BoxEntity).kind !== undefined)
+		&& (object as BoxEntity).kind === 'Th2GenericBox'
+		&& (object as BoxEntity).spec.type !== undefined)
 		&& (object as BoxEntity).spec['image-name'] !== undefined;
 }
 

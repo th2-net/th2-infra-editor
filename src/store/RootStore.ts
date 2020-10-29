@@ -19,19 +19,19 @@ import HistoryStore from './HistoryStore';
 import SchemasStore from './SchemasStore';
 
 export default class RootStore {
-	public schemaStore: SchemasStore;
+	public schemasStore: SchemasStore;
 
 	public historyStore: HistoryStore;
 
 	constructor(private api: ApiSchema) {
 		this.historyStore = new HistoryStore(this);
-		this.schemaStore = new SchemasStore(this, this.api, this.historyStore);
+		this.schemasStore = new SchemasStore(this, this.api, this.historyStore);
 	}
 
 	async init() {
-		await this.schemaStore.fetchSchemas();
-		if (this.schemaStore.schemas.length) {
-			this.schemaStore.setSelectedSchema(this.schemaStore.schemas[0]);
+		await this.schemasStore.fetchSchemas();
+		if (this.schemasStore.schemas.length) {
+			this.schemasStore.setSelectedSchema(this.schemasStore.schemas[0]);
 		}
 	}
 }

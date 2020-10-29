@@ -19,5 +19,5 @@ import useRootStore from './useRootStore';
 export default function useSchemasStore() {
 	const { rootStore } = useRootStore();
 
-	return rootStore.schemaStore;
+	return rootStore.schemasStore;
 }

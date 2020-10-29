@@ -23,9 +23,9 @@ import {
 } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import { rightJoin } from '../helpers/array';
-import { isValidBox } from '../helpers/box';
 import {
 	BoxEntity,
+	isBoxEntity,
 	Pin,
 } from '../models/Box';
 import {
@@ -41,9 +41,12 @@ import LinksDefinition, { isLinksDefinition } from '../models/LinksDefinition';
 import ConnectionsStore from './ConnectionsStore';
 import HistoryStore from './HistoryStore';
 import RootStore from './RootStore';
+import SubscriptionStore from './SubscriptionStore';
 
 export default class SchemasStore {
-	public connectionStore: ConnectionsStore;
+	public connectionsStore: ConnectionsStore;
+
+	public subscriptionStore: SubscriptionStore | null = null;
 
 	public readonly groups = [
 		{
@@ -62,7 +65,7 @@ export default class SchemasStore {
 			color: '#666DCC',
 		},
 		{
-			title: 'Report',
+			title: 'Th2Report',
 			types: ['th2-report-data-provider', 'th2-report-data-viewer'],
 			color: '#C066CC',
 		},
@@ -73,7 +76,7 @@ export default class SchemasStore {
 	];
 
 	constructor(private rootStore: RootStore, private api: ApiSchema, private historyStore: HistoryStore) {
-		this.connectionStore = new ConnectionsStore(rootStore, api, this, historyStore);
+		this.connectionsStore = new ConnectionsStore(rootStore, api, this, historyStore);
 
 		reaction(
 			() => this.boxes.map(box => box.spec.type),
@@ -85,12 +88,20 @@ export default class SchemasStore {
 			selectedSchema => {
 				this.historyStore.clearHistory();
 				this.preparedRequests = [];
-				this.connectionStore.connections = [];
+				this.connectionsStore.connections = [];
 				this.activeBox = null;
 				this.activePin = null;
 				this.isLoading = true;
 				if (selectedSchema) {
 					this.fetchSchemaState(selectedSchema);
+					this.subscriptionStore?.closeConnection();
+					this.subscriptionStore = new SubscriptionStore(
+						rootStore,
+						api,
+						this,
+						this.connectionsStore,
+						selectedSchema,
+					);
 				}
 			},
 		);
@@ -147,8 +158,8 @@ export default class SchemasStore {
 			return;
 		}
 		this.addBox(newBox);
-		this.saveBoxChanges(newBox, 'add');
 		if (createSnapshot) {
+			this.saveEntityChanges(newBox, 'add');
 			this.historyStore.addSnapshot({
 				object: newBox.name,
 				type: 'box',
@@ -179,8 +190,8 @@ export default class SchemasStore {
 	@action
 	public createDictionary = (dictionary: DictionaryEntity, createSnapshot = true) => {
 		this.dictionaryList.push(dictionary);
-		this.saveBoxChanges(dictionary, 'add');
 		if (createSnapshot) {
+			this.saveEntityChanges(dictionary, 'add');
 			this.historyStore.addSnapshot({
 				object: dictionary.name,
 				type: 'dictionary',
@@ -200,10 +211,11 @@ export default class SchemasStore {
 	public deleteDictionary = (dictionaryName: string, createSnapshot = true) => {
 		const oldValue = JSON.parse(JSON.stringify(
 			this.dictionaryList.find(dictionary => dictionary.name === dictionaryName),
-		));
+		)) as DictionaryEntity;
 		this.dictionaryList = this.dictionaryList.filter(dictionary => dictionary.name !== dictionaryName);
 
 		if (createSnapshot) {
+			this.saveEntityChanges(oldValue, 'remove');
 			this.historyStore.addSnapshot({
 				object: dictionaryName,
 				type: 'dictionary',
@@ -234,11 +246,11 @@ export default class SchemasStore {
 		this.schemaAbortController = new AbortController();
 		const result = await this.api.fetchSchemaState(schemaName, this.schemaAbortController.signal);
 
-		this.boxes = observable.array(result.resources.filter(resItem => isValidBox(resItem)));
+		this.boxes = observable.array(result.resources.filter(resItem => isBoxEntity(resItem)));
 
 		const links = result.resources.filter(resItem => isLinksDefinition(resItem)) as LinksDefinition[];
-		this.connectionStore.linkBox = links[0];
-		this.connectionStore.setLinks(links);
+		this.connectionsStore.linkBox = links[0];
+		this.connectionsStore.setLinks(links);
 
 		this.dictionaryList = (result.resources
 			.filter(resItem => isDictionaryEntity(resItem)) as DictionaryEntity[]);
@@ -294,14 +306,16 @@ export default class SchemasStore {
 
 		const changes = new Array<Change>();
 
-		removableBox.spec.pins
-			.forEach(pin => changes
-				.push(...this.connectionStore.removeConnectionsFromLinkBox(pin, boxName, createSnapshot)));
+		if (removableBox.spec.pins) {
+			removableBox.spec.pins
+				.forEach(pin => changes
+					.push(...this.connectionsStore.removeConnectionsFromLinkBox(pin, boxName, createSnapshot)));
+		}
 
 		this.boxes = observable.array(this.boxes.filter(box => box.name !== boxName));
 
-		this.saveBoxChanges(removableBox, 'remove');
 		if (createSnapshot) {
+			this.saveEntityChanges(removableBox, 'remove');
 			this.historyStore.addSnapshot({
 				object: boxName,
 				type: 'box',
@@ -319,7 +333,7 @@ export default class SchemasStore {
 	};
 
 	@action
-	public saveBoxChanges = (
+	public saveEntityChanges = (
 		updatedBox: BoxEntity | LinksDefinition | DictionaryLinksEntity | DictionaryEntity,
 		operation: 'add' | 'update' | 'remove',
 	) => {
@@ -332,26 +346,39 @@ export default class SchemasStore {
 	};
 
 	@action
-	public configurateBox = (updatedBox: BoxEntity, dictionaryRelations: DictionaryRelation[]) => {
+	public configurateBox = (
+		updatedBox: BoxEntity,
+		options?: {
+			dictionaryRelations?: DictionaryRelation[];
+			createSnapshot?: boolean;
+		},
+	) => {
 		const oldValue = JSON.parse(JSON.stringify(this.boxes.find(box => box.name === updatedBox.name)));
 		const newValue = JSON.parse(JSON.stringify(updatedBox));
 		this.boxes = observable.array([...this.boxes.filter(box => box.name !== updatedBox.name), updatedBox]);
-		const changeList = this.configurateBoxDictionaryRelations(dictionaryRelations);
 
-		if (Object.entries(diff(oldValue, newValue)).length !== 0) {
-			this.saveBoxChanges(updatedBox, 'update');
-			changeList.unshift({
+		let changeList: Change[] = [];
+
+		if (options?.dictionaryRelations) {
+			changeList = this.configurateBoxDictionaryRelations(options.dictionaryRelations);
+		}
+
+		if (options?.createSnapshot !== false) {
+			this.saveEntityChanges(updatedBox, 'update');
+			if (Object.entries(diff(oldValue, newValue)).length !== 0) {
+				changeList.unshift({
+					object: updatedBox.name,
+					from: oldValue,
+					to: newValue,
+				});
+			}
+			this.historyStore.addSnapshot({
 				object: updatedBox.name,
-				from: oldValue,
-				to: newValue,
+				type: 'box',
+				operation: 'change',
+				changeList,
 			});
 		}
-		this.historyStore.addSnapshot({
-			object: updatedBox.name,
-			type: 'box',
-			operation: 'change',
-			changeList,
-		});
 	};
 
 	@action
@@ -381,7 +408,7 @@ export default class SchemasStore {
 		const newValue = JSON.parse(JSON.stringify(this.dictionaryLinksEntity));
 
 		if (Object.entries(diff(oldValue, newValue)).length !== 0) {
-			this.saveBoxChanges(this.dictionaryLinksEntity, 'update');
+			this.saveEntityChanges(this.dictionaryLinksEntity, 'update');
 			return [
 				{
 					object: this.dictionaryLinksEntity.name,
@@ -396,7 +423,7 @@ export default class SchemasStore {
 	@action
 	public configuratePin = (pin: Pin, boxName: string) => {
 		const targetBox = this.boxes.find(box => box.name === boxName);
-		if (targetBox) {
+		if (targetBox && targetBox.spec.pins) {
 			const oldValue = (JSON.parse(JSON.stringify(targetBox)) as BoxEntity);
 			const pinIndex = targetBox.spec.pins.findIndex(boxPin => boxPin.name === pin.name);
 
@@ -406,7 +433,7 @@ export default class SchemasStore {
 					pin,
 					...targetBox.spec.pins.slice(pinIndex + 1, targetBox.spec.pins.length),
 				];
-				this.saveBoxChanges(targetBox, 'update');
+				this.saveEntityChanges(targetBox, 'update');
 				const newValue = (JSON.parse(JSON.stringify(targetBox)) as BoxEntity);
 				this.historyStore.addSnapshot({
 					object: boxName,
@@ -425,7 +452,7 @@ export default class SchemasStore {
 	};
 
 	@action
-	public configurateDictionary = (dictionaryEntity: DictionaryEntity) => {
+	public configurateDictionary = (dictionaryEntity: DictionaryEntity, createSnapshot = true) => {
 		const oldValue = JSON.parse(JSON.stringify(
 			this.dictionaryList.find(dictionary => dictionary.name === dictionaryEntity.name),
 		));
@@ -434,25 +461,27 @@ export default class SchemasStore {
 			dictionaryEntity,
 		];
 		const newValue = JSON.parse(JSON.stringify(dictionaryEntity));
-		this.saveBoxChanges(dictionaryEntity, 'update');
-		this.historyStore.addSnapshot({
-			object: dictionaryEntity.name,
-			type: 'dictionary',
-			operation: 'change',
-			changeList: [
-				{
-					object: dictionaryEntity.name,
-					from: oldValue,
-					to: newValue,
-				},
-			],
-		});
+		if (createSnapshot) {
+			this.saveEntityChanges(dictionaryEntity, 'update');
+			this.historyStore.addSnapshot({
+				object: dictionaryEntity.name,
+				type: 'dictionary',
+				operation: 'change',
+				changeList: [
+					{
+						object: dictionaryEntity.name,
+						from: oldValue,
+						to: newValue,
+					},
+				],
+			});
+		}
 	};
 
 	@action
 	public deletePinConnections = async (pin: Pin, boxName: string) => {
-		if (this.selectedSchema && this.connectionStore.linkBox) {
-			const changes = this.connectionStore.removeConnectionsFromLinkBox(pin, boxName);
+		if (this.selectedSchema && this.connectionsStore.linkBox) {
+			const changes = this.connectionsStore.removeConnectionsFromLinkBox(pin, boxName);
 			this.historyStore.addSnapshot({
 				object: pin.name,
 				type: 'box',
@@ -460,7 +489,7 @@ export default class SchemasStore {
 				changeList: changes,
 			});
 
-			this.saveBoxChanges(this.connectionStore.linkBox, 'update');
+			this.saveEntityChanges(this.connectionsStore.linkBox, 'update');
 		}
 	};
 

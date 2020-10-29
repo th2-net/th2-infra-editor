@@ -1,5 +1,5 @@
-/** *****************************************************************************
- * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
+/** ****************************************************************************
+ * Copyright 2020-2020 Exactpro (Exactpro Systems Limited)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,16 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { BoxEntity } from '../models/Box';
-import FileBase from '../models/FileBase';
+import { Snapshot } from '../models/History';
 
-export const isValidBox = (box: FileBase): box is BoxEntity => {
-	try {
-		const b = box as BoxEntity;
-		return [
-			Array.isArray(b.spec.pins),
-		].every(Boolean);
-	} catch (error) {
-		return false;
+export function getSnapshotTitle(snapshot: Snapshot) {
+	if (snapshot.changeList.length === 1) {
+		const action = snapshot.operation === 'add'
+			? 'create'
+			: snapshot.operation === 'remove'
+				? 'deleted'
+				: 'changed';
+		return `${snapshot.object} has been ${action}`;
 	}
-};
+	return snapshot.object;
+}

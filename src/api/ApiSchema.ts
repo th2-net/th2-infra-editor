@@ -22,4 +22,5 @@ export default interface ApiSchema {
     fetchSchemaState: (schemaName: string, abortSignal: AbortSignal) => Promise<Schema>;
     createSchema: (schemaName: string) => Promise<Schema>;
     sendSchemaRequest: (schemaName: string, schema: RequestModel[]) => Promise<boolean>;
+    subscribeOnChanges: (schemaName: string) => EventSource;
 }

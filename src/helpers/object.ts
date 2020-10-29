@@ -11,13 +11,18 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- *  limitations under the License.
+ * limitations under the License.
  ***************************************************************************** */
 
-import useSchemasStore from './useSchemasStore';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function isEqual(obj1: Record<string, any>, obj2: Record<string, any>): boolean {
+	return Object.entries(obj1).every(([key, value1]) => {
+		const value2 = obj2[key];
 
-export default function useConnectionsStore() {
-	const schemasStore = useSchemasStore();
+		if (typeof value1 === 'object' && typeof value2 === 'object') {
+			return isEqual(value1, value2);
+		}
 
-	return schemasStore.connectionsStore;
+		return value1 === value2;
+	});
 }

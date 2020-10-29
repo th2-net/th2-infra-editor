@@ -16,8 +16,12 @@
 
 import useSchemasStore from './useSchemasStore';
 
-export default function useConnectionsStore() {
+export default function useSubscriptionStore() {
 	const schemasStore = useSchemasStore();
 
-	return schemasStore.connectionsStore;
+	if (!schemasStore.subscriptionStore) {
+		throw new Error('useSubscriptionStore isn\'t created');
+	}
+
+	return schemasStore.subscriptionStore;
 }

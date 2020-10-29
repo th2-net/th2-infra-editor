@@ -58,6 +58,14 @@ const ElementsListModal = ({
 	const [editableDictionary, setEditableDictionary] = React.useState<DictionaryEntity | null>(null);
 	const [boxName, setBoxName] = React.useState<string | null>(null);
 
+	React.useEffect(() => {
+		const changedDictionary = schemasStore
+			.dictionaryList.find(dictionary => dictionary.name === editableDictionary?.name);
+		if (changedDictionary) {
+			setEditableDictionary(changedDictionary);
+		}
+	}, [schemasStore.dictionaryList]);
+
 	const boxButtonClass = createBemElement(
 		'modal',
 		'content-switcher-button',
@@ -231,16 +239,7 @@ const ElementsListModal = ({
 				&& <ModalPortal isOpen={Boolean(editableBox)}>
 					<BoxSettings
 						box={editableBox}
-						configurateBox={schemasStore.configurateBox}
-						dictionaryNamesList={schemasStore.dictionaryList.map(dictionary => dictionary.name)}
 						onClose={() => setEditableBox(null)}
-						relatedDictionary={
-							schemasStore.dictionaryLinksEntity
-								? schemasStore
-									.dictionaryLinksEntity
-									.spec['dictionaries-relation'].filter(link => link.box === editableBox.name)
-								: []
-						}
 						setEditablePin={pin => {
 							setEditablePin(pin);
 							setBoxName(editableBox.name);

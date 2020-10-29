@@ -110,10 +110,10 @@ export default class ConnectionsStore {
 		return this.schemasStore.boxes
 			.filter(box => box.spec.type === group)
 			.filter(box => intersection(
-				box.spec.pins.map(pin => pin['connection-type']),
+				box.spec.pins ? box.spec.pins.map(pin => pin['connection-type']) : [],
 				this.schemasStore.activePin
 					? [this.schemasStore.activePin?.['connection-type']]
-					: this.schemasStore.activeBox
+					: this.schemasStore.activeBox && this.schemasStore.activeBox.spec.pins
 						? this.schemasStore.activeBox.spec.pins.map(pin => pin['connection-type'])
 						: [],
 			).length !== 0);
@@ -217,8 +217,8 @@ export default class ConnectionsStore {
 		}
 		this.schemasStore.activeBox = null;
 		this.schemasStore.activePin = null;
-		this.schemasStore.saveBoxChanges(this.linkBox, 'update');
 		if ((options && options.createSnapshot) || !options) {
+			this.schemasStore.saveEntityChanges(this.linkBox, 'update');
 			this.historyStore.addSnapshot({
 				object: connectionName,
 				type: 'link',
@@ -291,8 +291,8 @@ export default class ConnectionsStore {
 					.splice(linkIndex, 1);
 			}
 
-			this.schemasStore.saveBoxChanges(this.linkBox, 'update');
 			if (createSnapshot) {
+				this.schemasStore.saveEntityChanges(this.linkBox, 'update');
 				this.historyStore.addSnapshot({
 					object: connection.name,
 					type: 'link',
@@ -336,6 +336,7 @@ export default class ConnectionsStore {
 		const newValue = JSON.parse(JSON.stringify(newLink)) as Link;
 
 		if (createSnapshot) {
+			this.schemasStore.saveEntityChanges(this.linkBox, 'update');
 			this.historyStore.addSnapshot({
 				object: oldValue.name,
 				type: 'link',
@@ -349,7 +350,6 @@ export default class ConnectionsStore {
 				],
 			});
 		}
-		this.schemasStore.saveBoxChanges(this.linkBox, 'update');
 
 		this.schemasStore.activeBox = null;
 		this.schemasStore.activePin = null;

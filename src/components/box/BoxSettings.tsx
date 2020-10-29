@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import React from 'react';
+import { observer } from 'mobx-react-lite';
 import { BoxEntity, Pin } from '../../models/Box';
 import useOutsideClickListener from '../../hooks/useOutsideClickListener';
 import PinsList from './PinsList';
@@ -26,47 +27,67 @@ import { useInput } from '../../hooks/useInput';
 import { ModalPortal } from '../util/Portal';
 import FormModal from '../util/FormModal';
 import DictionaryList from './DictionaryList';
+import useSchemasStore from '../../hooks/useSchemasStore';
+import { isEqual } from '../../helpers/object';
+import { openDecisionModal } from '../../helpers/modal';
 
 interface BoxSettingsProps {
 	box: BoxEntity;
-	configurateBox: (box: BoxEntity, dictionaryRelation: DictionaryRelation[]) => void;
 	onClose: () => void;
-	relatedDictionary: DictionaryRelation[];
-	dictionaryNamesList: string[];
 	setEditablePin: (pin: Pin) => void;
 }
 
 const BoxSettings = ({
 	box,
-	configurateBox,
 	onClose,
-	relatedDictionary,
-	dictionaryNamesList,
 	setEditablePin,
 }: BoxSettingsProps) => {
+	const schemasStore = useSchemasStore();
+
 	const modalRef = React.useRef<HTMLDivElement>(null);
 
+	const [editableBox, setEditableBox] = React.useState<BoxEntity>(box);
+	const [isUpdated, setIsUpdated] = React.useState(false);
 	const [currentSection, setCurrentSection] = React.useState<'config' | 'pins' | 'dictionary'>('config');
-
 	const [isAddPinFormOpen, setIsAddPinFormOpen] = React.useState(false);
 	const [isAddDictionaryFormOpen, setIsAddDictionaryFormOpen] = React.useState(false);
 
+	React.useEffect(() => {
+		if (!isEqual(editableBox, box)) {
+			setIsUpdated(true);
+		}
+	}, [box]);
+
+	const relatedDictionary = React.useMemo(
+		() => (schemasStore.dictionaryLinksEntity
+			? schemasStore
+				.dictionaryLinksEntity
+				.spec['dictionaries-relation'].filter(link => link.box === editableBox.name)
+			: []),
+		[schemasStore.dictionaryLinksEntity],
+	);
+
+	const dictionaryNamesList = React.useMemo(
+		() => schemasStore.dictionaryList.map(dictionary => dictionary.name),
+		[schemasStore.dictionaryList],
+	);
+
 	const imageNameInput = useInput({
-		initialValue: box.spec['image-name'],
+		initialValue: editableBox.spec['image-name'],
 		label: 'image-name',
 		name: 'image-name',
 		id: 'image-name',
 	});
 
 	const imageVersionInput = useInput({
-		initialValue: box.spec['image-version'],
+		initialValue: editableBox.spec['image-version'],
 		label: 'image-version',
 		name: 'image-version',
 		id: 'image-version',
 	});
 
 	const nodePortInput = useInput({
-		initialValue: box.spec['node-port']?.toString() ?? '',
+		initialValue: editableBox.spec['node-port']?.toString(),
 		label: 'node-port',
 		name: 'node-port',
 		id: 'node-port',
@@ -74,8 +95,8 @@ const BoxSettings = ({
 	});
 
 	const boxConfigInput = useInput({
-		initialValue: box.spec['custom-config']
-			? JSON.stringify(box.spec['custom-config'], null, 4)
+		initialValue: editableBox.spec['custom-config']
+			? JSON.stringify(editableBox.spec['custom-config'], null, 4)
 			: '',
 		label: 'Config',
 		validate: value => {
@@ -92,25 +113,26 @@ const BoxSettings = ({
 	});
 
 	const pinNameConfigInput = useInput({
-		initialValue: '',
 		label: 'Name',
 		id: 'pin-name',
 	});
 
 	const pinTypeConfigInput = useInput({
-		initialValue: '',
 		label: 'Connection type',
 		id: 'pin-connection-type',
+		autocomplete: {
+			datalistKey: 'box-settings__connection-type',
+			variants: schemasStore.connectionTypes,
+		},
+		validate: value => schemasStore.connectionTypes.includes(value),
 	});
 
 	const relationNameInput = useInput({
-		initialValue: '',
 		label: 'Name',
 		id: 'relation-name',
 	});
 
 	const dictionaryNameInput = useInput({
-		initialValue: '',
 		label: 'Dictionary name',
 		id: 'dictionary-name',
 		validate: value => dictionaryNamesList.includes(value),
@@ -121,14 +143,13 @@ const BoxSettings = ({
 	});
 
 	const dictionaryTypeInput = useInput({
-		initialValue: '',
 		label: 'Dictionary type',
 		id: 'dictionary-type',
 	});
 
 	const [relatedDictionaryList, setRelatedDictionaryList] = React.useState<DictionaryRelation[]>(relatedDictionary);
 
-	const [pinList, setPinList] = React.useState(box.spec.pins);
+	const [pinList, setPinList] = React.useState(editableBox.spec.pins ?? []);
 
 	useOutsideClickListener(modalRef, (e: MouseEvent) => {
 		if (
@@ -164,7 +185,12 @@ const BoxSettings = ({
 	);
 
 	const addPinToList = () => {
-		if (!pinList.find(pin => pin.name === pinNameConfigInput.value)) {
+		if (
+			!pinList.find(pin => pin.name === pinNameConfigInput.value)
+			&& pinNameConfigInput.value.trim()
+			&& pinTypeConfigInput.value.trim()
+			&& pinTypeConfigInput.isValid
+		) {
 			setPinList([...pinList, {
 				name: pinNameConfigInput.value,
 				'connection-type': pinTypeConfigInput.value as 'mq' | 'grpc',
@@ -181,7 +207,7 @@ const BoxSettings = ({
 		if (!relatedDictionaryList.find(dictionary => dictionary.name === relationNameInput.value)) {
 			setRelatedDictionaryList([...relatedDictionaryList, {
 				name: relationNameInput.value,
-				box: box.name,
+				box: editableBox.name,
 				dictionary: {
 					name: dictionaryNameInput.value,
 					type: dictionaryTypeInput.value,
@@ -193,27 +219,57 @@ const BoxSettings = ({
 		}
 	};
 
-	const submit = () => {
+	const submit = async () => {
 		if ([imageNameInput, imageVersionInput, nodePortInput]
 			.every(config => config.isValid && config.value.trim())
 			&& boxConfigInput.isValid) {
-			configurateBox({
-				name: box.name,
-				kind: box.kind,
-				spec: {
-					'image-name': imageNameInput.value,
-					'image-version': imageVersionInput.value,
-					'node-port': nodePortInput.value ? parseInt(nodePortInput.value) : undefined,
-					'custom-config': boxConfigInput.value
-						? JSON.parse(boxConfigInput.value)
-						: undefined,
-					pins: pinList,
-					type: box.spec.type,
-				},
-			},
-			relatedDictionaryList);
-			onClose();
+			if (!isUpdated) {
+				saveChanges();
+				onClose();
+			} else {
+				onClose();
+				await openDecisionModal(
+					'Resource has been updated',
+					{
+						title: 'Rewrite',
+						func: saveChanges,
+					},
+					[
+						{
+							title: 'Update',
+							// eslint-disable-next-line @typescript-eslint/no-empty-function
+							func: () => {},
+						},
+					],
+				);
+			}
 		}
+	};
+
+	const saveChanges = () => {
+		schemasStore.configurateBox({
+			name: editableBox.name,
+			kind: editableBox.kind,
+			spec: {
+				'image-name': imageNameInput.value,
+				'image-version': imageVersionInput.value,
+				'node-port': nodePortInput.value ? parseInt(nodePortInput.value) : undefined,
+				'custom-config': boxConfigInput.value
+					? JSON.parse(boxConfigInput.value)
+					: undefined,
+				pins: pinList,
+				type: editableBox.spec.type,
+			},
+		},
+		{
+			dictionaryRelations: relatedDictionaryList,
+			createSnapshot: true,
+		});
+	};
+
+	const updateChanges = () => {
+		setEditableBox(box);
+		setIsUpdated(false);
 	};
 
 	return (
@@ -222,7 +278,7 @@ const BoxSettings = ({
 				<div className="modal__header">
 					<i className="modal__header-icon" />
 					<h3 className="modal__header-title">
-						{box.name}
+						{editableBox.name}
 					</h3>
 					<button
 						onClick={() => onClose()}
@@ -231,6 +287,15 @@ const BoxSettings = ({
 					</button>
 				</div>
 				<div className="modal__content">
+					{
+						isUpdated
+						&& (<div className="modal__update">
+							<button
+								onClick={updateChanges}
+								className="modal__update-button">Update</button>
+							<span className="modal__update-message">Box has been changed</span>
+						</div>)
+					}
 					<div className="modal__content-switcher">
 						<div
 							onClick={() => setCurrentSection('config')}
@@ -327,4 +392,4 @@ const BoxSettings = ({
 	);
 };
 
-export default BoxSettings;
+export default observer(BoxSettings);

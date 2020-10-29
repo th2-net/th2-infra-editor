@@ -23,6 +23,8 @@ import useOutsideClickListener from '../../hooks/useOutsideClickListener';
 import DictionaryXMLEditor from './DictionaryXmlEditor';
 import { downloadFile } from '../../helpers/files';
 import useSchemasStore from '../../hooks/useSchemasStore';
+import { isEqual } from '../../helpers/object';
+import { openDecisionModal } from '../../helpers/modal';
 
 interface DictionaryModalProps {
 	dictionary?: DictionaryEntity;
@@ -34,6 +36,15 @@ const DictionaryModal = ({
 	onClose,
 }: DictionaryModalProps) => {
 	const schemasStore = useSchemasStore();
+
+	const [editableDictionary, setEditableDictionary] = React.useState<DictionaryEntity | undefined>(dictionary);
+	const [isUpdated, setIsUpdated] = React.useState(false);
+
+	React.useEffect(() => {
+		if (dictionary && editableDictionary && !isEqual(editableDictionary, dictionary)) {
+			setIsUpdated(true);
+		}
+	}, [dictionary]);
 
 	const modalRef = React.useRef<HTMLDivElement>(null);
 
@@ -50,7 +61,6 @@ const DictionaryModal = ({
 	const [isFileDragging, setIsFileDragging] = React.useState(false);
 
 	const dictionaryNameInput = useInput({
-		initialValue: '',
 		label: 'Dictionary name',
 		id: 'dicionary-modal__dictionary-name',
 	});
@@ -87,21 +97,33 @@ const DictionaryModal = ({
 		setIsFileDragging(false);
 	};
 
-	const submit = () => {
+	const submit = async () => {
 		if (dictionary && dictionaryData.isValid) {
-			schemasStore.configurateDictionary({
-				name: dictionary.name,
-				kind: 'Th2Dictionary',
-				spec: {
-					data: dictionaryData.value,
-				},
-			});
-			onClose();
+			if (!isUpdated) {
+				saveChanges();
+				onClose();
+			} else {
+				onClose();
+				await openDecisionModal(
+					'Resource has been updated',
+					{
+						title: 'Rewrite',
+						func: saveChanges,
+					},
+					[
+						{
+							title: 'Update',
+							// eslint-disable-next-line @typescript-eslint/no-empty-function
+							func: () => {},
+						},
+					],
+				);
+			}
 			return;
 		}
 		if (dictionaryNameInput.isValid && dictionaryData.isValid) {
 			schemasStore.createDictionary({
-				kind: 'Th2Dictionary',
+				kind: 'Th2Dictionaries',
 				name: dictionaryNameInput.value,
 				spec: {
 					data: dictionaryData.value,
@@ -109,6 +131,23 @@ const DictionaryModal = ({
 			});
 			onClose();
 		}
+	};
+
+	const saveChanges = () => {
+		if (dictionary) {
+			schemasStore.configurateDictionary({
+				name: dictionary.name,
+				kind: 'Th2Dictionaries',
+				spec: {
+					data: dictionaryData.value,
+				},
+			});
+		}
+	};
+
+	const updateChanges = () => {
+		setEditableDictionary(dictionary);
+		setIsUpdated(false);
 	};
 
 	return (
@@ -132,6 +171,15 @@ const DictionaryModal = ({
 				</button>
 			</div>
 			<div className="modal__content">
+				{
+					isUpdated
+					&& (<div className="modal__update">
+						<button
+							onClick={updateChanges}
+							className="modal__update-button">Update</button>
+						<span className="modal__update-message">Dictionary has been changed</span>
+					</div>)
+				}
 				{
 					!dictionary
 					&& <Input inputConfig={dictionaryNameInput} />

@@ -16,59 +16,21 @@
 
 import React, { Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useDropzone } from 'react-dropzone';
-import yaml from 'js-yaml';
 import Group from './Group';
 import SvgLayout from '../SvgLayout';
-import { isFileBase } from '../../models/FileBase';
-import { isLinksDefinition } from '../../models/LinksDefinition';
-import { readFileAsText } from '../../helpers/files';
-import { isValidBox } from '../../helpers/box';
 import '../../styles/group.scss';
 import useSchemasStore from '../../hooks/useSchemasStore';
 import useConnectionsStore from '../../hooks/useConnectionsStore';
 
 const Groups = () => {
 	const schemasStore = useSchemasStore();
-	const connectionStore = useConnectionsStore();
+	const connectionsStore = useConnectionsStore();
 
 	const groupsRef = React.useRef<HTMLDivElement>(null);
 
-	const onDrop = React.useCallback(acceptedFiles => {
-		parseYamlFiles(acceptedFiles);
-	}, []);
-
-	const parseYamlFiles = (files: FileList | File[]) => {
-		Array.from(files).forEach(async file => {
-			try {
-				const fileDataURL = await readFileAsText(file);
-				const parsedYamlFile = yaml.safeLoad(fileDataURL);
-				if (!isFileBase(parsedYamlFile)) {
-					return;
-				}
-
-				if (isValidBox(parsedYamlFile)) {
-					schemasStore.addBox(parsedYamlFile);
-				}
-
-				if (isLinksDefinition(parsedYamlFile)) {
-					connectionStore.setLinks([parsedYamlFile]);
-				}
-			} catch (error) {
-				console.error('error');
-			}
-		});
-	};
-
-	const { getRootProps, getInputProps } = useDropzone({
-		onDrop,
-		noClick: true,
-	});
-
 	return (
-		<div {...getRootProps()} className="groups__wrapper">
+		<div className="groups__wrapper">
 			<div ref={groupsRef} className="groups">
-				<input {...getInputProps()}/>
 				<div
 					className="groups__list"
 					style={{
@@ -92,7 +54,7 @@ const Groups = () => {
 				</div>
 			</div>
 			<SvgLayout
-				connections={connectionStore.connectionsArrows}
+				connections={connectionsStore.connectionsArrows}
 			/>
 		</div>
 	);

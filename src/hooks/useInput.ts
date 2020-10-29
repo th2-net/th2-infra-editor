@@ -17,7 +17,7 @@
 import React from 'react';
 
 interface UseInputProps {
-	initialValue: string;
+	initialValue?: string;
 	label?: string;
 	id: string;
 	name?: string;
@@ -27,6 +27,7 @@ interface UseInputProps {
 	};
 	validate?: (value: string) => boolean;
 	autoFocus?: boolean;
+	spellCheck?: boolean;
 }
 
 export interface InputConfig {
@@ -46,17 +47,19 @@ export interface InputConfig {
 		id: string;
 		name?: string;
 		autoFocus?: boolean;
+		spellCheck: boolean;
 	};
 }
 
 export const useInput = ({
-	initialValue,
+	initialValue = '',
 	label,
 	validate,
 	id,
 	name,
 	autocomplete,
 	autoFocus,
+	spellCheck = false,
 }: UseInputProps): InputConfig => {
 	const [value, setValue] = React.useState(initialValue);
 	const [isValid, setIsValid] = React.useState(true);
@@ -98,6 +101,7 @@ export const useInput = ({
 			id,
 			name,
 			autoFocus,
+			spellCheck,
 		},
 	};
 };

@@ -40,7 +40,6 @@ const Header = () => {
 	const elementsListButtonRef = React.useRef<HTMLButtonElement>(null);
 
 	const schemasNameInput = useInput({
-		initialValue: '',
 		id: 'schema-name',
 		label: 'Schema name',
 		validate: value => {

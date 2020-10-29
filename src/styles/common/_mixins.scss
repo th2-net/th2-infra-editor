@@ -124,3 +124,19 @@
     outline: none;
     cursor: pointer;
 }
+
+@mixin status {
+    background-color: $statusUnknownColor;
+
+    &.running {
+        background-color: $statusRunningColor;
+    }
+
+    &.pending {
+        background-color: $statusPendingColor;
+    }
+
+    &.failed {
+        background-color: $statusFailedColor;
+    }
+}

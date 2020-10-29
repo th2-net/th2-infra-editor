@@ -21,21 +21,13 @@ import { BoxEntity, isBoxEntity } from '../../models/Box';
 import { DictionaryLinksEntity, isDictionaryLinksEntity } from '../../models/Dictionary';
 import { createBemBlock } from '../../helpers/styleCreators';
 import { isLink } from '../../models/LinksDefinition';
+import { getSnapshotTitle } from '../../helpers/snapshot';
 
 interface ChangeLogBoxItemProps {
 	snapshot: Snapshot;
 }
 
 const ChangeLogBoxItem = ({ snapshot }: ChangeLogBoxItemProps) => {
-	const getSnapshotTitle = () => {
-		const action = snapshot.operation === 'add'
-			? 'create'
-			: snapshot.operation === 'remove'
-				? 'deleted'
-				: 'updated';
-		return `${snapshot.object} was ${action}`;
-	};
-
 	const getEntityChanges = (change: Change) => {
 		if (change.from && change.to && isBoxEntity(change.from) && isBoxEntity(change.to)) {
 			const from = {
@@ -91,15 +83,18 @@ const ChangeLogBoxItem = ({ snapshot }: ChangeLogBoxItemProps) => {
 				return {
 					added:
 						(delta.added as BoxEntity).spec && (delta.added as BoxEntity).spec.pins
-							? Object.entries((delta.added as BoxEntity).spec.pins).length
+							// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+							? Object.entries((delta.added as BoxEntity).spec.pins!).length
 							: 0,
 					deleted:
 						(delta.deleted as BoxEntity).spec && (delta.deleted as BoxEntity).spec.pins
-							? Object.entries((delta.deleted as BoxEntity).spec.pins).length
+							// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+							? Object.entries((delta.deleted as BoxEntity).spec.pins!).length
 							: 0,
 					updated:
 						(delta.updated as BoxEntity).spec && (delta.updated as BoxEntity).spec.pins
-							? Object.entries((delta.updated as BoxEntity).spec.pins).length
+							// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+							? Object.entries((delta.updated as BoxEntity).spec.pins!).length
 							: 0,
 				};
 			}
@@ -146,7 +141,7 @@ const ChangeLogBoxItem = ({ snapshot }: ChangeLogBoxItemProps) => {
 		<div className={elementClass}>
 			<div className="element__header">
 				<i className="element__header-icon boxes" />
-				<span className="element__title">{getSnapshotTitle()}</span>
+				<span className="element__title">{getSnapshotTitle(snapshot)}</span>
 			</div>
 			{
 				!(snapshot.changeList.length === 1 && snapshot.operation !== 'change')

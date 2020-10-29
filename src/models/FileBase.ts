@@ -18,6 +18,7 @@ export default interface FileBase {
 	apiVersion?: string;
 	kind: string;
 	name: string;
+	sourceHash?: string;
 	spec: unknown;
 }
 

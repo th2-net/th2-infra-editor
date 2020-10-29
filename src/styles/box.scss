@@ -42,7 +42,6 @@
 		flex-wrap: wrap;
 		align-items: center;
 		align-content: center;
-		justify-content: space-between;
 		padding: 0 10px;
 		border-radius: 6px 6px 0 0;
 	}
@@ -54,6 +53,16 @@
 		line-height: 15px;
 		max-width: 165px;
 		overflow-wrap: break-word;
+	}
+
+	&__status {
+		@include status;
+
+		height: 11px;
+		width: 11px;
+		border-radius: 50%;
+		border: 1px solid white;
+		margin-right: 5px;
 	}
 
 	&__body {
@@ -100,7 +109,11 @@
 		&.active {
 			margin-bottom: 0px;
 		}
-    }
+	}
+	
+	&__buttons-wrapper {
+		margin-left: auto;
+	}
 
 	&__button {
 		@include button-transparent(13px, 13px);
