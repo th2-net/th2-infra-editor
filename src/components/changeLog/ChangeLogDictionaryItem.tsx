@@ -15,6 +15,7 @@
  ***************************************************************************** */
 
 import React from 'react';
+import { getSnapshotTitle } from '../../helpers/snapshot';
 import { Snapshot } from '../../models/History';
 
 interface ChangeLogDictionaryItemProps {
@@ -23,27 +24,13 @@ interface ChangeLogDictionaryItemProps {
 
 const ChangeLogDictionaryItem = ({
 	snapshot,
-}: ChangeLogDictionaryItemProps) => {
-	const getSnapshotTitle = () => {
-		if (snapshot.changeList.length === 1) {
-			const action = snapshot.operation === 'add'
-				? 'create'
-				: snapshot.operation === 'remove'
-					? 'deleted'
-					: 'changed';
-			return `${snapshot.object} was ${action}`;
-		}
-		return snapshot.object;
-	};
-
-	return (
-		<div className="element empty">
-			<div className="element__header ">
-				<i className="element__header-icon dictionary" />
-				<span className="element__title">{getSnapshotTitle()}</span>
-			</div>
+}: ChangeLogDictionaryItemProps) => (
+	<div className="element empty">
+		<div className="element__header ">
+			<i className="element__header-icon dictionary" />
+			<span className="element__title">{getSnapshotTitle(snapshot)}</span>
 		</div>
-	);
-};
+	</div>
+);
 
 export default ChangeLogDictionaryItem;

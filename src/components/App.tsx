@@ -51,9 +51,9 @@ function App() {
 		<div className="root">
 			<Header />
 			{
-				rootStore.schemaStore.isLoading
+				rootStore.schemasStore.isLoading
 					? <SplashScreen />
-					: rootStore.schemaStore.boxes.length > 0
+					: rootStore.schemasStore.boxes.length > 0
 					&& <Groups />
 			}
 		</div>

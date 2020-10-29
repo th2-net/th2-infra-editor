@@ -52,7 +52,7 @@ const AttributesList = ({
 	}, [isFormOpen]);
 
 	const attributeInput = useInput({
-		initialValue: editableAttribute ?? '',
+		initialValue: editableAttribute ?? undefined,
 		id: 'attribute-name',
 		label: 'Name',
 	});

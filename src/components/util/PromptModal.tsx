@@ -55,7 +55,6 @@ const PromptModal = ({
 	}, [isESCPressed, isEnterPressed]);
 
 	const promptInput = useInput({
-		initialValue: '',
 		id: 'prompt-input',
 		autoFocus: true,
 	});

@@ -61,7 +61,7 @@
             &-button {
                 text-transform: capitalize;
                 border-radius: 24px;
-                color: #0FBDA0;
+                color: $buttonDefaultColor;
                 font-weight: 600;
                 font-size: 12px;
                 line-height: 15px;
@@ -114,6 +114,19 @@
         }
     }
 
+    &__update {
+        &-message {
+            font-size: 12px;
+            color: $primaryTextColor;
+        }
+
+        &-button {
+            @include button(23px, auto, $buttonDefaultColor, white);
+
+            margin-right: 10px;
+        }
+    }
+
     &__empty {
         width: 100%;
         height: 150px;
@@ -133,17 +146,24 @@
 
     &__buttons {
         display: flex;
+        gap: 15px;
         margin: 20px 15px 0 15px;
+
+        &.center {
+            justify-content: space-between;
+        }
     }
 
     &__button {
+        @include button(30px, auto, $buttonDefaultColor, white);
+
         &-icon {
             margin-right: 6px;
             display: inline-block;
         }
 
         &.submit {
-            @include button(30px, auto, #0FBDA0, white);
+            @include button(30px, auto, $buttonDefaultColor, white);
             margin-left: auto;
         }
 
@@ -152,7 +172,7 @@
         }
 
         &.pin {
-            @include button(30px, auto, #0FBDA0, white);
+            @include button(30px, auto, $buttonDefaultColor, white);
         }
 
         &.pin &-icon {
@@ -209,7 +229,7 @@
         }
 
         &.close {
-            @include button(30px, auto, #0FBDA0, white);
+            @include button(30px, auto, $buttonDefaultColor, white);
         }
 
         &.close &-icon {

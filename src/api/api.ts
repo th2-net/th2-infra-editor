@@ -68,4 +68,10 @@ export default class Api {
 
 		return res.ok;
 	}
+
+	subscribeOnChanges(schemaName: string): EventSource {
+		return new EventSource(
+			`http://th2-schema-test:30000/editor/backend/subscriptions/schema/${schemaName}`,
+		);
+	}
 }

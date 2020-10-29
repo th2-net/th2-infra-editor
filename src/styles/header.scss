@@ -99,7 +99,7 @@
 		}
 
 		&.schema {
-			@include button(30px, auto, #0FBDA0, white);
+			@include button(30px, auto, $buttonDefaultColor, white);
 			
 			margin-left: auto;
 		}
@@ -109,7 +109,7 @@
 		}
 
 		&.boxes {
-			@include button(30px, auto, #0FBDA0, white);
+			@include button(30px, auto, $buttonDefaultColor, white);
 
 			margin-left: 25px;
 		}
@@ -120,7 +120,7 @@
 		
 
 		&.dictionary {
-			@include button(30px, auto, #0FBDA0, white);
+			@include button(30px, auto, $buttonDefaultColor, white);
 			
 			margin-left: 25px;
 		}

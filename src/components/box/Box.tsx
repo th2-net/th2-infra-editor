@@ -17,7 +17,7 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { createStyleSelector } from '../../helpers/styleCreators';
+import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
 import { BoxEntity, Pin } from '../../models/Box';
 import useSchemasStore from '../../hooks/useSchemasStore';
 import { ModalPortal } from '../util/Portal';
@@ -28,6 +28,8 @@ import { openConfirmModal } from '../../helpers/modal';
 import BoxPinsContainer, { PinsContainerMethods } from './BoxPinsContainer';
 import useConnectionsStore from '../../hooks/useConnectionsStore';
 import useOutsideClickListener from '../../hooks/useOutsideClickListener';
+import useSubscriptionStore from '../../hooks/useSubscriptionStore';
+import { isEqual } from '../../helpers/object';
 
 interface Props {
 	box: BoxEntity;
@@ -44,6 +46,7 @@ const Box = ({
 }: Props, ref: React.Ref<PinsContainerMethods>) => {
 	const schemasStore = useSchemasStore();
 	const connectionsStore = useConnectionsStore();
+	const subscriptionStore = useSubscriptionStore();
 
 	const [isModalOpen, setIsModalOpen] = React.useState(false);
 	const [editablePin, setEditablePin] = React.useState<Pin | null>(null);
@@ -53,6 +56,21 @@ const Box = ({
 	const isBoxActive = schemasStore.activeBox?.name === box.name;
 
 	const boxClass = createStyleSelector('box', isBoxActive ? 'active' : null);
+
+	React.useEffect(() => {
+		if (editablePin && box.spec.pins && !box.spec.pins.some(pin => isEqual(pin, editablePin))) {
+			const changedPin = box.spec.pins.find(pin => pin.name === editablePin.name);
+			if (changedPin) {
+				setEditablePin(changedPin);
+			}
+		}
+	}, [box.spec.pins]);
+
+	const boxStatusClass = createBemElement(
+		'box',
+		'status',
+		subscriptionStore.boxStates.get(box.name) ?? null,
+	);
 
 	const deleteBoxHandler = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 		e.stopPropagation();
@@ -95,6 +113,10 @@ const Box = ({
 						backgroundColor: color,
 					}}
 					className="box__header">
+					{
+						subscriptionStore.isSubscriptionSuccessfull
+							&& <div className={boxStatusClass} />
+					}
 					<span className="box__title">{box.name}</span>
 					<div className="box__buttons-wrapper">
 						<button className="box__button remove" onClick={deleteBoxHandler}>
@@ -113,8 +135,8 @@ const Box = ({
 				<div className="box__body">
 					<div className="box__info-list">
 						<div className="box__info">
-							<div className="box__info-name">Kind</div>
-							<div className="box__info-value">{box.kind}</div>
+							<div className="box__info-name">Type</div>
+							<div className="box__info-value">{box.spec.type}</div>
 						</div>
 						<div className="box__info">
 							<div className="box__info-name">Image name</div>
@@ -122,7 +144,7 @@ const Box = ({
 						</div>
 					</div>
 					{
-						box.spec.pins.length > 0
+						box.spec.pins && box.spec.pins.length > 0
 						&& <BoxPinsContainer
 							ref={ref}
 							pins={box.spec.pins}
@@ -143,16 +165,7 @@ const Box = ({
 			>
 				<BoxSettings
 					box={box}
-					configurateBox={schemasStore.configurateBox}
 					onClose={() => setIsModalOpen(false)}
-					relatedDictionary={
-						schemasStore.dictionaryLinksEntity
-							? schemasStore
-								.dictionaryLinksEntity
-								.spec['dictionaries-relation'].filter(link => link.box === box.name)
-							: []
-					}
-					dictionaryNamesList={schemasStore.dictionaryList.map(dictionary => dictionary.name)}
 					setEditablePin={pin => {
 						setEditablePin(pin);
 						setIsModalOpen(false);

@@ -35,7 +35,6 @@ const CreateBoxModal = ({
 	const modalRef = React.useRef<HTMLDivElement>(null);
 
 	const nameInput = useInput({
-		initialValue: '',
 		label: 'Name',
 		id: 'name',
 		name: 'name',
@@ -43,7 +42,6 @@ const CreateBoxModal = ({
 	});
 
 	const typeInput = useInput({
-		initialValue: '',
 		label: 'Type',
 		id: 'type',
 		name: 'type',
@@ -54,14 +52,12 @@ const CreateBoxModal = ({
 	});
 
 	const imageNameInput = useInput({
-		initialValue: '',
 		label: 'Image-name',
 		id: 'image-name',
 		name: 'image-name',
 	});
 
 	const imageVersionInput = useInput({
-		initialValue: '',
 		label: 'Image-version',
 		id: 'image-version',
 		name: 'image-version',
@@ -69,7 +65,6 @@ const CreateBoxModal = ({
 	});
 
 	const nodePortInput = useInput({
-		initialValue: '',
 		label: 'Node-port',
 		id: 'node-port',
 		name: 'node-port',

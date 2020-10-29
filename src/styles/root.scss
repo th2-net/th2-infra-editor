@@ -122,3 +122,13 @@ body {
     height: 230px;
     resize: none;
 }
+
+.decision__modal {
+    width: auto;
+    top: auto;
+    bottom: 10px;
+
+    &__buttons {
+        gap: 10px;
+    }
+}

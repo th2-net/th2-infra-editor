@@ -17,6 +17,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import ConfirmModal from '../components/util/ConfirmModal';
+import DecisionModal from '../components/util/DecisionModal';
 import PromptModal from '../components/util/PromptModal';
 
 export function openConfirmModal(text: string, confirmButtonText?: string) {
@@ -59,6 +60,41 @@ export function openPromptModal(text: string) {
 						ReactDOM.unmountComponentAtNode(el);
 						modalRoot.removeChild(el);
 						res(answer);
+					}} />,
+				el,
+			);
+		}
+	});
+}
+
+export function openDecisionModal(
+	text: string,
+	mainVariant: {
+		title: string;
+		func: () => void;
+	},
+	variants: {
+		title: string;
+		func: () => void;
+	}[],
+) {
+	return new Promise<void>((res, rej) => {
+		const modalRoot = document.getElementById('modal-root');
+		if (!modalRoot) rej();
+		if (modalRoot) {
+			const el = document.createElement('div');
+
+			modalRoot.appendChild(el);
+
+			ReactDOM.render(
+				<DecisionModal
+					text={text}
+					mainVariant={mainVariant}
+					variants={variants}
+					onClose={() => {
+						ReactDOM.unmountComponentAtNode(el);
+						modalRoot.removeChild(el);
+						res();
 					}} />,
 				el,
 			);

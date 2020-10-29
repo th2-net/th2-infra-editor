@@ -23,6 +23,8 @@ import Input from '../util/Input';
 import AttributesList from './AttributesList';
 import FiltersList from './FiltersList';
 import { createBemElement } from '../../helpers/styleCreators';
+import { isEqual } from '../../helpers/object';
+import { openDecisionModal } from '../../helpers/modal';
 
 interface PinConfiguratorProps {
 	pin: Pin;
@@ -41,8 +43,17 @@ const PinConfigurator = ({
 }: PinConfiguratorProps) => {
 	const [currentSection, setCurrentSection] = React.useState<'config' | 'attributes' | 'filters'>('config');
 
-	const [attributes, setAttributes] = React.useState(pin.attributes);
-	const [filters, setFilters] = React.useState(() => (pin.filters ?? []));
+	const [editablePin, setEditablePin] = React.useState<Pin>(pin);
+	const [isUpdated, setIsUpdated] = React.useState(false);
+
+	React.useEffect(() => {
+		if (!isEqual(editablePin, pin)) {
+			setIsUpdated(true);
+		}
+	}, [pin]);
+
+	const [attributes, setAttributes] = React.useState(editablePin.attributes);
+	const [filters, setFilters] = React.useState(() => (editablePin.filters ?? []));
 
 	const [isAttributeFormOpen, setIsAttributeFormOpen] = React.useState(false);
 	const [isFilterFormOpen, setIsFilterFormOpen] = React.useState(false);
@@ -61,14 +72,8 @@ const PinConfigurator = ({
 		}
 	});
 
-	const nameInput = useInput({
-		initialValue: pin.name,
-		label: 'Name',
-		id: 'pin-name',
-	});
-
 	const connectionTypeInput = useInput({
-		initialValue: pin['connection-type'],
+		initialValue: editablePin['connection-type'],
 		label: 'Connection type',
 		id: 'pin-connection-type',
 		validate: value => connectionTypes.includes(value),
@@ -97,17 +102,43 @@ const PinConfigurator = ({
 		currentSection === 'filters' ? 'active' : 'null',
 	);
 
-	const submit = () => {
-		if ([nameInput, connectionTypeInput]
-			.every(config => config.isValid && config.value.trim())) {
-			configuratePin({
-				name: nameInput.value,
-				'connection-type': connectionTypeInput.value as 'mq' | 'grpc',
-				attributes,
-				filters,
-			}, boxName);
-			onClose();
+	const submit = async () => {
+		if (connectionTypeInput.isValid && connectionTypeInput.value.trim()) {
+			if (!isUpdated) {
+				onClose();
+				saveChanges();
+			} else {
+				onClose();
+				await openDecisionModal(
+					'Resource has been updated',
+					{
+						title: 'Rewrite',
+						func: saveChanges,
+					},
+					[
+						{
+							title: 'Update',
+							// eslint-disable-next-line @typescript-eslint/no-empty-function
+							func: () => {},
+						},
+					],
+				);
+			}
 		}
+	};
+
+	const saveChanges = () => {
+		configuratePin({
+			name: pin.name,
+			'connection-type': connectionTypeInput.value as 'mq' | 'grpc',
+			attributes,
+			filters,
+		}, boxName);
+	};
+
+	const updateChanges = () => {
+		setEditablePin(pin);
+		setIsUpdated(false);
 	};
 
 	return (
@@ -116,7 +147,7 @@ const PinConfigurator = ({
 			className="modal">
 			<div className="modal__header">
 				<h3 className="modal__header-title">
-					{pin.name}
+					{editablePin.name}
 				</h3>
 				<button
 					onClick={() => onClose()}
@@ -125,6 +156,15 @@ const PinConfigurator = ({
 				</button>
 			</div>
 			<div className="modal__content">
+				{
+					isUpdated
+					&& (<div className="modal__update">
+						<button
+							onClick={updateChanges}
+							className="modal__update-button">Update</button>
+						<span className="modal__update-message">Pin has been changed</span>
+					</div>)
+				}
 				<div className="modal__content-switcher">
 					<div
 						onClick={() => setCurrentSection('config')}
@@ -146,10 +186,9 @@ const PinConfigurator = ({
 				</div>
 				{
 					currentSection === 'config'
-					&& [nameInput, connectionTypeInput].map(inputConfig =>
-						<Input
-							key={inputConfig.bind.id}
-							inputConfig={inputConfig} />)
+					&& <Input
+						key={connectionTypeInput.bind.id}
+						inputConfig={connectionTypeInput} />
 				}
 			</div>
 			{

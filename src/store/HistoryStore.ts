@@ -65,23 +65,23 @@ export default class HistoryStore {
 	private rollbackChange = (change: Change) => {
 		if (!change.from && change.to) {
 			if (isBoxEntity(change.to)) {
-				this.rootStore.schemaStore.deleteBox(change.to.name, false);
+				this.rootStore.schemasStore.deleteBox(change.to.name, false);
 			}
 			if (isLink(change.to)) {
-				this.rootStore.schemaStore.connectionStore.deleteLink(change.to, false);
+				this.rootStore.schemasStore.connectionsStore.deleteLink(change.to, false);
 			}
 			if (isDictionaryEntity(change.to)) {
-				this.rootStore.schemaStore.deleteDictionary(change.to.name, false);
+				this.rootStore.schemasStore.deleteDictionary(change.to.name, false);
 			}
 			return;
 		}
 		if (!change.to && change.from) {
 			if (isBoxEntity(change.from)) {
-				this.rootStore.schemaStore.createBox(change.from, false);
+				this.rootStore.schemasStore.createBox(change.from, false);
 			}
 			if (isLink(change.from)) {
-				this.rootStore.schemaStore
-					.connectionStore.createLink(
+				this.rootStore.schemasStore
+					.connectionsStore.createLink(
 						change.object,
 						change.from.to.pin,
 						change.from.to.connectionType as 'mq' | 'grpc',
@@ -94,21 +94,21 @@ export default class HistoryStore {
 					);
 			}
 			if (isDictionaryEntity(change.from)) {
-				this.rootStore.schemaStore.createDictionary(change.from, false);
+				this.rootStore.schemasStore.createDictionary(change.from, false);
 			}
 			return;
 		}
 		if (isBoxEntity(change.from) && isBoxEntity(change.to)) {
-			this.rootStore.schemaStore.boxes = observable.array([
-				...this.rootStore.schemaStore.boxes.filter(box => box.name !== change.from?.name),
+			this.rootStore.schemasStore.boxes = observable.array([
+				...this.rootStore.schemasStore.boxes.filter(box => box.name !== change.from?.name),
 				change.from,
 			]);
 		}
 		if (isLink(change.from) && isLink(change.to)) {
-			this.rootStore.schemaStore.connectionStore.changeLink(change.from, change.to, false);
+			this.rootStore.schemasStore.connectionsStore.changeLink(change.from, change.to, false);
 		}
 		if (isDictionaryEntity(change.from) && isDictionaryEntity(change.to)) {
-			this.rootStore.schemaStore.configurateDictionary(change.from);
+			this.rootStore.schemasStore.configurateDictionary(change.from, false);
 		}
 	};
 
@@ -116,11 +116,11 @@ export default class HistoryStore {
 	private applyChange = (change: Change) => {
 		if (!change.from) {
 			if (isBoxEntity(change.to)) {
-				this.rootStore.schemaStore.createBox(change.to, false);
+				this.rootStore.schemasStore.createBox(change.to, false);
 			}
 			if (isLink(change.to)) {
-				this.rootStore.schemaStore
-					.connectionStore.createLink(
+				this.rootStore.schemasStore
+					.connectionsStore.createLink(
 						change.object,
 						change.to.to.pin,
 						change.to.from.connectionType as 'mq' | 'grpc',
@@ -133,35 +133,35 @@ export default class HistoryStore {
 					);
 			}
 			if (isDictionaryEntity(change.to)) {
-				this.rootStore.schemaStore
+				this.rootStore.schemasStore
 					.createDictionary(change.to, false);
 			}
 			return;
 		}
 		if (!change.to) {
 			if (isBoxEntity(change.from)) {
-				this.rootStore.schemaStore.deleteBox(change.from.name, false);
+				this.rootStore.schemasStore.deleteBox(change.from.name, false);
 			}
 			if (isLink(change.from)) {
-				this.rootStore.schemaStore.connectionStore.deleteLink(change.from, false);
+				this.rootStore.schemasStore.connectionsStore.deleteLink(change.from, false);
 			}
 			if (isDictionaryEntity(change.from)) {
-				this.rootStore.schemaStore
+				this.rootStore.schemasStore
 					.deleteDictionary(change.from.name, false);
 			}
 			return;
 		}
 		if (isBoxEntity(change.from) && isBoxEntity(change.to)) {
-			this.rootStore.schemaStore.boxes = observable.array([
-				...this.rootStore.schemaStore.boxes.filter(box => box.name !== change.from?.name),
+			this.rootStore.schemasStore.boxes = observable.array([
+				...this.rootStore.schemasStore.boxes.filter(box => box.name !== change.from?.name),
 				change.to,
 			]);
 		}
 		if (isLink(change.from) && isLink(change.to)) {
-			this.rootStore.schemaStore.connectionStore.changeLink(change.to, change.from, false);
+			this.rootStore.schemasStore.connectionsStore.changeLink(change.to, change.from, false);
 		}
 		if (isDictionaryEntity(change.from) && isDictionaryEntity(change.to)) {
-			this.rootStore.schemaStore.configurateDictionary(change.to);
+			this.rootStore.schemasStore.configurateDictionary(change.to);
 		}
 	};
 

@@ -47,21 +47,21 @@ const FiltersList = ({
 	}, [isFormOpen]);
 
 	const fieldNameInput = useInput({
-		initialValue: editableFilter?.metadata[0]['field-name'] ?? '',
+		initialValue: editableFilter?.metadata[0]['field-name'],
 		label: 'Field name',
 		name: 'field-name',
 		id: 'field-name',
 	});
 
 	const expectedValueInput = useInput({
-		initialValue: editableFilter?.metadata[0]['expected-value'] ?? '',
+		initialValue: editableFilter?.metadata[0]['expected-value'],
 		label: 'Expected value',
 		name: 'expected value',
 		id: 'expected value',
 	});
 
 	const operationInput = useInput({
-		initialValue: editableFilter?.metadata[0].operation ?? '',
+		initialValue: editableFilter?.metadata[0].operation,
 		label: 'Operation',
 		name: 'operation',
 		id: 'operation',
