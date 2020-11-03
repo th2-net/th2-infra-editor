@@ -14,15 +14,10 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable } from 'mobx';
+import { action, computed, observable, reaction } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import LinksDefinition, { Link } from '../models/LinksDefinition';
-import {
-	BoxEntity,
-	Connection,
-	LinkArrow,
-	Pin,
-} from '../models/Box';
+import { BoxEntity, Connection, LinkArrow, Pin } from '../models/Box';
 import { intersection } from '../helpers/array';
 import { convertLinks } from '../helpers/link';
 import SchemasStore from './SchemasStore';
@@ -34,10 +29,19 @@ export default class ConnectionsStore {
 	constructor(
 		private rootStore: RootStore,
 		private api: ApiSchema,
-		private schemasStore:
-			SchemasStore,
+		private schemasStore: SchemasStore,
 		private historyStore: HistoryStore,
-	) { }
+	) {
+		reaction(
+			() => schemasStore.activeBox,
+			activeBox => (this.connectionBoxStart = activeBox),
+		);
+
+		reaction(
+			() => schemasStore.activePin,
+			activePin => (this.connectionPinStart = activePin),
+		);
+	}
 
 	@observable
 	public selectedLink: string | null = null;
@@ -57,6 +61,12 @@ export default class ConnectionsStore {
 	@observable
 	public draggableLink: Link | null = null;
 
+	@observable
+	public connectionBoxStart: BoxEntity | null = null;
+
+	@observable
+	public connectionPinStart: Pin | null = null;
+
 	@action setSelectedLink = (link: string | null) => {
 		this.selectedLink = link;
 	};
@@ -67,6 +77,11 @@ export default class ConnectionsStore {
 
 	@action setDraggableLink = (link: Link | null) => {
 		this.draggableLink = link;
+	};
+
+	@action setConnectionStart = (box: BoxEntity | null, pin: Pin | null) => {
+		this.connectionBoxStart = box;
+		this.connectionPinStart = pin;
 	};
 
 	@action
@@ -84,21 +99,23 @@ export default class ConnectionsStore {
 
 	@computed
 	public get connectionChain(): BoxEntity[] {
-		if (!this.schemasStore.activeBox || !this.schemasStore.activePin) return [];
+		if (!this.connectionBoxStart || !this.connectionPinStart) return [];
 		const boxes: Array<BoxEntity> = [];
 
-		const groupIndex = this.schemasStore.types.indexOf(this.schemasStore.activeBox.spec.type);
+		const groupIndex = this.schemasStore.types.indexOf(this.connectionBoxStart.spec.type);
 
 		for (let i = 0; i < this.schemasStore.types.length; i++) {
 			// eslint-disable-next-line no-continue
 			if (i === groupIndex) continue;
 			const nextGroupBoxes = this.getConnectableBoxes(i);
-			if (!nextGroupBoxes.length) break;
+			// eslint-disable-next-line no-continue
+			if (!nextGroupBoxes.length) continue;
 			boxes.push(...nextGroupBoxes);
 		}
 
-		const activeBoxCoords = this.connections
-			.find(connection => connection.connectionOwner.box === this.schemasStore.activeBox?.name);
+		const activeBoxCoords = this.connections.find(
+			connection => connection.connectionOwner.box === this.connectionBoxStart?.name,
+		);
 
 		if (!activeBoxCoords) return [];
 
@@ -109,25 +126,29 @@ export default class ConnectionsStore {
 		const group = this.schemasStore.types[index];
 		return this.schemasStore.boxes
 			.filter(box => box.spec.type === group)
-			.filter(box => intersection(
-				box.spec.pins ? box.spec.pins.map(pin => pin['connection-type']) : [],
-				this.schemasStore.activePin
-					? [this.schemasStore.activePin?.['connection-type']]
-					: this.schemasStore.activeBox && this.schemasStore.activeBox.spec.pins
-						? this.schemasStore.activeBox.spec.pins.map(pin => pin['connection-type'])
-						: [],
-			).length !== 0);
+			.filter(
+				box =>
+					intersection(
+						box.spec.pins ? box.spec.pins.map(pin => pin['connection-type']) : [],
+						this.connectionPinStart
+							? [this.connectionPinStart?.['connection-type']]
+							: this.connectionBoxStart && this.connectionBoxStart.spec.pins
+							? this.connectionBoxStart.spec.pins.map(pin => pin['connection-type'])
+							: [],
+					).length !== 0,
+			);
 	}
 
 	@action
 	public addConnection = (connections: Connection[]) => {
 		if (!connections.length) return;
 		connections.forEach(pinConnection => {
-			const coordIndex = this.connections
-				.findIndex(coonection =>
-					coonection.connectionOwner.box === pinConnection.connectionOwner.box
-					&& coonection.connectionOwner.pin === pinConnection.connectionOwner.pin
-					&& coonection.name === pinConnection.name);
+			const coordIndex = this.connections.findIndex(
+				coonection =>
+					coonection.connectionOwner.box === pinConnection.connectionOwner.box &&
+					coonection.connectionOwner.pin === pinConnection.connectionOwner.pin &&
+					coonection.name === pinConnection.name,
+			);
 			if (coordIndex === -1) {
 				this.connections.push(pinConnection);
 			} else {
@@ -139,36 +160,49 @@ export default class ConnectionsStore {
 	@computed
 	public get connectionsArrows(): LinkArrow[] {
 		if (!this.connections.length) return [];
-		return this.links.map(link => {
-			const startBox = this.schemasStore.boxes.find(box => box.name === link.from.box);
-			const endBox = this.schemasStore.boxes.find(box => box.name === link.to.box);
-			if (startBox && endBox) {
-				const startConnection = this.connections
-					.find(connection => connection.connectionOwner.box === startBox.name
-						&& connection.connectionOwner.pin === link.from.pin && connection.name === link.name);
-				const endConnection = this.connections
-					.find(connection => connection.connectionOwner.box === endBox.name
-						&& connection.connectionOwner.pin === link.to.pin && connection.name === link.name);
-				if (startConnection && endConnection) {
-					return {
-						name: link.name,
-						start: startConnection.coords.rightPoint.left < endConnection.coords.rightPoint.left
-							? startConnection.coords.rightPoint
-							: startConnection.coords.leftPoint,
-						end: startConnection.coords.rightPoint.left <= endConnection.coords.rightPoint.left
-							? endConnection.coords.leftPoint
-							: endConnection.coords.rightPoint,
-					};
+		return this.links
+			.map(link => {
+				const startBox = this.schemasStore.boxes.find(box => box.name === link.from.box);
+				const endBox = this.schemasStore.boxes.find(box => box.name === link.to.box);
+				if (startBox && endBox) {
+					const startConnection = this.connections.find(
+						connection =>
+							connection.connectionOwner.box === startBox.name &&
+							connection.connectionOwner.pin === link.from.pin &&
+							connection.name === link.name,
+					);
+					const endConnection = this.connections.find(
+						connection =>
+							connection.connectionOwner.box === endBox.name &&
+							connection.connectionOwner.pin === link.to.pin &&
+							connection.name === link.name,
+					);
+					if (startConnection && endConnection) {
+						return {
+							name: link.name,
+							start:
+								startConnection.coords.rightPoint.left <
+								endConnection.coords.rightPoint.left
+									? startConnection.coords.rightPoint
+									: startConnection.coords.leftPoint,
+							end:
+								startConnection.coords.rightPoint.left <=
+								endConnection.coords.rightPoint.left
+									? endConnection.coords.leftPoint
+									: endConnection.coords.rightPoint,
+						};
+					}
 				}
-			}
-			return {} as LinkArrow;
-		}).filter(arrow => arrow.start && arrow.end);
+				return {} as LinkArrow;
+			})
+			.filter(arrow => arrow.start && arrow.end);
 	}
 
 	@action
 	public createLink = async (
 		connectionName: string,
-		pinName: string, connectionType: 'mq' | 'grpc',
+		pinName: string,
+		connectionType: 'mq' | 'grpc',
 		boxName: string,
 		options?: {
 			createSnapshot?: boolean;
@@ -176,10 +210,13 @@ export default class ConnectionsStore {
 			fromPin?: string;
 		},
 	) => {
-		if (!this.schemasStore.selectedSchema
-			|| (!this.schemasStore.activeBox && (options && !options.fromBox))
-			|| (!this.schemasStore.activePin && (options && !options.fromPin))
-			|| !this.linkBox) return;
+		if (
+			!this.schemasStore.selectedSchema ||
+			(!this.schemasStore.activeBox && options && !options.fromBox) ||
+			(!this.schemasStore.activePin && options && !options.fromPin) ||
+			!this.linkBox
+		)
+			return;
 
 		const link = {
 			name: connectionName,
@@ -212,8 +249,9 @@ export default class ConnectionsStore {
 			},
 		};
 		if (this.linkBox.spec['boxes-relation']) {
-			this.linkBox.spec['boxes-relation'][(`router-${connectionType}` as 'router-mq' | 'router-grpc')]
-				.push(newConnection);
+			this.linkBox.spec['boxes-relation'][
+				`router-${connectionType}` as 'router-mq' | 'router-grpc'
+			].push(newConnection);
 		}
 		this.schemasStore.activeBox = null;
 		this.schemasStore.activePin = null;
@@ -245,8 +283,12 @@ export default class ConnectionsStore {
 		const changes = new Array<Change>();
 
 		if (createSnapshot) {
-			this.links.filter(connection => (connection.from.box === boxName && connection.from.pin === pin.name)
-			|| (connection.to.box === boxName && connection.to.pin === pin.name))
+			this.links
+				.filter(
+					connection =>
+						(connection.from.box === boxName && connection.from.pin === pin.name) ||
+						(connection.to.box === boxName && connection.to.pin === pin.name),
+				)
 				.forEach(connection => {
 					changes.push({
 						object: connection.name,
@@ -256,18 +298,26 @@ export default class ConnectionsStore {
 				});
 		}
 
-		this.links = [...this.links.filter(connection =>
-			(connection.from.box !== boxName && connection.from.pin !== pin.name)
-			|| (connection.to.box !== boxName && connection.to.pin !== pin.name))];
+		this.links = [
+			...this.links.filter(
+				connection =>
+					(connection.from.box !== boxName && connection.from.pin !== pin.name) ||
+					(connection.to.box !== boxName && connection.to.pin !== pin.name),
+			),
+		];
 
 		if (this.linkBox?.spec['boxes-relation']) {
-			this.linkBox
-				// eslint-disable-next-line max-len
-				.spec['boxes-relation'][(`router-${pin['connection-type']}` as 'router-mq' | 'router-grpc')] = [...this.linkBox
-					.spec['boxes-relation'][(`router-${pin['connection-type']}` as 'router-mq' | 'router-grpc')]
-					.filter(connection =>
-						connection.from.pin !== pin.name
-						&& connection.from.box !== boxName)];
+			// eslint-disable-next-line max-len
+			this.linkBox.spec['boxes-relation'][
+				`router-${pin['connection-type']}` as 'router-mq' | 'router-grpc'
+			] = [
+				...this.linkBox.spec['boxes-relation'][
+					`router-${pin['connection-type']}` as 'router-mq' | 'router-grpc'
+				].filter(
+					connection =>
+						connection.from.pin !== pin.name && connection.from.box !== boxName,
+				),
+			];
 		}
 		return changes;
 	};
@@ -275,20 +325,22 @@ export default class ConnectionsStore {
 	@action
 	public deleteLink = async (connection: Link, createSnapshot = true) => {
 		if (this.schemasStore.selectedSchema && this.linkBox) {
-			this.links = [...this.links.filter(link => link.from.box !== connection.from.box
-				|| link.to.box !== connection.to.box
-				|| link.from.pin !== connection.from.pin
-				|| link.to.pin !== connection.to.pin),
+			this.links = [
+				...this.links.filter(
+					link =>
+						link.from.box !== connection.from.box ||
+						link.to.box !== connection.to.box ||
+						link.from.pin !== connection.from.pin ||
+						link.to.pin !== connection.to.pin,
+				),
 			];
 			if (this.linkBox?.spec['boxes-relation']) {
-				const linkIndex = this.linkBox
-					.spec['boxes-relation'][`router-${connection
-						.from.connectionType}` as 'router-mq' | 'router-grpc']
-					.findIndex(link => link.name === connection.name);
-				this.linkBox
-					.spec['boxes-relation'][`router-${connection
-						.from.connectionType}` as 'router-mq' | 'router-grpc']
-					.splice(linkIndex, 1);
+				const linkIndex = this.linkBox.spec['boxes-relation'][
+					`router-${connection.from.connectionType}` as 'router-mq' | 'router-grpc'
+				].findIndex(link => link.name === connection.name);
+				this.linkBox.spec['boxes-relation'][
+					`router-${connection.from.connectionType}` as 'router-mq' | 'router-grpc'
+				].splice(linkIndex, 1);
 			}
 
 			if (createSnapshot) {
@@ -310,27 +362,16 @@ export default class ConnectionsStore {
 	};
 
 	@action
-	public changeLink = (
-		newLink: Link,
-		oldLink?: Link,
-		createSnapshot = true,
-	) => {
+	public changeLink = (newLink: Link, oldLink?: Link, createSnapshot = true) => {
 		if (!(this.draggableLink || oldLink) || !this.linkBox) return;
 
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		this.deleteLink(oldLink || this.draggableLink!, false);
-		this.createLink(
-			newLink.name,
-			newLink.to.pin,
-			newLink.from.connectionType,
-			newLink.to.box,
-			{
-				createSnapshot: false,
-				fromBox: newLink.from.box,
-				fromPin: newLink.from.pin,
-
-			},
-		);
+		this.createLink(newLink.name, newLink.to.pin, newLink.from.connectionType, newLink.to.box, {
+			createSnapshot: false,
+			fromBox: newLink.from.box,
+			fromPin: newLink.from.pin,
+		});
 
 		const oldValue = JSON.parse(JSON.stringify(oldLink || this.draggableLink)) as Link;
 		const newValue = JSON.parse(JSON.stringify(newLink)) as Link;
@@ -354,5 +395,21 @@ export default class ConnectionsStore {
 		this.schemasStore.activeBox = null;
 		this.schemasStore.activePin = null;
 		this.draggableLink = null;
+	};
+
+	public generateLinkName = (fromBoxName: string, toBoxName: string) => {
+		let defaultName = `${fromBoxName}-${toBoxName}`;
+		const connectionNumber = Math.max(
+			...this.links
+				.filter(link => link.name.includes(defaultName))
+				.map(link => {
+					const number = link.name.substr(defaultName.length);
+					return /\d+/.test(number) ? parseInt(number) : 1;
+				}),
+		);
+		if (connectionNumber !== -Infinity) {
+			defaultName += `-${connectionNumber + 1}`;
+		}
+		return defaultName;
 	};
 }

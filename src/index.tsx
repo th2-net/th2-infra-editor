@@ -25,7 +25,7 @@ import ErrorBoundary from './components/util/ErrorBoundary';
 
 ReactDOM.render(
 	<ErrorBoundary>
-		<App/>
+		<App />
 	</ErrorBoundary>,
 	document.getElementById('index'),
 );

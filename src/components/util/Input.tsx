@@ -23,35 +23,31 @@ interface InputProps {
 	inputConfig: InputConfig;
 }
 
-const Input = ({
-	inputConfig,
-}: InputProps) => {
+const Input = ({ inputConfig }: InputProps) => {
 	const inputClass = createBemBlock(
 		'input',
 		!inputConfig.isValid && inputConfig.isDirty ? 'invalid' : '',
 	);
 
 	return (
-		<div
-			className="input-wrapper">
-			<label
-				htmlFor={inputConfig.bind.id}
-				className="input-label">
+		<div className='input-wrapper'>
+			<label htmlFor={inputConfig.bind.id} className='input-label'>
 				{inputConfig.label}
 			</label>
 			<input
 				{...inputConfig.bind}
-				type="text"
+				type='text'
 				className={inputClass}
-				list={inputConfig.autocomplete?.datalistKey}/>
-			{
-				(inputConfig.autocomplete && inputConfig.value.length > 0)
-				&& <datalist id={inputConfig.autocomplete.datalistKey}>
+				list={inputConfig.autocomplete?.datalistKey}
+			/>
+			{inputConfig.autocomplete && inputConfig.value.length > 0 && (
+				<datalist id={inputConfig.autocomplete.datalistKey}>
 					{inputConfig.autocomplete.variants.map((variant, index) => (
 						<option key={index} value={variant} />
 					))}
 				</datalist>
-			}
-		</div>);
+			)}
+		</div>
+	);
 };
 export default Input;

@@ -14,12 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import {
-	Router,
-	MqConnection,
-	GrpcConnection,
-	Link,
-} from '../models/LinksDefinition';
+import { Router, MqConnection, GrpcConnection, Link } from '../models/LinksDefinition';
 
 export function convertLinks(
 	connections: Router<MqConnection | GrpcConnection>[],

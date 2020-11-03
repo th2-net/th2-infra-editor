@@ -37,18 +37,16 @@ interface BoxSettingsProps {
 	setEditablePin: (pin: Pin) => void;
 }
 
-const BoxSettings = ({
-	box,
-	onClose,
-	setEditablePin,
-}: BoxSettingsProps) => {
+const BoxSettings = ({ box, onClose, setEditablePin }: BoxSettingsProps) => {
 	const schemasStore = useSchemasStore();
 
 	const modalRef = React.useRef<HTMLDivElement>(null);
 
 	const [editableBox, setEditableBox] = React.useState<BoxEntity>(box);
 	const [isUpdated, setIsUpdated] = React.useState(false);
-	const [currentSection, setCurrentSection] = React.useState<'config' | 'pins' | 'dictionary'>('config');
+	const [currentSection, setCurrentSection] = React.useState<'config' | 'pins' | 'dictionary'>(
+		'config',
+	);
 	const [isAddPinFormOpen, setIsAddPinFormOpen] = React.useState(false);
 	const [isAddDictionaryFormOpen, setIsAddDictionaryFormOpen] = React.useState(false);
 
@@ -59,11 +57,12 @@ const BoxSettings = ({
 	}, [box]);
 
 	const relatedDictionary = React.useMemo(
-		() => (schemasStore.dictionaryLinksEntity
-			? schemasStore
-				.dictionaryLinksEntity
-				.spec['dictionaries-relation'].filter(link => link.box === editableBox.name)
-			: []),
+		() =>
+			schemasStore.dictionaryLinksEntity
+				? schemasStore.dictionaryLinksEntity.spec['dictionaries-relation'].filter(
+						link => link.box === editableBox.name,
+				  )
+				: [],
 		[schemasStore.dictionaryLinksEntity],
 	);
 
@@ -147,19 +146,17 @@ const BoxSettings = ({
 		id: 'dictionary-type',
 	});
 
-	const [relatedDictionaryList, setRelatedDictionaryList] = React.useState<DictionaryRelation[]>(relatedDictionary);
+	const [relatedDictionaryList, setRelatedDictionaryList] = React.useState<DictionaryRelation[]>(
+		relatedDictionary,
+	);
 
 	const [pinList, setPinList] = React.useState(editableBox.spec.pins ?? []);
 
 	useOutsideClickListener(modalRef, (e: MouseEvent) => {
 		if (
-			!e.composedPath()
-				.some(
-					elem =>
-						((elem as HTMLElement).className
-							&& (elem as HTMLElement).className.includes)
-							&& ((elem as HTMLElement).className.includes('modal')),
-				)
+			!e
+				.composedPath()
+				.some(elem => elem instanceof HTMLElement && elem.className.includes('modal'))
 		) {
 			onClose();
 		}
@@ -186,17 +183,20 @@ const BoxSettings = ({
 
 	const addPinToList = () => {
 		if (
-			!pinList.find(pin => pin.name === pinNameConfigInput.value)
-			&& pinNameConfigInput.value.trim()
-			&& pinTypeConfigInput.value.trim()
-			&& pinTypeConfigInput.isValid
+			!pinList.find(pin => pin.name === pinNameConfigInput.value) &&
+			pinNameConfigInput.value.trim() &&
+			pinTypeConfigInput.value.trim() &&
+			pinTypeConfigInput.isValid
 		) {
-			setPinList([...pinList, {
-				name: pinNameConfigInput.value,
-				'connection-type': pinTypeConfigInput.value as 'mq' | 'grpc',
-				attributes: [],
-				filters: [],
-			}]);
+			setPinList([
+				...pinList,
+				{
+					name: pinNameConfigInput.value,
+					'connection-type': pinTypeConfigInput.value as 'mq' | 'grpc',
+					attributes: [],
+					filters: [],
+				},
+			]);
 		} else {
 			// eslint-disable-next-line no-alert
 			window.alert(`Pin ${pinNameConfigInput.value} already exists`);
@@ -204,15 +204,20 @@ const BoxSettings = ({
 	};
 
 	const addDictionaryToList = () => {
-		if (!relatedDictionaryList.find(dictionary => dictionary.name === relationNameInput.value)) {
-			setRelatedDictionaryList([...relatedDictionaryList, {
-				name: relationNameInput.value,
-				box: editableBox.name,
-				dictionary: {
-					name: dictionaryNameInput.value,
-					type: dictionaryTypeInput.value,
+		if (
+			!relatedDictionaryList.find(dictionary => dictionary.name === relationNameInput.value)
+		) {
+			setRelatedDictionaryList([
+				...relatedDictionaryList,
+				{
+					name: relationNameInput.value,
+					box: editableBox.name,
+					dictionary: {
+						name: dictionaryNameInput.value,
+						type: dictionaryTypeInput.value,
+					},
 				},
-			}]);
+			]);
 		} else {
 			// eslint-disable-next-line no-alert
 			window.alert(`Dictionary ${relationNameInput.value} already exists`);
@@ -220,51 +225,55 @@ const BoxSettings = ({
 	};
 
 	const submit = async () => {
-		if ([imageNameInput, imageVersionInput, nodePortInput]
-			.every(config => config.isValid && config.value.trim())
-			&& boxConfigInput.isValid) {
+		if (
+			[imageNameInput, imageVersionInput, nodePortInput].every(
+				config => config.isValid && config.value.trim(),
+			) &&
+			boxConfigInput.isValid
+		) {
 			if (!isUpdated) {
 				saveChanges();
 				onClose();
 			} else {
 				onClose();
-				await openDecisionModal(
-					'Resource has been updated',
-					{
+				await openDecisionModal('Resource has been updated', {
+					mainVariant: {
 						title: 'Rewrite',
 						func: saveChanges,
 					},
-					[
+					variants: [
 						{
 							title: 'Update',
 							// eslint-disable-next-line @typescript-eslint/no-empty-function
 							func: () => {},
 						},
 					],
-				);
+				});
 			}
 		}
 	};
 
 	const saveChanges = () => {
-		schemasStore.configurateBox({
-			name: editableBox.name,
-			kind: editableBox.kind,
-			spec: {
-				'image-name': imageNameInput.value,
-				'image-version': imageVersionInput.value,
-				'node-port': nodePortInput.value ? parseInt(nodePortInput.value) : undefined,
-				'custom-config': boxConfigInput.value
-					? JSON.parse(boxConfigInput.value)
-					: undefined,
-				pins: pinList,
-				type: editableBox.spec.type,
+		schemasStore.configurateBox(
+			{
+				name: editableBox.name,
+				kind: editableBox.kind,
+				spec: {
+					'image-name': imageNameInput.value,
+					'image-version': imageVersionInput.value,
+					'node-port': nodePortInput.value ? parseInt(nodePortInput.value) : undefined,
+					'custom-config': boxConfigInput.value
+						? JSON.parse(boxConfigInput.value)
+						: undefined,
+					pins: pinList,
+					type: editableBox.spec.type,
+				},
 			},
-		},
-		{
-			dictionaryRelations: relatedDictionaryList,
-			createSnapshot: true,
-		});
+			{
+				dictionaryRelations: relatedDictionaryList,
+				createSnapshot: true,
+			},
+		);
 	};
 
 	const updateChanges = () => {
@@ -274,100 +283,90 @@ const BoxSettings = ({
 
 	return (
 		<>
-			<div ref={modalRef} className="modal">
-				<div className="modal__header">
-					<i className="modal__header-icon" />
-					<h3 className="modal__header-title">
-						{editableBox.name}
-					</h3>
-					<button
-						onClick={() => onClose()}
-						className="modal__header-close-button">
-						<i className="modal__header-close-button-icon" />
+			<div ref={modalRef} className='modal'>
+				<div className='modal__header'>
+					<i className='modal__header-icon' />
+					<h3 className='modal__header-title'>{editableBox.name}</h3>
+					<button onClick={() => onClose()} className='modal__header-close-button'>
+						<i className='modal__header-close-button-icon' />
 					</button>
 				</div>
-				<div className="modal__content">
-					{
-						isUpdated
-						&& (<div className="modal__update">
-							<button
-								onClick={updateChanges}
-								className="modal__update-button">Update</button>
-							<span className="modal__update-message">Box has been changed</span>
-						</div>)
-					}
-					<div className="modal__content-switcher">
+				<div className='modal__content'>
+					{isUpdated && (
+						<div className='modal__update'>
+							<button onClick={updateChanges} className='modal__update-button'>
+								Update
+							</button>
+							<span className='modal__update-message'>Box has been changed</span>
+						</div>
+					)}
+					<div className='modal__content-switcher'>
 						<div
 							onClick={() => setCurrentSection('config')}
-							className={configButtonClass}>Box config</div>
-						<div
-							onClick={() => setCurrentSection('pins')}
-							className={pinsButtonClass}>
-							<i className="modal__content-switcher-button-icon" />
-							{
-								`${pinList.length} ${pinList.length === 1
-									? 'pin'
-									: 'pins'}`
-							}
+							className={configButtonClass}>
+							Box config
+						</div>
+						<div onClick={() => setCurrentSection('pins')} className={pinsButtonClass}>
+							<i className='modal__content-switcher-button-icon' />
+							{`${pinList.length} ${pinList.length === 1 ? 'pin' : 'pins'}`}
 						</div>
 						<div
 							onClick={() => setCurrentSection('dictionary')}
 							className={dictionaryButtonClass}>
-							{
-								`${relatedDictionaryList.length} ${pinList.length === 1
-									? 'dictionary'
-									: 'dictionaries'}`
-							}
+							{`${relatedDictionaryList.length} ${
+								pinList.length === 1 ? 'dictionary' : 'dictionaries'
+							}`}
 						</div>
 					</div>
-					{
-						currentSection === 'config'
-						&& <BoxConfig
+					{currentSection === 'config' && (
+						<BoxConfig
 							imageNameInputConfig={imageNameInput}
 							imageVersionInputConfig={imageVersionInput}
 							nodePortInputConfig={nodePortInput}
-							boxConfigInput={boxConfigInput} />
-					}
+							boxConfigInput={boxConfigInput}
+						/>
+					)}
 				</div>
-				{
-					currentSection === 'pins'
-					&& <PinsList
+				{currentSection === 'pins' && (
+					<PinsList
 						pins={pinList}
 						removePinFromBox={deletedPin =>
-							setPinList(pinList.filter(pin => pin.name !== deletedPin.name))}
-						setEditablePin={pin => setEditablePin(pin)}/>
-				}
-				{
-					currentSection === 'dictionary'
-					&& <DictionaryList
+							setPinList(pinList.filter(pin => pin.name !== deletedPin.name))
+						}
+						setEditablePin={pin => setEditablePin(pin)}
+					/>
+				)}
+				{currentSection === 'dictionary' && (
+					<DictionaryList
 						dictionaryRelations={relatedDictionaryList}
 						removeDictionaryRelation={deletedRelation =>
-							setRelatedDictionaryList(relatedDictionaryList
-								.filter(relation => relation.name !== deletedRelation.name))} />
-				}
-				<div className="modal__buttons">
-					{
-						currentSection === 'pins'
-						&& <button
+							setRelatedDictionaryList(
+								relatedDictionaryList.filter(
+									relation => relation.name !== deletedRelation.name,
+								),
+							)
+						}
+					/>
+				)}
+				<div className='modal__buttons'>
+					{currentSection === 'pins' && (
+						<button
 							onClick={() => setIsAddPinFormOpen(true)}
-							className="modal__button add">
-							<i className="modal__button-icon" />
+							className='modal__button add'>
+							<i className='modal__button-icon' />
 							Add pin
 						</button>
-					}
-					{
-						currentSection === 'dictionary'
-						&& <button
+					)}
+					{currentSection === 'dictionary' && (
+						<button
 							onClick={() => setIsAddDictionaryFormOpen(true)}
-							className="modal__button add">
-							<i className="modal__button-icon" />
+							className='modal__button add'>
+							<i className='modal__button-icon' />
 							Add dictionary
 						</button>
-					}
-					<button
-						onClick={submit}
-						className="modal__button submit">
-						<i className="modal__button-icon" />
+					)}
+					<button onClick={submit} className='modal__button submit'>
+						<i className='modal__button-icon' />
 						Submit
 					</button>
 				</div>

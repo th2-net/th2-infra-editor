@@ -22,13 +22,11 @@ interface ChangeLogDictionaryItemProps {
 	snapshot: Snapshot;
 }
 
-const ChangeLogDictionaryItem = ({
-	snapshot,
-}: ChangeLogDictionaryItemProps) => (
-	<div className="element empty">
-		<div className="element__header ">
-			<i className="element__header-icon dictionary" />
-			<span className="element__title">{getSnapshotTitle(snapshot)}</span>
+const ChangeLogDictionaryItem = ({ snapshot }: ChangeLogDictionaryItemProps) => (
+	<div className='element empty'>
+		<div className='element__header '>
+			<i className='element__header-icon dictionary' />
+			<span className='element__title'>{getSnapshotTitle(snapshot)}</span>
 		</div>
 	</div>
 );

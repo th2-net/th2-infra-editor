@@ -20,7 +20,7 @@ export default function useSubscriptionStore() {
 	const schemasStore = useSchemasStore();
 
 	if (!schemasStore.subscriptionStore) {
-		throw new Error('useSubscriptionStore isn\'t created');
+		throw new Error("useSubscriptionStore isn't created");
 	}
 
 	return schemasStore.subscriptionStore;

@@ -66,8 +66,10 @@ export function isLinksDefinition(file: FileBase): file is LinksDefinition {
 }
 
 export function isLink(object: unknown): object is Link {
-	return (typeof object === 'object'
-		&& object !== null
-		&& (object as Link).to !== undefined
-		&& (object as Link).from !== undefined);
+	return (
+		typeof object === 'object' &&
+		object !== null &&
+		(object as Link).to !== undefined &&
+		(object as Link).from !== undefined
+	);
 }

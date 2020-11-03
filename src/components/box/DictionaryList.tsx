@@ -22,47 +22,42 @@ interface PinsListProps {
 	removeDictionaryRelation: (relation: DictionaryRelation) => void;
 }
 
-const DictionaryList = ({
-	dictionaryRelations,
-	removeDictionaryRelation,
-}: PinsListProps) => (
-	<div className="modal__elements-list">
-		{
-			dictionaryRelations.length > 0
-				? dictionaryRelations.map(relation => (
-					<div
-						key={relation.name}
-						className="element">
-						<div className="element__header">
-							<h3 className="element__title">
-								{relation.name}
-							</h3>
-							<div className="element__buttons-wrapper">
-								<button
-									onClick={() => removeDictionaryRelation(relation)}
-									className="element__button remove">
-									<i className="element__button-icon" />
-								</button>
-							</div>
+const DictionaryList = ({ dictionaryRelations, removeDictionaryRelation }: PinsListProps) => (
+	<div className='modal__elements-list'>
+		{dictionaryRelations.length > 0 ? (
+			dictionaryRelations.map(relation => (
+				<div key={relation.name} className='element'>
+					<div className='element__header'>
+						<h3 className='element__title'>{relation.name}</h3>
+						<div className='element__buttons-wrapper'>
+							<button
+								onClick={() => removeDictionaryRelation(relation)}
+								className='element__button remove'>
+								<i className='element__button-icon' />
+							</button>
 						</div>
-						<div className="element__body">
-							<div className="element__info-list">
-								<div className="element__info">
-									<div className="element__info-name">Dictionary name</div>
-									<div className="element__info-value">{relation.dictionary.name}</div>
+					</div>
+					<div className='element__body'>
+						<div className='element__info-list'>
+							<div className='element__info'>
+								<div className='element__info-name'>Dictionary name</div>
+								<div className='element__info-value'>
+									{relation.dictionary.name}
 								</div>
-								<div className="element__info">
-									<div className="element__info-name">Dictionary type</div>
-									<div className="element__info-value">{relation.dictionary.type}</div>
+							</div>
+							<div className='element__info'>
+								<div className='element__info-name'>Dictionary type</div>
+								<div className='element__info-value'>
+									{relation.dictionary.type}
 								</div>
 							</div>
 						</div>
 					</div>
-				))
-				: <div className="modal__empty">
-					Dictionary list is empty
 				</div>
-		}
+			))
+		) : (
+			<div className='modal__empty'>Dictionary list is empty</div>
+		)}
 	</div>
 );
 

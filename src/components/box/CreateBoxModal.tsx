@@ -27,11 +27,7 @@ interface CreateBoxModalProps {
 	onClose: () => void;
 }
 
-const CreateBoxModal = ({
-	createBox,
-	typeVariants,
-	onClose,
-}: CreateBoxModalProps) => {
+const CreateBoxModal = ({ createBox, typeVariants, onClose }: CreateBoxModalProps) => {
 	const modalRef = React.useRef<HTMLDivElement>(null);
 
 	const nameInput = useInput({
@@ -80,9 +76,7 @@ const CreateBoxModal = ({
 	const createNewBox = () => {
 		if (inputs.every(inputConfig => inputConfig.isValid)) {
 			const inputValues = inputs.map(inputConfig => inputConfig.value.trim());
-			const [
-				name, type, imageName, imageVersion, nodePortString,
-			] = inputValues;
+			const [name, type, imageName, imageVersion, nodePortString] = inputValues;
 			let nodePort;
 			if (nodePortString) {
 				nodePort = parseInt(nodePortString);
@@ -109,35 +103,22 @@ const CreateBoxModal = ({
 	};
 
 	return (
-		<div
-			ref={modalRef}
-			className='modal'>
-			<div className="modal__header">
-				<i className="modal__header-icon" />
-				<h3 className="modal__header-title">
-					Create box
-				</h3>
-				<button
-					onClick={() => onClose()}
-					className="modal__header-close-button">
-					<i className="modal__header-close-button-icon" />
+		<div ref={modalRef} className='modal'>
+			<div className='modal__header'>
+				<i className='modal__header-icon' />
+				<h3 className='modal__header-title'>Create box</h3>
+				<button onClick={() => onClose()} className='modal__header-close-button'>
+					<i className='modal__header-close-button-icon' />
 				</button>
 			</div>
-			<div className="modal__content">
-				{
-					inputs.map(inputConfig => (
-						<Input
-							key={inputConfig.bind.id}
-							inputConfig={inputConfig}
-						/>
-					))
-				}
+			<div className='modal__content'>
+				{inputs.map(inputConfig => (
+					<Input key={inputConfig.bind.id} inputConfig={inputConfig} />
+				))}
 			</div>
-			<div className="modal__buttons">
-				<button
-					onClick={createNewBox}
-					className="modal__button submit">
-					<i className="modal__button-icon" />
+			<div className='modal__buttons'>
+				<button onClick={createNewBox} className='modal__button submit'>
+					<i className='modal__button-icon' />
 					Submit
 				</button>
 			</div>

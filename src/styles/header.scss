@@ -14,12 +14,11 @@
  * limitations under the License.
  ******************************************************************************/
 
- @import './common/vars';
-
+@import './common/vars';
 
 .header {
 	height: 60px;
-	background: #7A99B8;
+	background: #7a99b8;
 	box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.25);
 	z-index: 2;
 	padding: 15px 60px;
@@ -28,7 +27,7 @@
 	align-items: center;
 	position: relative;
 	z-index: 3;
-	
+
 	&__select {
 		height: 30px;
 		width: 326px;
@@ -41,13 +40,13 @@
 		line-height: 14px;
 		color: $primaryTextColor;
 		appearance: none;
-		
+
 		&-wrapper {
 			position: relative;
 
 			&:before {
 				@include icon(url(../../resources/icons/schema-grey.svg), 15px, 15px);
-	
+
 				content: '';
 				position: absolute;
 				left: 10px;
@@ -57,7 +56,7 @@
 
 			&:after {
 				@include icon(url(../../resources/icons/arrow-grey.svg), 15px, 15px);
-	
+
 				content: '';
 				position: absolute;
 				right: 10px;
@@ -69,11 +68,10 @@
 				transform: translateY(-50%);
 			}
 		}
-
 	}
 
 	&__button {
-		@include button(30px, auto, #FFA666, white);
+		@include button(30px, auto, #ffa666, white);
 
 		flex-shrink: 0;
 
@@ -83,7 +81,7 @@
 		}
 
 		&.save {
-			@include button(30px, auto, #FFA666, white);
+			@include button(30px, auto, #ffa666, white);
 
 			margin: 0 25px;
 		}
@@ -100,7 +98,7 @@
 
 		&.schema {
 			@include button(30px, auto, $buttonDefaultColor, white);
-			
+
 			margin-left: auto;
 		}
 
@@ -113,15 +111,14 @@
 
 			margin-left: 25px;
 		}
-		
+
 		&.boxes &-icon {
 			@include icon(url(../../resources/icons/box-active.svg), 15px, 15px);
 		}
-		
 
 		&.dictionary {
 			@include button(30px, auto, $buttonDefaultColor, white);
-			
+
 			margin-left: 25px;
 		}
 
@@ -131,7 +128,7 @@
 
 		&.elements {
 			@include button(30px, auto, transparent, white);
-			
+
 			margin-left: 78px;
 			box-shadow: none;
 
@@ -143,7 +140,7 @@
 		&.elements &-icon {
 			@include icon(url(../../resources/icons/arrow.svg), 15px, 15px);
 		}
-		
+
 		&.elements.active &-icon {
 			@include icon(url(../../resources/icons/arrow-grey.svg), 15px, 15px);
 
@@ -152,7 +149,7 @@
 
 		&.changes {
 			@include button(30px, auto, transparent, white);
-			
+
 			margin-left: 25px;
 			box-shadow: none;
 
@@ -164,10 +161,10 @@
 		&.changes &-icon {
 			@include icon(url(../../resources/icons/arrow.svg), 15px, 15px);
 		}
-		
+
 		&.changes.active &-icon {
 			@include icon(url(../../resources/icons/arrow-grey.svg), 15px, 15px);
-			
+
 			transform: rotate(180deg);
 		}
 	}

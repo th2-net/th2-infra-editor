@@ -14,15 +14,16 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { hot } from 'react-hot-loader/root';
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import Header from './Header';
 import Groups from './groups/Groups';
 import useRootStore from '../hooks/useRootStore';
-import '../styles/root.scss';
 import SplashScreen from './SplashScreen';
 import useHistoryStore from '../hooks/useHistoryStore';
 import { useKeyPress } from '../hooks/useKeyPress';
+import '../styles/root.scss';
 
 function App() {
 	const { rootStore } = useRootStore();
@@ -48,16 +49,15 @@ function App() {
 	}, [isCtrlKeyPressed, isZKeyPressed, isYKeyPressed]);
 
 	return (
-		<div className="root">
+		<div className='root'>
 			<Header />
-			{
-				rootStore.schemasStore.isLoading
-					? <SplashScreen />
-					: rootStore.schemasStore.boxes.length > 0
-					&& <Groups />
-			}
+			{rootStore.schemasStore.isLoading ? (
+				<SplashScreen />
+			) : (
+				rootStore.schemasStore.boxes.length > 0 && <Groups />
+			)}
 		</div>
 	);
 }
 
-export default observer(App);
+export default hot(observer(App));

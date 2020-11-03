@@ -39,28 +39,28 @@ interface ElementsListModalProps {
 	onClose: () => void;
 }
 
-const ElementsListModal = ({
-	top,
-	left,
-	width,
-	onClose,
-}: ElementsListModalProps) => {
+const ElementsListModal = ({ top, left, width, onClose }: ElementsListModalProps) => {
 	const schemasStore = useSchemasStore();
 	const connectionsStore = useConnectionsStore();
 
 	const modalRef = React.useRef<HTMLDivElement>(null);
 
-	const [currentSection, setCurrentSection] = React.useState<'boxes' | 'links' | 'dictionaries'>('boxes');
+	const [currentSection, setCurrentSection] = React.useState<'boxes' | 'links' | 'dictionaries'>(
+		'boxes',
+	);
 	const [sortDirection, setSortDicrection] = React.useState<'asc' | 'desc'>('desc');
 
 	const [editableBox, setEditableBox] = React.useState<BoxEntity | null>(null);
 	const [editablePin, setEditablePin] = React.useState<Pin | null>(null);
-	const [editableDictionary, setEditableDictionary] = React.useState<DictionaryEntity | null>(null);
+	const [editableDictionary, setEditableDictionary] = React.useState<DictionaryEntity | null>(
+		null,
+	);
 	const [boxName, setBoxName] = React.useState<string | null>(null);
 
 	React.useEffect(() => {
-		const changedDictionary = schemasStore
-			.dictionaryList.find(dictionary => dictionary.name === editableDictionary?.name);
+		const changedDictionary = schemasStore.dictionaryList.find(
+			dictionary => dictionary.name === editableDictionary?.name,
+		);
 		if (changedDictionary) {
 			setEditableDictionary(changedDictionary);
 		}
@@ -87,21 +87,19 @@ const ElementsListModal = ({
 		currentSection === 'dictionaries' ? 'active' : 'null',
 	);
 
-	const sortButtonClass = createBemElement(
-		'modal',
-		'button',
-		'sort',
-		sortDirection,
-	);
+	const sortButtonClass = createBemElement('modal', 'button', 'sort', sortDirection);
 
 	useOutsideClickListener(modalRef, (e: MouseEvent) => {
-		if (!e.composedPath().some(
-			elem =>
-				((elem as HTMLElement).className
-					&& (elem as HTMLElement).className.includes)
-					&& ((elem as HTMLElement).className.includes('header__button elements active')
-						|| ((elem as HTMLElement).className.includes('modal'))),
-		)) {
+		if (
+			!e
+				.composedPath()
+				.some(
+					elem =>
+						elem instanceof HTMLElement &&
+						(elem.className.includes('header__button elements active') ||
+							elem.className.includes('modal')),
+				)
+		) {
 			onClose();
 		}
 	});
@@ -115,128 +113,124 @@ const ElementsListModal = ({
 					top: `${top ?? 0}px`,
 					width: `${width ?? 0}px`,
 				}}
-				className="modal header__modal">
-				<div className="modal__content">
-					<div className="modal__content-switcher">
-						<div
-							onClick={() => setCurrentSection('boxes')}
-							className={boxButtonClass}>
-							<i className="modal__content-switcher-button-icon" />
-							{
-								`${schemasStore.boxes.length} ${schemasStore.boxes.length === 1
-									? 'box'
-									: 'boxes'}`
-							}
+				className='modal header__modal'>
+				<div className='modal__content'>
+					<div className='modal__content-switcher'>
+						<div onClick={() => setCurrentSection('boxes')} className={boxButtonClass}>
+							<i className='modal__content-switcher-button-icon' />
+							{`${schemasStore.boxes.length} ${
+								schemasStore.boxes.length === 1 ? 'box' : 'boxes'
+							}`}
 						</div>
-						<div
-							onClick={() => setCurrentSection('links')}
-							className={linkButtonClass}>
-							<i className="modal__content-switcher-button-icon" />
-							{
-								`${connectionsStore.links.length} ${connectionsStore.links.length === 1
-									? 'link'
-									: 'links'}`
-							}
+						<div onClick={() => setCurrentSection('links')} className={linkButtonClass}>
+							<i className='modal__content-switcher-button-icon' />
+							{`${connectionsStore.links.length} ${
+								connectionsStore.links.length === 1 ? 'link' : 'links'
+							}`}
 						</div>
 						<div
 							onClick={() => setCurrentSection('dictionaries')}
 							className={dictionaryButtonClass}>
-							<i className="modal__content-switcher-button-icon" />
-							{
-								`${schemasStore.dictionaryList.length} ${schemasStore.dictionaryList.length === 1
+							<i className='modal__content-switcher-button-icon' />
+							{`${schemasStore.dictionaryList.length} ${
+								schemasStore.dictionaryList.length === 1
 									? 'dictionary'
-									: 'dictonaries'}`
-							}
+									: 'dictonaries'
+							}`}
 						</div>
 					</div>
 					<button
 						onClick={() => setSortDicrection(sortDirection === 'asc' ? 'desc' : 'asc')}
 						className={sortButtonClass}>
-						<i className="modal__button-icon" />
+						<i className='modal__button-icon' />
 						Sort by {currentSection === 'boxes' ? 'Type' : 'Name'}
 					</button>
 				</div>
-				<div className="modal__elements-list">
-					{
-						currentSection === 'boxes'
-						&& (schemasStore.boxes.length > 0
-							? schemasStore.boxes
+				<div className='modal__elements-list'>
+					{currentSection === 'boxes' &&
+						(schemasStore.boxes.length > 0 ? (
+							schemasStore.boxes
 								.sort((a, b) =>
-									(a.spec.type > b.spec.type
+									a.spec.type > b.spec.type
 										? sortDirection === 'asc'
-											? -1 : 1
+											? -1
+											: 1
 										: a.spec.type < b.spec.type
-											? sortDirection === 'asc'
-												? 1 : -1
-											: 0
-									))
+										? sortDirection === 'asc'
+											? 1
+											: -1
+										: 0,
+								)
 								.map(box => (
 									<ElementsListBoxItem
 										key={box.name}
 										box={box}
 										editBox={() => setEditableBox(box)}
-										deleteBox={deletableBox => schemasStore.deleteBox(deletableBox)}
+										deleteBox={deletableBox =>
+											schemasStore.deleteBox(deletableBox)
+										}
 										activeBox={schemasStore.activeBox}
 										setActiveBox={schemasStore.setActiveBox}
-										color={schemasStore.getBoxBorderColor(box.name)} />
+										color={schemasStore.getBoxBorderColor(box.name)}
+									/>
 								))
-							: <div className="modal__empty">
-								Box list is empty
-							</div>)
-					}
-					{
-						currentSection === 'links'
-						&& (connectionsStore.links.length > 0
-							? connectionsStore.links
+						) : (
+							<div className='modal__empty'>Box list is empty</div>
+						))}
+					{currentSection === 'links' &&
+						(connectionsStore.links.length > 0 ? (
+							connectionsStore.links
 								.sort((a, b) =>
-									(a.name > b.name
+									a.name > b.name
 										? sortDirection === 'asc'
-											? -1 : 1
+											? -1
+											: 1
 										: a.name < b.name
-											? sortDirection === 'asc'
-												? 1 : -1
-											: 0
-									))
+										? sortDirection === 'asc'
+											? 1
+											: -1
+										: 0,
+								)
 								.map(connection => (
 									<ElementsListLinkItem
 										key={connection.name}
 										link={connection}
 										deleteConnection={connectionsStore.deleteLink}
-										getBoxBorderColor={schemasStore.getBoxBorderColor} />
+										getBoxBorderColor={schemasStore.getBoxBorderColor}
+									/>
 								))
-							: <div className="modal__empty">
-								Links list is empty
-							</div>)
-					}
-					{
-						currentSection === 'dictionaries'
-						&& (schemasStore.dictionaryList.length > 0
-							? schemasStore.dictionaryList
+						) : (
+							<div className='modal__empty'>Links list is empty</div>
+						))}
+					{currentSection === 'dictionaries' &&
+						(schemasStore.dictionaryList.length > 0 ? (
+							schemasStore.dictionaryList
 								.sort((a, b) =>
-									(a.name > b.name
+									a.name > b.name
 										? sortDirection === 'asc'
-											? -1 : 1
+											? -1
+											: 1
 										: a.name < b.name
-											? sortDirection === 'asc'
-												? 1 : -1
-											: 0
-									))
+										? sortDirection === 'asc'
+											? 1
+											: -1
+										: 0,
+								)
 								.map(dictionary => (
 									<ElementsListDictionaryItem
 										key={dictionary.name}
 										dictionary={dictionary}
 										deleteDictionary={schemasStore.deleteDictionary}
-										setEditableDictionary={setEditableDictionary} />
+										setEditableDictionary={setEditableDictionary}
+									/>
 								))
-							: <div className="modal__empty">
-								Dictionary list is empty
-							</div>)
-					}
+						) : (
+							<div className='modal__empty'>Dictionary list is empty</div>
+						))}
 				</div>
 			</div>
-			{
-				editableBox
-				&& <ModalPortal isOpen={Boolean(editableBox)}>
+			{editableBox && (
+				<ModalPortal isOpen={Boolean(editableBox)}>
 					<BoxSettings
 						box={editableBox}
 						onClose={() => setEditableBox(null)}
@@ -244,28 +238,29 @@ const ElementsListModal = ({
 							setEditablePin(pin);
 							setBoxName(editableBox.name);
 							setEditableBox(null);
-						}} />
+						}}
+					/>
 				</ModalPortal>
-			}
-			{
-				(editablePin && boxName)
-				&& <ModalPortal isOpen={Boolean(editablePin)}>
+			)}
+			{editablePin && boxName && (
+				<ModalPortal isOpen={Boolean(editablePin)}>
 					<PinConfigurator
 						pin={editablePin}
 						boxName={boxName}
 						configuratePin={schemasStore.configuratePin}
 						connectionTypes={schemasStore.connectionTypes}
-						onClose={() => setEditablePin(null)} />
+						onClose={() => setEditablePin(null)}
+					/>
 				</ModalPortal>
-			}
-			{
-				editableDictionary
-				&& <ModalPortal isOpen={Boolean(editableDictionary)}>
+			)}
+			{editableDictionary && (
+				<ModalPortal isOpen={Boolean(editableDictionary)}>
 					<DictionaryModal
 						dictionary={editableDictionary}
-						onClose={() => setEditableDictionary(null)} />
+						onClose={() => setEditableDictionary(null)}
+					/>
 				</ModalPortal>
-			}
+			)}
 		</>
 	);
 };

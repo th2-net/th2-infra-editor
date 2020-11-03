@@ -18,16 +18,16 @@
 
 .groups {
 	grid-area: groups;
-	
+
 	&__wrapper {
 		@include scrollbar(#9e9e9e);
-		
+
 		position: relative;
 		overflow-x: scroll;
 		grid-row: 2 / 3;
 		grid-column: 1 / 2;
 	}
-	
+
 	&__list {
 		display: grid;
 		grid-auto-flow: column;
@@ -64,7 +64,7 @@
 
 	&__items-scroller {
 		@include scrollbar;
-		
+
 		display: flex;
 		flex-direction: column;
 		overflow-y: scroll;

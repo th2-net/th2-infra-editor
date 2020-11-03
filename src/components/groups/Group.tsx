@@ -28,19 +28,18 @@ interface Props {
 	color: string;
 }
 
-const Group = React.memo(({
-	title,
-	boxes,
-	groupsTopOffset,
-	color,
-}: Props) => {
+const Group = React.memo(({ title, boxes, groupsTopOffset, color }: Props) => {
 	const boxRefsObject = React.useRef<{
 		[key: string]: React.RefObject<PinsContainerMethods>;
 	}>({});
 	const titleRef = React.useRef<HTMLHeadingElement>(null);
 
 	React.useEffect(() => {
-		boxes.forEach(box => boxRefsObject.current[box.name] = boxRefsObject.current[box.name] || React.createRef());
+		boxes.forEach(
+			box =>
+				(boxRefsObject.current[box.name] =
+					boxRefsObject.current[box.name] || React.createRef()),
+		);
 	}, [boxes]);
 
 	const onScroll = () => {
@@ -48,31 +47,36 @@ const Group = React.memo(({
 	};
 
 	return (
-		<div className="group-wrapper">
-			<div className="group">
-				<h1 ref={titleRef} className="group__title">
+		<div className='group-wrapper'>
+			<div className='group'>
+				<h1 ref={titleRef} className='group__title'>
 					{title}
 				</h1>
-				<div className="group__items">
+				<div className='group__items'>
 					<div
 						onScroll={onScroll}
-						className="group__items-scroller"
+						className='group__items-scroller'
 						style={{
 							maxHeight: `${window.innerHeight - GROUP_OFFSET}px`,
 						}}>
-						{
-							boxes.map((box, index) =>
-								<Box
-									key={`${box.name}-${index}`}
-									box={box}
-									ref={boxRefsObject.current[box.name]}
-									groupsTopOffset={groupsTopOffset}
-									titleHeight={titleRef.current
-										? (titleRef.current?.clientHeight
-											+ parseInt(window.getComputedStyle(titleRef.current).marginBottom))
-										: undefined}
-									color={color} />)
-						}
+						{boxes.map((box, index) => (
+							<Box
+								key={`${box.name}-${index}`}
+								box={box}
+								ref={boxRefsObject.current[box.name]}
+								groupsTopOffset={groupsTopOffset}
+								titleHeight={
+									titleRef.current
+										? titleRef.current?.clientHeight +
+										  parseInt(
+												window.getComputedStyle(titleRef.current)
+													.marginBottom,
+										  )
+										: undefined
+								}
+								color={color}
+							/>
+						))}
 					</div>
 				</div>
 			</div>

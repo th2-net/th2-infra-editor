@@ -23,42 +23,33 @@ interface PinsListProps {
 	setEditablePin: (pin: Pin) => void;
 }
 
-const PinsList = ({
-	pins,
-	removePinFromBox,
-	setEditablePin,
-}: PinsListProps) => (
-	<div className="modal__elements-list">
-		{
-			pins.length > 0
-				? pins.map(pin =>
-					<div
-						key={pin.name}
-						className='modal__elements-item'>
-						<div className="modal__elements-item-info">
-							<span className="modal__elements-item-info-name">
-								{pin.name}
-							</span>
-						</div>
-						<div className="modal__elements-item-buttons-wrapper">
-							<button
-								onClick={() => {
-									setEditablePin(pin);
-								}}
-								className="modal__elements-item-button edit">
-								<i className="modal__elements-item-button-icon" />
-							</button>
-							<button
-								onClick={() => removePinFromBox(pin)}
-								className="modal__elements-item-button delete">
-								<i className="modal__elements-item-button-icon" />
-							</button>
-						</div>
-					</div>)
-				: <div className="modal__empty">
-					Pins list is empty
+const PinsList = ({ pins, removePinFromBox, setEditablePin }: PinsListProps) => (
+	<div className='modal__elements-list'>
+		{pins.length > 0 ? (
+			pins.map(pin => (
+				<div key={pin.name} className='modal__elements-item'>
+					<div className='modal__elements-item-info'>
+						<span className='modal__elements-item-info-name'>{pin.name}</span>
+					</div>
+					<div className='modal__elements-item-buttons-wrapper'>
+						<button
+							onClick={() => {
+								setEditablePin(pin);
+							}}
+							className='modal__elements-item-button edit'>
+							<i className='modal__elements-item-button-icon' />
+						</button>
+						<button
+							onClick={() => removePinFromBox(pin)}
+							className='modal__elements-item-button delete'>
+							<i className='modal__elements-item-button-icon' />
+						</button>
+					</div>
 				</div>
-		}
+			))
+		) : (
+			<div className='modal__empty'>Pins list is empty</div>
+		)}
 	</div>
 );
 

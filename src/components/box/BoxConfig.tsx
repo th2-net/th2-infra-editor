@@ -33,13 +33,9 @@ const BoxConfig = ({
 	boxConfigInput,
 }: BoxConfigProps) => (
 	<>
-		{
-			[imageNameInputConfig, imageVersionInputConfig, nodePortInputConfig]
-				.map(config =>
-					<Input
-						key={config.bind.id}
-						inputConfig={config} />)
-		}
+		{[imageNameInputConfig, imageVersionInputConfig, nodePortInputConfig].map(config => (
+			<Input key={config.bind.id} inputConfig={config} />
+		))}
 		<ConfigEditor configInput={boxConfigInput} />
 	</>
 );

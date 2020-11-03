@@ -18,9 +18,9 @@ import React, { Fragment } from 'react';
 import { observer } from 'mobx-react-lite';
 import Group from './Group';
 import SvgLayout from '../SvgLayout';
-import '../../styles/group.scss';
 import useSchemasStore from '../../hooks/useSchemasStore';
 import useConnectionsStore from '../../hooks/useConnectionsStore';
+import '../../styles/group.scss';
 
 const Groups = () => {
 	const schemasStore = useSchemasStore();
@@ -29,33 +29,38 @@ const Groups = () => {
 	const groupsRef = React.useRef<HTMLDivElement>(null);
 
 	return (
-		<div className="groups__wrapper">
-			<div ref={groupsRef} className="groups">
+		<div className='groups__wrapper'>
+			<div ref={groupsRef} className='groups'>
 				<div
-					className="groups__list"
+					className='groups__list'
 					style={{
-						gridTemplateColumns: `repeat(${Math.max(schemasStore.types.length, 6)}, 252px)`,
+						gridTemplateColumns: `repeat(${Math.max(
+							schemasStore.types.length,
+							6,
+						)}, 252px)`,
 					}}>
-					{
-						schemasStore.groups.map(group => {
-							const boxes = schemasStore.boxes
-								.filter(box => group.types.some(type => type === box.spec.type));
+					{schemasStore.groups.map(group => {
+						const boxes = schemasStore.boxes.filter(box =>
+							group.types.some(type => type === box.spec.type),
+						);
 
-							return boxes.length > 0
-								? <Group
-									key={group.title}
-									title={group.title}
-									boxes={boxes.sort((first, second) => (first.name > second.name ? 1 : -1))}
-									groupsTopOffset={groupsRef.current?.getBoundingClientRect().top}
-									color={group.color} />
-								: <Fragment key={group.title}></Fragment>;
-						})
-					}
+						return boxes.length > 0 ? (
+							<Group
+								key={group.title}
+								title={group.title}
+								boxes={boxes.sort((first, second) =>
+									first.name > second.name ? 1 : -1,
+								)}
+								groupsTopOffset={groupsRef.current?.getBoundingClientRect().top}
+								color={group.color}
+							/>
+						) : (
+							<Fragment key={group.title}></Fragment>
+						);
+					})}
 				</div>
 			</div>
-			<SvgLayout
-				connections={connectionsStore.connectionsArrows}
-			/>
+			<SvgLayout connections={connectionsStore.connectionsArrows} />
 		</div>
 	);
 };

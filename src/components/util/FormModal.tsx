@@ -26,18 +26,11 @@ interface FormModalProps {
 	onClose: () => void;
 }
 
-const FormModal = ({
-	title,
-	inputConfigList,
-	onSubmit,
-	onClose,
-}: FormModalProps) => {
+const FormModal = ({ title, inputConfigList, onSubmit, onClose }: FormModalProps) => {
 	const modalRef = React.useRef<HTMLDivElement>(null);
 
 	const submit = () => {
-		if (inputConfigList.every(inputConfig =>
-			inputConfig.isValid
-			&& inputConfig.value.trim())) {
+		if (inputConfigList.every(inputConfig => inputConfig.isValid && inputConfig.value.trim())) {
 			onSubmit();
 			onClose();
 		}
@@ -48,32 +41,21 @@ const FormModal = ({
 	});
 
 	return (
-		<div
-			ref={modalRef}
-			className="modal">
-			<div className="modal__header">
-				<h3 className="modal__header-title">
-					{title}
-				</h3>
-				<button
-					onClick={() => onClose()}
-					className="modal__header-close-button">
-					<i className="modal__header-close-button-icon" />
+		<div ref={modalRef} className='modal'>
+			<div className='modal__header'>
+				<h3 className='modal__header-title'>{title}</h3>
+				<button onClick={() => onClose()} className='modal__header-close-button'>
+					<i className='modal__header-close-button-icon' />
 				</button>
 			</div>
-			<div className="modal__content">
-				{
-					inputConfigList.map(inputConfig =>
-						<Input
-							key={inputConfig.bind.id}
-							inputConfig={inputConfig} />)
-				}
+			<div className='modal__content'>
+				{inputConfigList.map(inputConfig => (
+					<Input key={inputConfig.bind.id} inputConfig={inputConfig} />
+				))}
 			</div>
-			<div className="modal__buttons">
-				<button
-					onClick={submit}
-					className="modal__button submit">
-					<i className="modal__button-icon" />
+			<div className='modal__buttons'>
+				<button onClick={submit} className='modal__button submit'>
+					<i className='modal__button-icon' />
 					Submit
 				</button>
 			</div>

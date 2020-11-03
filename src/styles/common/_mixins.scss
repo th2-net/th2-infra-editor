@@ -17,126 +17,132 @@
 @import './colors';
 
 @mixin scrollbar($thumbColor: $scrollbarThumbBackground) {
-    &::-webkit-scrollbar {
-        background-color: rgba(0, 0, 0, 0.0);
-        height: 6px;
-        width: 6px;
-    }
+	&::-webkit-scrollbar {
+		background-color: rgba(0, 0, 0, 0);
+		height: 6px;
+		width: 6px;
+	}
 
-    &::-webkit-scrollbar-track {
-        background-color: $scrollbarTrackBackground;
-    }
+	&::-webkit-scrollbar-track {
+		background-color: $scrollbarTrackBackground;
+	}
 
-    &::-webkit-scrollbar-thumb {
-        background-color: $thumbColor;
-        border-radius: 40px;
-        height: 40px;
-    }
+	&::-webkit-scrollbar-thumb {
+		background-color: $thumbColor;
+		border-radius: 40px;
+		height: 40px;
+	}
 
-    &::-webkit-scrollbar-button {
-        display: none;
-    }
+	&::-webkit-scrollbar-button {
+		display: none;
+	}
 }
 
 @mixin icon($image, $height: 16px, $width: 16px) {
-    height: $height;
-    width: $width;
+	height: $height;
+	width: $width;
 
-    background: {
-        image: $image;
-        repeat: no-repeat;
-        size: 100%;
-        position: center;
-    }
+	background: {
+		image: $image;
+		repeat: no-repeat;
+		size: 100%;
+		position: center;
+	}
 }
 
-@mixin spinner($thikness, $size: 16px , $duration: 1s, $outer-color: $spinnerOuterColor, $inner-color: $spinnerInnerColor) {
-    height: $size;
-    width: $size;
-    border: $thikness solid $outer-color;
-    border-top: $thikness solid $inner-color;
-    border-radius: 50%;
-    animation: spin $duration linear infinite;
+@mixin spinner(
+	$thikness,
+	$size: 16px,
+	$duration: 1s,
+	$outer-color: $spinnerOuterColor,
+	$inner-color: $spinnerInnerColor
+) {
+	height: $size;
+	width: $size;
+	border: $thikness solid $outer-color;
+	border-top: $thikness solid $inner-color;
+	border-radius: 50%;
+	animation: spin $duration linear infinite;
 }
 
 @keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
+	0% {
+		transform: rotate(0deg);
+	}
 
-    100% {
-        transform: rotate(360deg);
-    }
+	100% {
+		transform: rotate(360deg);
+	}
 }
 
 @mixin button($height: 30px, $width: auto, $background-color: white, $color: black) {
-    border-radius: 17px;
-    height: $height;
-    width: $width;
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.15);
-    border: none;
-    background-color: $background-color;
-    color: $color;
-    font-weight: 600;
-    font-size: 13px;
-    line-height: 16px;
-    padding: 7px 12px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    text-transform: capitalize;
-    outline: none;
-    position: relative;
-    overflow: hidden;
+	border-radius: 17px;
+	height: $height;
+	width: $width;
+	box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.15);
+	border: none;
+	background-color: $background-color;
+	color: $color;
+	font-weight: 600;
+	font-size: 13px;
+	line-height: 16px;
+	padding: 7px 12px;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	text-transform: capitalize;
+	outline: none;
+	position: relative;
+	overflow: hidden;
 
-    &:not(.disable)::before {
-        content: "";
-        position: absolute;
-        background-color: rgba(238, 238, 238, 0.7);
-        padding: 50%;
-        border-radius: 50%;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%) scale(1);
-        opacity: 0;
-        transition: transform 0.4s, opacity 0.4s;
-    }
+	&:not(.disable)::before {
+		content: '';
+		position: absolute;
+		background-color: rgba(238, 238, 238, 0.7);
+		padding: 50%;
+		border-radius: 50%;
+		left: 50%;
+		top: 50%;
+		transform: translate(-50%, -50%) scale(1);
+		opacity: 0;
+		transition: transform 0.4s, opacity 0.4s;
+	}
 
-    &:not(.disable):active::before {
-        transition: 0s;
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(0);
-    }
+	&:not(.disable):active::before {
+		transition: 0s;
+		opacity: 1;
+		transform: translate(-50%, -50%) scale(0);
+	}
 
-    &.disable {
-        background-color: rgb(151, 151, 151);
-        cursor: auto;
-    }
+	&.disable {
+		background-color: rgb(151, 151, 151);
+		cursor: auto;
+	}
 }
 
 @mixin button-transparent($height, $width) {
-    height: $height;
-    width: $width;
-    margin: 0;
-    padding: 0;
-    border: none;
-    background-color: transparent;
-    outline: none;
-    cursor: pointer;
+	height: $height;
+	width: $width;
+	margin: 0;
+	padding: 0;
+	border: none;
+	background-color: transparent;
+	outline: none;
+	cursor: pointer;
 }
 
 @mixin status {
-    background-color: $statusUnknownColor;
+	background-color: $statusUnknownColor;
 
-    &.running {
-        background-color: $statusRunningColor;
-    }
+	&.running {
+		background-color: $statusRunningColor;
+	}
 
-    &.pending {
-        background-color: $statusPendingColor;
-    }
+	&.pending {
+		background-color: $statusPendingColor;
+	}
 
-    &.failed {
-        background-color: $statusFailedColor;
-    }
+	&.failed {
+		background-color: $statusFailedColor;
+	}
 }

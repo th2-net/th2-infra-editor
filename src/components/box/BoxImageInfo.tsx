@@ -24,26 +24,12 @@ interface BoxImageInfoProps {
 		imageVersion: string;
 		nodePort: string;
 	};
-	setImageName: (imageName: {
-		value: string;
-		isValid: boolean;
-	}) => void;
-	setImageVersion: (imageVersion: {
-		value: string;
-		isValid: boolean;
-	}) => void;
-	setNodePort: (nodePort: {
-		value: string;
-		isValid: boolean;
-	}) => void;
+	setImageName: (imageName: { value: string; isValid: boolean }) => void;
+	setImageVersion: (imageVersion: { value: string; isValid: boolean }) => void;
+	setNodePort: (nodePort: { value: string; isValid: boolean }) => void;
 }
 
-const BoxImageInfo = ({
-	spec,
-	setImageName,
-	setImageVersion,
-	setNodePort,
-}: BoxImageInfoProps) => {
+const BoxImageInfo = ({ spec, setImageName, setImageVersion, setNodePort }: BoxImageInfoProps) => {
 	const imageNameInput = useInput({
 		initialValue: spec.imageName,
 		label: 'image-name',
@@ -94,15 +80,10 @@ const BoxImageInfo = ({
 	}, [nodePortInput.value]);
 
 	return (
-		<div className="box-settings__image-info">
-			{
-				[imageNameInput, imageVersionInput, nodePortInput]
-					.map(inputConfig => (
-						<Input
-							key={inputConfig.bind.id}
-							inputConfig={inputConfig}/>
-					))
-			}
+		<div className='box-settings__image-info'>
+			{[imageNameInput, imageVersionInput, nodePortInput].map(inputConfig => (
+				<Input key={inputConfig.bind.id} inputConfig={inputConfig} />
+			))}
 		</div>
 	);
 };

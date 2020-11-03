@@ -22,13 +22,11 @@ interface ChangeLogBoxItemProps {
 	snapshot: Snapshot;
 }
 
-const ChangeLogLinkItem = ({
-	snapshot,
-}: ChangeLogBoxItemProps) => (
-	<div className="element empty">
-		<div className="element__header ">
-			<i className="element__header-icon link" />
-			<span className="element__title">{getSnapshotTitle(snapshot)}</span>
+const ChangeLogLinkItem = ({ snapshot }: ChangeLogBoxItemProps) => (
+	<div className='element empty'>
+		<div className='element__header '>
+			<i className='element__header-icon link' />
+			<span className='element__title'>{getSnapshotTitle(snapshot)}</span>
 		</div>
 	</div>
 );

@@ -22,22 +22,21 @@ import FormModal from './FormModal';
 
 interface PromptModalProps {
 	text: string;
+	defaultValue?: string;
 	onAnswer: (answer: string | null) => void;
 }
 
-const PromptModal = ({
-	text,
-	onAnswer,
-}: PromptModalProps) => {
+const PromptModal = ({ text, defaultValue, onAnswer }: PromptModalProps) => {
 	const modalRef = React.useRef<HTMLDivElement>(null);
 
+	const isSubmited = React.useRef(false);
+
 	useOutsideClickListener(modalRef, e => {
-		if (!e.composedPath().some(
-			elem =>
-				((elem as HTMLElement).className
-					&& (elem as HTMLElement).className.includes)
-					&& ((elem as HTMLElement).className.includes('modal')),
-		)) {
+		if (
+			!e
+				.composedPath()
+				.some(elem => elem instanceof HTMLElement && elem.className.includes('modal'))
+		) {
 			onAnswer(null);
 		}
 	});
@@ -55,6 +54,7 @@ const PromptModal = ({
 	}, [isESCPressed, isEnterPressed]);
 
 	const promptInput = useInput({
+		initialValue: defaultValue,
 		id: 'prompt-input',
 		autoFocus: true,
 	});
@@ -62,6 +62,7 @@ const PromptModal = ({
 	const submitHandler = () => {
 		if (promptInput.value.trim() && promptInput.isValid) {
 			onAnswer(promptInput.value);
+			isSubmited.current = true;
 		}
 	};
 
@@ -69,8 +70,9 @@ const PromptModal = ({
 		<FormModal
 			inputConfigList={[promptInput]}
 			title={text}
-			onClose={() => onAnswer(null)}
-			onSubmit={submitHandler} />
+			onClose={() => !isSubmited.current && onAnswer(null)}
+			onSubmit={submitHandler}
+		/>
 	);
 };
 

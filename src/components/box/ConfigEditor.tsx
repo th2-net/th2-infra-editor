@@ -22,22 +22,15 @@ interface ConfigEditor {
 	configInput: InputConfig;
 }
 
-const ConfigEditor = ({
-	configInput,
-}: ConfigEditor) => {
-	const textAreaClass = createBemBlock(
-		'textarea',
-		!configInput.isValid ? 'invalid' : null,
-	);
+const ConfigEditor = ({ configInput }: ConfigEditor) => {
+	const textAreaClass = createBemBlock('textarea', !configInput.isValid ? 'invalid' : null);
 
 	return (
-		<div className="textarea-wrapper">
-			<label htmlFor={configInput.bind.name} className="textarea-label">
+		<div className='textarea-wrapper'>
+			<label htmlFor={configInput.bind.name} className='textarea-label'>
 				{configInput.label}
 			</label>
-			<textarea
-				className={textAreaClass}
-				{...configInput.bind}/>
+			<textarea className={textAreaClass} {...configInput.bind} />
 		</div>
 	);
 };

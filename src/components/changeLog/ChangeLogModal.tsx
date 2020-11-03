@@ -29,24 +29,21 @@ interface ChangeLogModalProps {
 	onClose: () => void;
 }
 
-const ChangeLogModal = ({
-	top,
-	left,
-	width,
-	onClose,
-}: ChangeLogModalProps) => {
+const ChangeLogModal = ({ top, left, width, onClose }: ChangeLogModalProps) => {
 	const historyStore = useHistoryStore();
 
 	const modalRef = React.useRef<HTMLDivElement>(null);
 
 	useOutsideClickListener(modalRef, (e: MouseEvent) => {
 		if (
-			!e.composedPath().some(
-				elem =>
-					(elem as HTMLElement).className
-					&& (elem as HTMLElement).className.includes
-					&& (elem as HTMLElement).className.includes('header__button changes active'),
-			)) {
+			!e
+				.composedPath()
+				.some(
+					elem =>
+						elem instanceof HTMLElement &&
+						elem.className.includes('header__button changes active'),
+				)
+		) {
 			onClose();
 		}
 	});
@@ -59,27 +56,25 @@ const ChangeLogModal = ({
 				top: `${top ?? 0}px`,
 				width: `${width ?? 0}px`,
 			}}
-			className="modal header__modal"
-		>
-			{
-				historyStore.history.length > 0
-					? <div className="modal__elements-list long">
-						{historyStore.history.map((snapshot, index) => {
-							switch (snapshot.type) {
-								case 'box': return <ChangeLogBoxItem
-									key={index} snapshot={snapshot} />;
-								case 'link': return <ChangeLogLinkItem
-									key={index} snapshot={snapshot} />;
-								case 'dictionary': return <ChangeLogDictionaryItem
-									key={index} snapshot={snapshot} />;
-								default: return <></>;
-							}
-						})}
-					</div>
-					: <div className="modal__empty">
-						Change log is empty
-					</div>
-			}
+			className='modal header__modal'>
+			{historyStore.history.length > 0 ? (
+				<div className='modal__elements-list long'>
+					{historyStore.history.map((snapshot, index) => {
+						switch (snapshot.type) {
+							case 'box':
+								return <ChangeLogBoxItem key={index} snapshot={snapshot} />;
+							case 'link':
+								return <ChangeLogLinkItem key={index} snapshot={snapshot} />;
+							case 'dictionary':
+								return <ChangeLogDictionaryItem key={index} snapshot={snapshot} />;
+							default:
+								return <></>;
+						}
+					})}
+				</div>
+			) : (
+				<div className='modal__empty'>Change log is empty</div>
+			)}
 		</div>
 	);
 };
