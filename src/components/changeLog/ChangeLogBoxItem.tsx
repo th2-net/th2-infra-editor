@@ -76,25 +76,25 @@ const ChangeLogBoxItem = ({ snapshot }: ChangeLogBoxItemProps) => {
 		if (change.from && change.to && isBoxEntity(change.from) && isBoxEntity(change.to)) {
 			const delta = detailedDiff(change.from, change.to) as DetailedDiff;
 			if (
-				(delta.added && delta.added.spec && (delta.added as BoxEntity).spec.pins)
-				|| (delta.deleted && delta.deleted.spec && (delta.deleted as BoxEntity).spec.pins)
-				|| (delta.updated && delta.updated.spec && (delta.updated as BoxEntity).spec.pins)
+				(delta.added && delta.added.spec && (delta.added as BoxEntity).spec.pins) ||
+				(delta.deleted && delta.deleted.spec && (delta.deleted as BoxEntity).spec.pins) ||
+				(delta.updated && delta.updated.spec && (delta.updated as BoxEntity).spec.pins)
 			) {
 				return {
 					added:
 						(delta.added as BoxEntity).spec && (delta.added as BoxEntity).spec.pins
-							// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-							? Object.entries((delta.added as BoxEntity).spec.pins!).length
+							? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+							  Object.entries((delta.added as BoxEntity).spec.pins!).length
 							: 0,
 					deleted:
 						(delta.deleted as BoxEntity).spec && (delta.deleted as BoxEntity).spec.pins
-							// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-							? Object.entries((delta.deleted as BoxEntity).spec.pins!).length
+							? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+							  Object.entries((delta.deleted as BoxEntity).spec.pins!).length
 							: 0,
 					updated:
 						(delta.updated as BoxEntity).spec && (delta.updated as BoxEntity).spec.pins
-							// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-							? Object.entries((delta.updated as BoxEntity).spec.pins!).length
+							? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+							  Object.entries((delta.updated as BoxEntity).spec.pins!).length
 							: 0,
 				};
 			}
@@ -103,27 +103,38 @@ const ChangeLogBoxItem = ({ snapshot }: ChangeLogBoxItemProps) => {
 	};
 
 	const getDictionaryChanges = (change: Change) => {
-		if (change.from && change.to && isDictionaryLinksEntity(change.from) && isDictionaryLinksEntity(change.to)) {
+		if (
+			change.from &&
+			change.to &&
+			isDictionaryLinksEntity(change.from) &&
+			isDictionaryLinksEntity(change.to)
+		) {
 			const delta = detailedDiff(change.from, change.to) as DetailedDiff;
 
 			if (
-				(delta.added || delta.deleted)
-				&& (delta.added.spec || delta.deleted.spec)
-				&& ((delta.added as DictionaryLinksEntity).spec['dictionaries-relation']
-					|| (delta.added as DictionaryLinksEntity).spec['dictionaries-relation'])
+				(delta.added || delta.deleted) &&
+				(delta.added.spec || delta.deleted.spec) &&
+				((delta.added as DictionaryLinksEntity).spec['dictionaries-relation'] ||
+					(delta.added as DictionaryLinksEntity).spec['dictionaries-relation'])
 			) {
 				return {
 					added:
-						(delta.added as DictionaryLinksEntity).spec && (delta.added as DictionaryLinksEntity)
-							.spec['dictionaries-relation']
-							? Object.entries((delta.added as DictionaryLinksEntity)
-								.spec['dictionaries-relation']).length
+						(delta.added as DictionaryLinksEntity).spec &&
+						(delta.added as DictionaryLinksEntity).spec['dictionaries-relation']
+							? Object.entries(
+									(delta.added as DictionaryLinksEntity).spec[
+										'dictionaries-relation'
+									],
+							  ).length
 							: 0,
 					deleted:
-						(delta.deleted as DictionaryLinksEntity).spec && (delta.deleted as DictionaryLinksEntity)
-							.spec['dictionaries-relation']
-							? Object.entries((delta.deleted as DictionaryLinksEntity)
-								.spec['dictionaries-relation']).length
+						(delta.deleted as DictionaryLinksEntity).spec &&
+						(delta.deleted as DictionaryLinksEntity).spec['dictionaries-relation']
+							? Object.entries(
+									(delta.deleted as DictionaryLinksEntity).spec[
+										'dictionaries-relation'
+									],
+							  ).length
 							: 0,
 				};
 			}
@@ -133,50 +144,53 @@ const ChangeLogBoxItem = ({ snapshot }: ChangeLogBoxItemProps) => {
 
 	const elementClass = createBemBlock(
 		'element',
-		(snapshot.changeList.length === 1 && snapshot.operation !== 'change')
-			? 'empty' : null,
+		snapshot.changeList.length === 1 && snapshot.operation !== 'change' ? 'empty' : null,
 	);
 
 	return (
 		<div className={elementClass}>
-			<div className="element__header">
-				<i className="element__header-icon boxes" />
-				<span className="element__title">{getSnapshotTitle(snapshot)}</span>
+			<div className='element__header'>
+				<i className='element__header-icon boxes' />
+				<span className='element__title'>{getSnapshotTitle(snapshot)}</span>
 			</div>
-			{
-				!(snapshot.changeList.length === 1 && snapshot.operation !== 'change')
-				&& <div className="element__body">
-					<div className="element__info-list">
+			{!(snapshot.changeList.length === 1 && snapshot.operation !== 'change') && (
+				<div className='element__body'>
+					<div className='element__info-list'>
 						{snapshot.changeList.map(change =>
 							getEntityChanges(change).map((info, index) => (
-								<div key={index} className="element__info">
-									<div className="element__info-name">{info.key}</div>
-									<div className="element__info-value from">{info.change.from}</div>
-									<svg className="element__info-arrow" xmlns="http://www.w3.org/2000/svg">
-										<line x1="0" y1="3" x2="15" y2="3" />
-										<polygon points="15,3 12,6 12,0" />
+								<div key={index} className='element__info'>
+									<div className='element__info-name'>{info.key}</div>
+									<div className='element__info-value from'>
+										{info.change.from}
+									</div>
+									<svg
+										className='element__info-arrow'
+										xmlns='http://www.w3.org/2000/svg'>
+										<line x1='0' y1='3' x2='15' y2='3' />
+										<polygon points='15,3 12,6 12,0' />
 									</svg>
-									<div className="element__info-value to">{info.change.to}</div>
+									<div className='element__info-value to'>{info.change.to}</div>
 								</div>
-							)))}
+							)),
+						)}
 						{snapshot.changeList.map((change, index) => {
 							const pinsChanges = getPinsChanges(change);
 							return (
 								pinsChanges && (
 									<Fragment key={index}>
-										<div className="element__info-name">Pins</div>
+										<div className='element__info-name'>Pins</div>
 										{pinsChanges.added > 0 && (
-											<div className="element__info-value to sub">
+											<div className='element__info-value to sub'>
 												{`${pinsChanges.added} added`}
 											</div>
 										)}
 										{pinsChanges.deleted > 0 && (
-											<div className="element__info-value from sub">
+											<div className='element__info-value from sub'>
 												{`${pinsChanges.deleted} deleted`}
 											</div>
 										)}
 										{pinsChanges.updated > 0 && (
-											<div className="element__info-value to sub">
+											<div className='element__info-value to sub'>
 												{`${pinsChanges.updated} updated`}
 											</div>
 										)}
@@ -189,14 +203,14 @@ const ChangeLogBoxItem = ({ snapshot }: ChangeLogBoxItemProps) => {
 							return (
 								pinsChanges && (
 									<Fragment key={index}>
-										<div className="element__info-name">Dictionaries</div>
+										<div className='element__info-name'>Dictionaries</div>
 										{pinsChanges.added > 0 && (
-											<div className="element__info-value to sub">
+											<div className='element__info-value to sub'>
 												{`${pinsChanges.added} added`}
 											</div>
 										)}
 										{pinsChanges.deleted > 0 && (
-											<div className="element__info-value from sub">
+											<div className='element__info-value from sub'>
 												{`${pinsChanges.deleted} deleted`}
 											</div>
 										)}
@@ -204,15 +218,16 @@ const ChangeLogBoxItem = ({ snapshot }: ChangeLogBoxItemProps) => {
 								)
 							);
 						})}
-						{
-							snapshot.changeList.some(change => isLink(change.from) || isLink(change.to))
-								&& <div className="element__info-value from">
-									All connected links were deleted
-								</div>
-						}
+						{snapshot.changeList.some(
+							change => isLink(change.from) || isLink(change.to),
+						) && (
+							<div className='element__info-value from'>
+								All connected links were deleted
+							</div>
+						)}
 					</div>
 				</div>
-			}
+			)}
 		</div>
 	);
 };

@@ -38,49 +38,55 @@ const ElementsListBoxItem = ({
 }: ElementsListBoxItemProps) => {
 	const elementClass = createBemBlock(
 		'element',
-		(activeBox && activeBox.name === box.name) ? 'active' : null,
+		activeBox && activeBox.name === box.name ? 'active' : null,
 	);
 
-	return (<div
-		onMouseOver={() => setActiveBox(box)}
-		onMouseLeave={() => setActiveBox(null)}
-		className={elementClass}>
+	return (
 		<div
-			style={{
-				backgroundColor: color,
-			}}
-			className="element__header">
-			<span className="element__title">{box.name}</span>
-			<div className="element__buttons-wrapper">
-				<button
-					onClick={async e => {
-						e.stopPropagation();
-						if (await openConfirmModal(`Are you sure you want to delete resource "${box.name}"?`)) {
-							deleteBox(box.name);
-						}
-					}}
-					className="element__button remove">
-					<i className="element__button-icon" />
-				</button>
-				<button
-					className="element__button settings"
-					onClick={e => {
-						e.stopPropagation();
-						editBox();
-					}}>
-					<i className="element__button-icon" />
-				</button>
+			onMouseOver={() => setActiveBox(box)}
+			onMouseLeave={() => setActiveBox(null)}
+			className={elementClass}>
+			<div
+				style={{
+					backgroundColor: color,
+				}}
+				className='element__header'>
+				<span className='element__title'>{box.name}</span>
+				<div className='element__buttons-wrapper'>
+					<button
+						onClick={async e => {
+							e.stopPropagation();
+							if (
+								await openConfirmModal(
+									`Are you sure you want to delete resource "${box.name}"?`,
+								)
+							) {
+								deleteBox(box.name);
+							}
+						}}
+						className='element__button remove'>
+						<i className='element__button-icon' />
+					</button>
+					<button
+						className='element__button settings'
+						onClick={e => {
+							e.stopPropagation();
+							editBox();
+						}}>
+						<i className='element__button-icon' />
+					</button>
+				</div>
 			</div>
-		</div>
-		<div className="element__body">
-			<div className="element__info-list">
-				<div className="element__info">
-					<div className="element__info-name">Type</div>
-					<div className="element__info-value">{box.spec.type}</div>
+			<div className='element__body'>
+				<div className='element__info-list'>
+					<div className='element__info'>
+						<div className='element__info-name'>Type</div>
+						<div className='element__info-value'>{box.spec.type}</div>
+					</div>
 				</div>
 			</div>
 		</div>
-	</div>);
+	);
 };
 
 export default ElementsListBoxItem;

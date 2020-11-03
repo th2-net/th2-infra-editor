@@ -30,32 +30,26 @@ const ContextMenu = ({
 	closeContextMenu,
 	deletePinConnections,
 }: ContextMenu) => {
-	const contextMenuClass = createBemElement(
-		'pin',
-		'context-menu',
-		state,
-	);
+	const contextMenuClass = createBemElement('pin', 'context-menu', state);
 
 	return (
-		<div
-			className={contextMenuClass}>
+		<div className={contextMenuClass}>
 			<button
 				onClick={() => {
 					togglePinConfigurator();
 					closeContextMenu();
 				}}
-				className="pin__menu-button"
-			>
-				<i className='pin__menu-button-icon edit'/>
+				className='pin__menu-button'>
+				<i className='pin__menu-button-icon edit' />
 			</button>
-			<div className="pin__menu-separator"/>
+			<div className='pin__menu-separator' />
 			<button
 				onClick={() => {
 					deletePinConnections();
 					closeContextMenu();
 				}}
-				className="pin__menu-button">
-				<i className='pin__menu-button-icon delete'/>
+				className='pin__menu-button'>
+				<i className='pin__menu-button-icon delete' />
 			</button>
 		</div>
 	);

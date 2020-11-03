@@ -24,9 +24,7 @@ interface Props {
 	children: React.ReactNode;
 }
 
-export const Portal = ({
-	children,
-}: Props) => {
+export const Portal = ({ children }: Props) => {
 	const el = useRef(document.createElement('div'));
 
 	useEffect(() => {
@@ -46,12 +44,7 @@ interface ModalPortalProps {
 	closeModal?: () => void;
 }
 
-export const ModalPortal = ({
-	closeDelay = 0,
-	children,
-	isOpen,
-	closeModal,
-}: ModalPortalProps) => {
+export const ModalPortal = ({ closeDelay = 0, children, isOpen, closeModal }: ModalPortalProps) => {
 	const [isShown, setIsShown] = React.useState(false);
 
 	const isEscPressed = useKeyPress('Escape');
@@ -73,9 +66,5 @@ export const ModalPortal = ({
 		setIsShown(isOpen);
 	}, [isOpen]);
 
-	return isShown ? (
-		<Portal>
-			{children}
-		</Portal>
-	) : null;
+	return isShown ? <Portal>{children}</Portal> : null;
 };

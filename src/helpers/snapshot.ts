@@ -18,9 +18,10 @@ import { Snapshot } from '../models/History';
 
 export function getSnapshotTitle(snapshot: Snapshot) {
 	if (snapshot.changeList.length === 1) {
-		const action = snapshot.operation === 'add'
-			? 'create'
-			: snapshot.operation === 'remove'
+		const action =
+			snapshot.operation === 'add'
+				? 'create'
+				: snapshot.operation === 'remove'
 				? 'deleted'
 				: 'changed';
 		return `${snapshot.object} has been ${action}`;

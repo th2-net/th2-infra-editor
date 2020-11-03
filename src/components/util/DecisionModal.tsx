@@ -18,7 +18,7 @@ import React from 'react';
 
 interface DecisionModalProps {
 	text: string;
-	mainVariant: {
+	mainVariant?: {
 		title: string;
 		func: () => void;
 	};
@@ -29,19 +29,16 @@ interface DecisionModalProps {
 	onClose: () => void;
 }
 
-const DecisionModal = ({
-	text,
-	mainVariant,
-	variants,
-	onClose,
-}: DecisionModalProps) => {
+const DecisionModal = ({ text, mainVariant, variants, onClose }: DecisionModalProps) => {
 	const timeout = React.useRef<NodeJS.Timeout>();
 
 	React.useEffect(() => {
 		timeout.current = setTimeout(() => {
-			mainVariant.func();
+			if (mainVariant) {
+				mainVariant.func();
+			}
 			onClose();
-		}, 15000);
+		}, 10000);
 	}, []);
 
 	const makeDecision = (func: () => void) => {
@@ -49,27 +46,32 @@ const DecisionModal = ({
 			clearTimeout(timeout.current);
 		}
 		func();
+		onClose();
 	};
 
-	return (<div className="modal decision__modal">
-		<div className="modal__content">
-			<p className="modal__paragraph">
-				{text}
-			</p>
-		</div>
-		<div className="modal__buttons center">
-			{
-				[mainVariant, ...variants].map((variant, index) => (
+	const preparedVariants = [...(mainVariant ? [mainVariant] : []), ...variants];
+
+	return (
+		<div className='modal decision__modal'>
+			<div className='modal__content'>
+				<p className='modal__paragraph'>{text}</p>
+			</div>
+			<div
+				style={{
+					justifyContent: preparedVariants.length === 1 ? 'center' : 'space-between',
+				}}
+				className='modal__buttons'>
+				{preparedVariants.map((variant, index) => (
 					<button
 						key={index}
 						onClick={() => makeDecision(variant.func)}
-						className="modal__button">
+						className='modal__button'>
 						{variant.title}
 					</button>
-				))
-			}
+				))}
+			</div>
 		</div>
-	</div>);
+	);
 };
 
 export default DecisionModal;

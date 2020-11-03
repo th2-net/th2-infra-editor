@@ -20,16 +20,10 @@ import { useInput } from '../../hooks/useInput';
 
 interface DictionaryXMLEditorProps {
 	xmlContent: string;
-	setDictionaryData: (dictionaryData: {
-		value: string;
-		isValid: boolean;
-	}) => void;
+	setDictionaryData: (dictionaryData: { value: string; isValid: boolean }) => void;
 }
 
-const DictionaryXMLEditor = ({
-	xmlContent,
-	setDictionaryData,
-}: DictionaryXMLEditorProps) => {
+const DictionaryXMLEditor = ({ xmlContent, setDictionaryData }: DictionaryXMLEditorProps) => {
 	const isXMLValid = (xml: string) => {
 		const parser = new DOMParser();
 		const theDom = parser.parseFromString(xml, 'application/xml');
@@ -45,10 +39,7 @@ const DictionaryXMLEditor = ({
 		validate: isXMLValid,
 	});
 
-	const editorClass = createBemBlock(
-		'textarea',
-		!xmlInputConfig.isValid ? 'invalid' : null,
-	);
+	const editorClass = createBemBlock('textarea', !xmlInputConfig.isValid ? 'invalid' : null);
 
 	React.useEffect(() => {
 		setDictionaryData({
@@ -58,13 +49,11 @@ const DictionaryXMLEditor = ({
 	}, [xmlInputConfig.value]);
 
 	return (
-		<div className="textarea-wrapper">
-			<label htmlFor={xmlInputConfig.bind.name} className="textarea-label">
+		<div className='textarea-wrapper'>
+			<label htmlFor={xmlInputConfig.bind.name} className='textarea-label'>
 				{xmlInputConfig.label}
 			</label>
-			<textarea
-				className={editorClass}
-				{...xmlInputConfig.bind} />
+			<textarea className={editorClass} {...xmlInputConfig.bind} />
 		</div>
 	);
 };

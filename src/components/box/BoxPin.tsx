@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import React from 'react';
-import { openConfirmModal, openPromptModal } from '../../helpers/modal';
+import { openConfirmModal, openDecisionModal, openPromptModal } from '../../helpers/modal';
 import { createBemElement } from '../../helpers/styleCreators';
 import useConnectionsStore from '../../hooks/useConnectionsStore';
 import useSchemasStore from '../../hooks/useSchemasStore';
@@ -32,7 +32,10 @@ const NAME_MODAL_OFFSET = 7;
 interface BoxPinProps {
 	pin: Pin;
 	setEditablePin: (pin: Pin) => void;
-	getPinLinks: (pin: Pin, direction: 'left' | 'right' | 'both') => {
+	getPinLinks: (
+		pin: Pin,
+		direction: 'left' | 'right' | 'both',
+	) => {
 		in: Link[];
 		out: Link[];
 	};
@@ -44,17 +47,20 @@ interface BoxPinProps {
 	titleHeight?: number;
 }
 
-const BoxPin = ({
-	pin,
-	setEditablePin,
-	getPinLinks,
-	isPinExpanded,
-	togglePin,
-	isConnectable,
-	boxName,
-	groupsTopOffset,
-	titleHeight,
-}: BoxPinProps, ref: React.Ref<HTMLDivElement>) => {
+const BoxPin = (
+	{
+		pin,
+		setEditablePin,
+		getPinLinks,
+		isPinExpanded,
+		togglePin,
+		isConnectable,
+		boxName,
+		groupsTopOffset,
+		titleHeight,
+	}: BoxPinProps,
+	ref: React.Ref<HTMLDivElement>,
+) => {
 	const schemasStore = useSchemasStore();
 	const connectionsStore = useConnectionsStore();
 
@@ -85,11 +91,7 @@ const BoxPin = ({
 		isConnectable ? 'connectable' : null,
 	);
 
-	const infoClass = createBemElement(
-		'box',
-		'pin-info',
-		isMenuOpen ? 'active' : null,
-	);
+	const infoClass = createBemElement('box', 'pin-info', isMenuOpen ? 'active' : null);
 
 	const leftPinLinks = getPinLinks(pin, 'left');
 	const rightPinLinks = getPinLinks(pin, 'right');
@@ -101,10 +103,10 @@ const BoxPin = ({
 	const pinHeight = React.useMemo(() => {
 		if (!leftPinLinks || !rightPinLinks) return STANDART_PIN_HEIGHT;
 		return Math.max(
-			(leftPinLinks.in.length + leftPinLinks.out.length)
-				* (PIN_OFFSET + PIN_DOT_HEIGHT) + PIN_OFFSET,
-			(rightPinLinks.in.length + rightPinLinks.out.length)
-				* (PIN_OFFSET + PIN_DOT_HEIGHT) + PIN_OFFSET,
+			(leftPinLinks.in.length + leftPinLinks.out.length) * (PIN_OFFSET + PIN_DOT_HEIGHT) +
+				PIN_OFFSET,
+			(rightPinLinks.in.length + rightPinLinks.out.length) * (PIN_OFFSET + PIN_DOT_HEIGHT) +
+				PIN_OFFSET,
 			STANDART_PIN_HEIGHT,
 		);
 	}, [leftPinLinks, rightPinLinks]);
@@ -121,7 +123,13 @@ const BoxPin = ({
 			expandPin();
 			schemasStore.setActivePin(!isPinExpanded ? pin : null);
 		} else {
-			const connectionName = await openPromptModal('Connection name');
+			if (!schemasStore.activeBox) return;
+			const defaultName = connectionsStore.generateLinkName(
+				schemasStore.activeBox.name,
+				boxName,
+			);
+
+			const connectionName = await openPromptModal('Connection name', defaultName);
 			if (!connectionName) return;
 			connectionsStore.createLink(connectionName, pin.name, pin['connection-type'], boxName);
 		}
@@ -131,56 +139,69 @@ const BoxPin = ({
 		const body = document.querySelector('body');
 		if (body) body.style.userSelect = 'none';
 
-		document.onmousemove = ((e: MouseEvent) => {
+		const connectableBox = schemasStore.boxes.find(box => box.name === link.from.box);
+
+		if (!connectableBox || !connectableBox.spec.pins) return;
+
+		const connectablePin = connectableBox.spec.pins.find(
+			boxPin => boxPin.name === link.from.pin,
+		);
+
+		if (!connectablePin) return;
+
+		connectionsStore.setConnectionStart(connectableBox, connectablePin);
+
+		document.onmousemove = (e: MouseEvent) => {
 			connectionsStore.setDraggableLink(link);
-			connectionsStore.addConnection(
-				[
-					{
-						name: link.name,
-						connectionOwner: {
-							box: boxName,
-							pin: targetPin.name,
-							connectionType: targetPin['connection-type'],
+			connectionsStore.addConnection([
+				{
+					name: link.name,
+					connectionOwner: {
+						box: boxName,
+						pin: targetPin.name,
+						connectionType: targetPin['connection-type'],
+					},
+					coords: {
+						leftPoint: {
+							left: e.pageX,
+							top: e.pageY - (groupsTopOffset ?? 0) - (titleHeight ?? 0),
 						},
-						coords: {
-							leftPoint: {
-								left: e.pageX,
-								top: e.pageY
-									- (groupsTopOffset ?? 0)
-									- (titleHeight ?? 0),
-							},
-							rightPoint: {
-								left: e.pageX,
-								top: e.pageY
-								- (groupsTopOffset ?? 0)
-								- (titleHeight ?? 0),
-							},
+						rightPoint: {
+							left: e.pageX,
+							top: e.pageY - (groupsTopOffset ?? 0) - (titleHeight ?? 0),
 						},
 					},
-				],
-			);
-		});
+				},
+			]);
+		};
 	};
 
 	const dropConnection = async () => {
+		if (!connectionsStore.draggableLink) return;
+
 		document.onmousemove = null;
 		const body = document.querySelector('body');
 		if (body) body.style.userSelect = 'auto';
 
+		connectionsStore.setConnectionStart(schemasStore.activeBox, schemasStore.activePin);
+
 		const draggableLink = connectionsStore.draggableLink;
 
 		if (draggableLink) {
-			const changedSide: 'from' | 'to' = schemasStore.activeBox?.name === draggableLink.from.box
-				&& schemasStore.activePin?.name === draggableLink.from.pin
-				? 'from'
-				: 'to';
+			const changedSide: 'from' | 'to' =
+				schemasStore.activeBox?.name === draggableLink.from.box &&
+				schemasStore.activePin?.name === draggableLink.from.pin
+					? 'from'
+					: 'to';
 
-			const newName = await openPromptModal('Connection name');
+			const newName = await connectionsStore.generateLinkName(
+				changedSide === 'from' ? boxName : draggableLink.from.box,
+				changedSide === 'to' ? boxName : draggableLink.to.box,
+			);
 
-			if (!newName) return;
-			connectionsStore.changeLink(
-				{
-					name: newName,
+			const changeLink = (linkName: string, oldLink?: Link): Link => {
+				const link = {
+					name: linkName,
 					from: {
 						box: changedSide === 'from' ? boxName : draggableLink.from.box,
 						pin: changedSide === 'from' ? pin.name : draggableLink.from.pin,
@@ -191,15 +212,37 @@ const BoxPin = ({
 						pin: changedSide === 'to' ? pin.name : draggableLink.to.pin,
 						connectionType: draggableLink.from.connectionType,
 					},
-				},
-			);
+				};
+				connectionsStore.changeLink(link, oldLink);
+				return link;
+			};
+
+			const newLink = changeLink(newName);
+
+			openDecisionModal(`Link has been renamed to ${newName}`, {
+				variants: [
+					{
+						title: 'Rename',
+						func: async () => {
+							const name = await openPromptModal('Link name', newName);
+							if (!name) return;
+
+							changeLink(name, newLink);
+						},
+					},
+				],
+			});
 		}
 	};
 
 	const deleteAllRelatedLinks = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 		if (isMenuOpen) {
 			e.stopPropagation();
-			if (await openConfirmModal(`Are you sure you want to delete all "${pin.name}" pin links`)) {
+			if (
+				await openConfirmModal(
+					`Are you sure you want to delete all "${pin.name}" pin links`,
+				)
+			) {
 				schemasStore.deletePinConnections(pin, boxName);
 			}
 		}
@@ -222,128 +265,116 @@ const BoxPin = ({
 						? connClientRect.left - NAME_MODAL_OFFSET
 						: connClientRect.right + NAME_MODAL_OFFSET
 					: 0,
-				top: connClientRect
-					? connClientRect.top
-						+ (connClientRect.height / 2)
-					: 0,
+				top: connClientRect ? connClientRect.top + connClientRect.height / 2 : 0,
 			},
 		});
 	};
 
 	return (
-		<>
-			<div
-				ref={ref}
-				onClick={pinClickHandler}
-				style={{
-					height: isPinExpanded ? pinHeight : STANDART_PIN_HEIGHT,
-				}}
-				onMouseUp={dropConnection}
-				className={pinClass}>
-				{
-					isPinExpanded
-						? leftPinLinks
-							&& [...leftPinLinks.in, ...leftPinLinks.out, ...rightPinLinks.in, ...rightPinLinks.out]
-								.map((link, index) => {
-									const linkSide = index < leftPinLinksAmount ? 'left' : 'right';
+		<div
+			ref={ref}
+			onClick={pinClickHandler}
+			style={{
+				height: isPinExpanded ? pinHeight : STANDART_PIN_HEIGHT,
+			}}
+			onMouseUp={dropConnection}
+			className={pinClass}>
+			{isPinExpanded ? (
+				leftPinLinks &&
+				[
+					...leftPinLinks.in,
+					...leftPinLinks.out,
+					...rightPinLinks.in,
+					...rightPinLinks.out,
+				].map((link, index) => {
+					const linkSide = index < leftPinLinksAmount ? 'left' : 'right';
 
-									return <div
-										key={link.name}
-										ref={connectionRef => (connectionsRefs[index] = connectionRef)}
-										onClick={e => {
-											e.stopPropagation();
-											setOpenedConnection(link.name);
-										}}
-										onMouseOver={() => onMouseOverHandler(link, linkSide, index)}
-										onMouseLeave={() => setNameModal(null)}
-										style={{
-											top: (pinHeight
-												/ ((linkSide === 'left'
-													? leftPinLinksAmount
-													: rightPinLinksAmount) + 1))
-												* (index + 1),
-										}}
-										onMouseDown={e => {
-											e.stopPropagation();
-											dragConnection(link, pin);
-										}}
-										className={`box__pin-dot ${openedConnection === link.name
-											? 'open' : null} ${linkSide}`}>
-										<button
-											onClick={() => deleteLink(link)}
-											className="box__pin-dot-delete-btn" />
-									</div>;
-								})
-						: <>
-							<div className="box__pin-dot left" />
-							<div className="box__pin-dot right" />
-						</>
-				}
-				{
-					!isPinExpanded
-					&& <span className="box__pin-counter left">
-						{
-							leftPinLinksAmount
-						}
-					</span>
-				}
-				{
-					isMenuOpen
-					&& 	<button
-						onClick={deleteAllRelatedLinks}
-						className="box__pin-button remove">
-						<i className="box__pin-button-icon" />
-					</button>
-				}
-				<div
+					return (
+						<div
+							key={link.name}
+							ref={connectionRef => (connectionsRefs[index] = connectionRef)}
+							onClick={e => {
+								e.stopPropagation();
+								setOpenedConnection(link.name);
+							}}
+							onMouseOver={() => onMouseOverHandler(link, linkSide, index)}
+							onMouseLeave={() => setNameModal(null)}
+							style={{
+								top:
+									(pinHeight /
+										((linkSide === 'left'
+											? leftPinLinksAmount
+											: rightPinLinksAmount) +
+											1)) *
+									(index + 1),
+							}}
+							onMouseDown={e => {
+								e.stopPropagation();
+								dragConnection(link, pin);
+							}}
+							className={`box__pin-dot ${
+								openedConnection === link.name ? 'open' : null
+							} ${linkSide}`}>
+							<button
+								onClick={() => deleteLink(link)}
+								className='box__pin-dot-delete-btn'
+							/>
+						</div>
+					);
+				})
+			) : (
+				<>
+					<div className='box__pin-dot left' />
+					<div className='box__pin-dot right' />
+				</>
+			)}
+			{!isPinExpanded && <span className='box__pin-counter left'>{leftPinLinksAmount}</span>}
+			{isMenuOpen && (
+				<button onClick={deleteAllRelatedLinks} className='box__pin-button remove'>
+					<i className='box__pin-button-icon' />
+				</button>
+			)}
+			<div
+				onClick={e => {
+					if (isPinExpanded) {
+						e.stopPropagation();
+						setIsMenuOpen(!isMenuOpen);
+					}
+				}}
+				className={infoClass}>
+				<span className='box__pin-name'>{`${pin.name} / ${pin['connection-type']}`}</span>
+			</div>
+			{isMenuOpen && (
+				<button
 					onClick={e => {
-						if (isPinExpanded) {
+						if (isMenuOpen) {
 							e.stopPropagation();
-							setIsMenuOpen(!isMenuOpen);
+							setEditablePin(pin);
 						}
 					}}
-					className={infoClass}>
-					<span className="box__pin-name">
-						{`${pin.name} / ${pin['connection-type']}`}
-					</span>
-				</div>
-				{
-					isMenuOpen
-					&& 	<button
-						onClick={e => {
-							if (isMenuOpen) {
-								e.stopPropagation();
-								setEditablePin(pin);
-							}
-						}}
-						className="box__pin-button settings">
-						<i className="box__pin-button-icon" />
-					</button>
-				}
-				{
-					!isPinExpanded
-					&& <span className="box__pin-counter right">
-						{
-							rightPinLinksAmount
-						}
-					</span>
-				}
-			</div>
-			{
-				nameModal
-				&& <ModalPortal isOpen={Boolean(nameModal)}>
+					className='box__pin-button settings'>
+					<i className='box__pin-button-icon' />
+				</button>
+			)}
+			{!isPinExpanded && (
+				<span className='box__pin-counter right'>{rightPinLinksAmount}</span>
+			)}
+			{nameModal && (
+				<ModalPortal isOpen={Boolean(nameModal)}>
 					<div
 						style={{
 							top: nameModal.coords.top,
 							left: nameModal.coords.left,
-							transform: `translate(${nameModal.side === 'left' ? '-100' : '0'}%, -50%)`,
+							transform: `translate(${
+								nameModal.side === 'left' ? '-100' : '0'
+							}%, -50%)`,
 						}}
-						className="box__pin-connection-name">
+						className='box__pin-connection-name'>
 						{nameModal.name}
 					</div>
 				</ModalPortal>
-			}
-		</>
+			)}
+		</div>
 	);
 };
 

@@ -41,7 +41,9 @@ const PinConfigurator = ({
 	configuratePin,
 	connectionTypes,
 }: PinConfiguratorProps) => {
-	const [currentSection, setCurrentSection] = React.useState<'config' | 'attributes' | 'filters'>('config');
+	const [currentSection, setCurrentSection] = React.useState<'config' | 'attributes' | 'filters'>(
+		'config',
+	);
 
 	const [editablePin, setEditablePin] = React.useState<Pin>(pin);
 	const [isUpdated, setIsUpdated] = React.useState(false);
@@ -53,7 +55,7 @@ const PinConfigurator = ({
 	}, [pin]);
 
 	const [attributes, setAttributes] = React.useState(editablePin.attributes);
-	const [filters, setFilters] = React.useState(() => (editablePin.filters ?? []));
+	const [filters, setFilters] = React.useState(() => editablePin.filters ?? []);
 
 	const [isAttributeFormOpen, setIsAttributeFormOpen] = React.useState(false);
 	const [isFilterFormOpen, setIsFilterFormOpen] = React.useState(false);
@@ -62,12 +64,10 @@ const PinConfigurator = ({
 
 	useOutsideClickListener(editorRef, (e: MouseEvent) => {
 		if (
-			!e.composedPath().some(
-				elem =>
-					((elem as HTMLElement).className
-						&& (elem as HTMLElement).className.includes)
-						&& ((elem as HTMLElement).className.includes('modal')),
-			)) {
+			!e
+				.composedPath()
+				.some(elem => elem instanceof HTMLElement && elem.className.includes('modal'))
+		) {
 			onClose();
 		}
 	});
@@ -109,31 +109,33 @@ const PinConfigurator = ({
 				saveChanges();
 			} else {
 				onClose();
-				await openDecisionModal(
-					'Resource has been updated',
-					{
+				await openDecisionModal('Resource has been updated', {
+					mainVariant: {
 						title: 'Rewrite',
 						func: saveChanges,
 					},
-					[
+					variants: [
 						{
 							title: 'Update',
 							// eslint-disable-next-line @typescript-eslint/no-empty-function
 							func: () => {},
 						},
 					],
-				);
+				});
 			}
 		}
 	};
 
 	const saveChanges = () => {
-		configuratePin({
-			name: pin.name,
-			'connection-type': connectionTypeInput.value as 'mq' | 'grpc',
-			attributes,
-			filters,
-		}, boxName);
+		configuratePin(
+			{
+				name: pin.name,
+				'connection-type': connectionTypeInput.value as 'mq' | 'grpc',
+				attributes,
+				filters,
+			},
+			boxName,
+		);
 	};
 
 	const updateChanges = () => {
@@ -142,99 +144,86 @@ const PinConfigurator = ({
 	};
 
 	return (
-		<div
-			ref={editorRef}
-			className="modal">
-			<div className="modal__header">
-				<h3 className="modal__header-title">
-					{editablePin.name}
-				</h3>
-				<button
-					onClick={() => onClose()}
-					className="modal__header-close-button">
-					<i className="modal__header-close-button-icon" />
+		<div ref={editorRef} className='modal'>
+			<div className='modal__header'>
+				<h3 className='modal__header-title'>{editablePin.name}</h3>
+				<button onClick={() => onClose()} className='modal__header-close-button'>
+					<i className='modal__header-close-button-icon' />
 				</button>
 			</div>
-			<div className="modal__content">
-				{
-					isUpdated
-					&& (<div className="modal__update">
-						<button
-							onClick={updateChanges}
-							className="modal__update-button">Update</button>
-						<span className="modal__update-message">Pin has been changed</span>
-					</div>)
-				}
-				<div className="modal__content-switcher">
-					<div
-						onClick={() => setCurrentSection('config')}
-						className={configButtonClass}>Pin config</div>
+			<div className='modal__content'>
+				{isUpdated && (
+					<div className='modal__update'>
+						<button onClick={updateChanges} className='modal__update-button'>
+							Update
+						</button>
+						<span className='modal__update-message'>Pin has been changed</span>
+					</div>
+				)}
+				<div className='modal__content-switcher'>
+					<div onClick={() => setCurrentSection('config')} className={configButtonClass}>
+						Pin config
+					</div>
 					<div
 						onClick={() => setCurrentSection('attributes')}
 						className={attributesButtonClass}>
-						{
-							`${attributes.length} ${attributes.length === 1 ? 'attribute' : 'attributes'}`
-						}
+						{`${attributes.length} ${
+							attributes.length === 1 ? 'attribute' : 'attributes'
+						}`}
 					</div>
 					<div
 						onClick={() => setCurrentSection('filters')}
 						className={filtersButtonClass}>
-						{
-							`${filters.length} ${filters.length === 1 ? 'filter' : 'filters'}`
-						}
+						{`${filters.length} ${filters.length === 1 ? 'filter' : 'filters'}`}
 					</div>
 				</div>
-				{
-					currentSection === 'config'
-					&& <Input
-						key={connectionTypeInput.bind.id}
-						inputConfig={connectionTypeInput} />
-				}
+				{currentSection === 'config' && (
+					<Input key={connectionTypeInput.bind.id} inputConfig={connectionTypeInput} />
+				)}
 			</div>
-			{
-				currentSection === 'attributes'
-					&& <AttributesList
-						attributes={attributes}
-						addAttribute={attribute => setAttributes([...attributes, attribute])}
-						removeAttribute={deletedAttribute =>
-							setAttributes(attributes.filter(attribute => attribute !== deletedAttribute))}
-						changeAttributesList={changedAttributesList => setAttributes(changedAttributesList)}
-						isFormOpen={isAttributeFormOpen} />
-			}
-			{
-				currentSection === 'filters'
-				&& <FiltersList
+			{currentSection === 'attributes' && (
+				<AttributesList
+					attributes={attributes}
+					addAttribute={attribute => setAttributes([...attributes, attribute])}
+					removeAttribute={deletedAttribute =>
+						setAttributes(
+							attributes.filter(attribute => attribute !== deletedAttribute),
+						)
+					}
+					changeAttributesList={changedAttributesList =>
+						setAttributes(changedAttributesList)
+					}
+					isFormOpen={isAttributeFormOpen}
+				/>
+			)}
+			{currentSection === 'filters' && (
+				<FiltersList
 					filters={filters}
 					addFilter={filter => setFilters([...filters, filter])}
 					removeFilter={deletedFilter =>
-						setFilters(filters.filter(filter => filter !== deletedFilter))}
+						setFilters(filters.filter(filter => filter !== deletedFilter))
+					}
 					changeFiltersList={changedFiltersList => setFilters(changedFiltersList)}
-					isFormOpen={isFilterFormOpen} />
-
-			}
-			<div className="modal__buttons">
-				{
-					currentSection === 'attributes'
-					&& <button
+					isFormOpen={isFilterFormOpen}
+				/>
+			)}
+			<div className='modal__buttons'>
+				{currentSection === 'attributes' && (
+					<button
 						onClick={() => setIsAttributeFormOpen(true)}
-						className="modal__button add">
-						<i className="modal__button-icon" />
+						className='modal__button add'>
+						<i className='modal__button-icon' />
 						Add attribute
 					</button>
-				}
-				{
-					currentSection === 'filters'
-					&& <button
-						onClick={() => setIsFilterFormOpen(true)}
-						className="modal__button add">
-						<i className="modal__button-icon" />
+				)}
+				{currentSection === 'filters' && (
+					<button onClick={() => setIsFilterFormOpen(true)} className='modal__button add'>
+						<i className='modal__button-icon' />
 						Add filter
 					</button>
-				}
-				<button
-					onClick={submit}
-					className="modal__button submit">
-					<i className="modal__button-icon" />
+				)}
+				<button onClick={submit} className='modal__button submit'>
+					<i className='modal__button-icon' />
 					Submit
 				</button>
 			</div>

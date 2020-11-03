@@ -24,11 +24,7 @@ interface ConfirmModalProps {
 	onAnswer: (answer: boolean) => void;
 }
 
-const ConfirmModal = ({
-	text,
-	confirmButtonText = 'Confirm',
-	onAnswer,
-}: ConfirmModalProps) => {
+const ConfirmModal = ({ text, confirmButtonText = 'Confirm', onAnswer }: ConfirmModalProps) => {
 	const modalRef = React.useRef<HTMLDivElement>(null);
 
 	useOutsideClickListener(modalRef, () => onAnswer(false));
@@ -42,36 +38,23 @@ const ConfirmModal = ({
 	}, [isESCPressed]);
 
 	return (
-		<div
-			ref={modalRef}
-			className="modal"
-			id="confirm-modal">
-			<div className="modal__header">
-				<h3 className="modal__header-title">
-					Confirm
-				</h3>
-				<button
-					onClick={() => onAnswer(false)}
-					className="modal__header-close-button">
-					<i className="modal__header-close-button-icon" />
+		<div ref={modalRef} className='modal' id='confirm-modal'>
+			<div className='modal__header'>
+				<h3 className='modal__header-title'>Confirm</h3>
+				<button onClick={() => onAnswer(false)} className='modal__header-close-button'>
+					<i className='modal__header-close-button-icon' />
 				</button>
 			</div>
-			<div className="modal__content">
-				<p className="modal__paragraph">
-					{text}
-				</p>
+			<div className='modal__content'>
+				<p className='modal__paragraph'>{text}</p>
 			</div>
-			<div className="modal__buttons">
-				<button
-					onClick={() => onAnswer(false)}
-					className="modal__button close">
-					<i className="modal__button-icon" />
+			<div className='modal__buttons'>
+				<button onClick={() => onAnswer(false)} className='modal__button close'>
+					<i className='modal__button-icon' />
 					Close
 				</button>
-				<button
-					onClick={() => onAnswer(true)}
-					className="modal__button submit">
-					<i className="modal__button-icon" />
+				<button onClick={() => onAnswer(true)} className='modal__button submit'>
+					<i className='modal__button-icon' />
 					{confirmButtonText}
 				</button>
 			</div>

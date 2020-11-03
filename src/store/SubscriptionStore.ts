@@ -90,40 +90,55 @@ export default class SubscriptionStore {
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		).map(boxName => this.schemasStore.boxes.find(box => box.name === boxName)!);
 
-		const changedBoxes = boxes
-			.filter(box => !this.schemasStore.boxes.find(changedBox =>
-				changedBox.name === box.name
-				&& changedBox.sourceHash === box.sourceHash));
+		const changedBoxes = boxes.filter(
+			box =>
+				!this.schemasStore.boxes.find(
+					changedBox =>
+						changedBox.name === box.name && changedBox.sourceHash === box.sourceHash,
+				),
+		);
 
 		addedBoxes.forEach(box => this.schemasStore.addBox(box));
 		deletedBoxes.forEach(box => this.schemasStore.deleteBox(box.name, false));
-		changedBoxes.forEach(box => this.schemasStore.configurateBox(
-			box,
-			{
+		changedBoxes.forEach(box =>
+			this.schemasStore.configurateBox(box, {
 				createSnapshot: false,
-			},
-		));
+			}),
+		);
 
-		const links = result.resources.filter(resItem => isLinksDefinition(resItem)) as LinksDefinition[];
+		const links = result.resources.filter(resItem =>
+			isLinksDefinition(resItem),
+		) as LinksDefinition[];
 		if (links[0].sourceHash !== this.connectionsStore.linkBox?.sourceHash) {
 			this.connectionsStore.linkBox = links[0];
 			this.connectionsStore.setLinks(links);
 		}
 
-		const dictionaryList = result.resources
-			.filter(resItem => isDictionaryEntity(resItem)) as DictionaryEntity[];
+		const dictionaryList = result.resources.filter(resItem =>
+			isDictionaryEntity(resItem),
+		) as DictionaryEntity[];
 		if (
-			dictionaryList.some(targetDictionary => !this.schemasStore.dictionaryList
-				.find(dictionary => dictionary.sourceHash === targetDictionary.sourceHash))
-			|| this.schemasStore.dictionaryList.some(targetDictionary => dictionaryList
-				.find(dictionary => dictionary.sourceHash === targetDictionary.sourceHash))
+			dictionaryList.some(
+				targetDictionary =>
+					!this.schemasStore.dictionaryList.find(
+						dictionary => dictionary.sourceHash === targetDictionary.sourceHash,
+					),
+			) ||
+			this.schemasStore.dictionaryList.some(targetDictionary =>
+				dictionaryList.find(
+					dictionary => dictionary.sourceHash === targetDictionary.sourceHash,
+				),
+			)
 		) {
 			this.schemasStore.dictionaryList = dictionaryList;
 		}
 
 		const dictionaryLinksEntity = (result.resources.filter(resItem =>
-			isDictionaryLinksEntity(resItem)) as DictionaryLinksEntity[])[0];
-		if (dictionaryLinksEntity.sourceHash !== this.schemasStore.dictionaryLinksEntity?.sourceHash) {
+			isDictionaryLinksEntity(resItem),
+		) as DictionaryLinksEntity[])[0];
+		if (
+			dictionaryLinksEntity.sourceHash !== this.schemasStore.dictionaryLinksEntity?.sourceHash
+		) {
 			this.schemasStore.setDictionaryLinks(dictionaryLinksEntity);
 		}
 	};

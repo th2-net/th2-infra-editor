@@ -80,18 +80,17 @@ export default class HistoryStore {
 				this.rootStore.schemasStore.createBox(change.from, false);
 			}
 			if (isLink(change.from)) {
-				this.rootStore.schemasStore
-					.connectionsStore.createLink(
-						change.object,
-						change.from.to.pin,
-						change.from.to.connectionType as 'mq' | 'grpc',
-						change.from.to.box,
-						{
-							createSnapshot: false,
-							fromBox: change.from.from.box,
-							fromPin: change.from.from.pin,
-						},
-					);
+				this.rootStore.schemasStore.connectionsStore.createLink(
+					change.object,
+					change.from.to.pin,
+					change.from.to.connectionType as 'mq' | 'grpc',
+					change.from.to.box,
+					{
+						createSnapshot: false,
+						fromBox: change.from.from.box,
+						fromPin: change.from.from.pin,
+					},
+				);
 			}
 			if (isDictionaryEntity(change.from)) {
 				this.rootStore.schemasStore.createDictionary(change.from, false);
@@ -119,22 +118,20 @@ export default class HistoryStore {
 				this.rootStore.schemasStore.createBox(change.to, false);
 			}
 			if (isLink(change.to)) {
-				this.rootStore.schemasStore
-					.connectionsStore.createLink(
-						change.object,
-						change.to.to.pin,
-						change.to.from.connectionType as 'mq' | 'grpc',
-						change.to.to.box,
-						{
-							createSnapshot: false,
-							fromBox: change.to.from.box,
-							fromPin: change.to.from.pin,
-						},
-					);
+				this.rootStore.schemasStore.connectionsStore.createLink(
+					change.object,
+					change.to.to.pin,
+					change.to.from.connectionType as 'mq' | 'grpc',
+					change.to.to.box,
+					{
+						createSnapshot: false,
+						fromBox: change.to.from.box,
+						fromPin: change.to.from.pin,
+					},
+				);
 			}
 			if (isDictionaryEntity(change.to)) {
-				this.rootStore.schemasStore
-					.createDictionary(change.to, false);
+				this.rootStore.schemasStore.createDictionary(change.to, false);
 			}
 			return;
 		}
@@ -146,8 +143,7 @@ export default class HistoryStore {
 				this.rootStore.schemasStore.connectionsStore.deleteLink(change.from, false);
 			}
 			if (isDictionaryEntity(change.from)) {
-				this.rootStore.schemasStore
-					.deleteDictionary(change.from.name, false);
+				this.rootStore.schemasStore.deleteDictionary(change.from.name, false);
 			}
 			return;
 		}

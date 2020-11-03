@@ -38,12 +38,10 @@ interface Props {
 	color: string;
 }
 
-const Box = ({
-	box,
-	groupsTopOffset,
-	titleHeight,
-	color,
-}: Props, ref: React.Ref<PinsContainerMethods>) => {
+const Box = (
+	{ box, groupsTopOffset, titleHeight, color }: Props,
+	ref: React.Ref<PinsContainerMethods>,
+) => {
 	const schemasStore = useSchemasStore();
 	const connectionsStore = useConnectionsStore();
 	const subscriptionStore = useSubscriptionStore();
@@ -80,13 +78,19 @@ const Box = ({
 	};
 
 	useOutsideClickListener(boxRef, e => {
-		if (!e.composedPath().some(
-			elem =>
-				((elem as HTMLElement).className
-					&& (elem as HTMLElement).className.includes)
-					&& ((elem as HTMLElement).className.includes('box')),
-		)) {
+		if (
+			!e
+				.composedPath()
+				.some(elem => elem instanceof HTMLElement && elem.className.includes('box'))
+		) {
 			schemasStore.setActiveBox(null);
+			if (document.onmousemove) {
+				document.onmousemove = null;
+				const body = document.querySelector('body');
+				if (body) body.style.userSelect = 'auto';
+
+				connectionsStore.setConnectionStart(schemasStore.activeBox, schemasStore.activePin);
+			}
 		}
 	});
 
@@ -101,68 +105,58 @@ const Box = ({
 					}
 				}}
 				onMouseLeave={() => {
-					if (!editablePin
-						&& isBoxActive
-						&& !schemasStore.activePin) {
+					if (!editablePin && isBoxActive && !schemasStore.activePin) {
 						schemasStore.setActiveBox(null);
 					}
-				}}
-			>
+				}}>
 				<div
 					style={{
 						backgroundColor: color,
 					}}
-					className="box__header">
-					{
-						subscriptionStore.isSubscriptionSuccessfull
-							&& <div className={boxStatusClass} />
-					}
-					<span className="box__title">{box.name}</span>
-					<div className="box__buttons-wrapper">
-						<button className="box__button remove" onClick={deleteBoxHandler}>
-							<i className="box__button-icon" />
+					className='box__header'>
+					{subscriptionStore.isSubscriptionSuccessfull && (
+						<div className={boxStatusClass} />
+					)}
+					<span className='box__title'>{box.name}</span>
+					<div className='box__buttons-wrapper'>
+						<button className='box__button remove' onClick={deleteBoxHandler}>
+							<i className='box__button-icon' />
 						</button>
 						<button
-							className="box__button settings"
+							className='box__button settings'
 							onClick={e => {
 								e.stopPropagation();
 								setIsModalOpen(!isModalOpen);
 							}}>
-							<i className="box__button-icon" />
+							<i className='box__button-icon' />
 						</button>
 					</div>
 				</div>
-				<div className="box__body">
-					<div className="box__info-list">
-						<div className="box__info">
-							<div className="box__info-name">Type</div>
-							<div className="box__info-value">{box.spec.type}</div>
+				<div className='box__body'>
+					<div className='box__info-list'>
+						<div className='box__info'>
+							<div className='box__info-name'>Type</div>
+							<div className='box__info-value'>{box.spec.type}</div>
 						</div>
-						<div className="box__info">
-							<div className="box__info-name">Image name</div>
-							<div className="box__info-value">{box.spec['image-name']}</div>
+						<div className='box__info'>
+							<div className='box__info-name'>Image name</div>
+							<div className='box__info-value'>{box.spec['image-name']}</div>
 						</div>
 					</div>
-					{
-						box.spec.pins && box.spec.pins.length > 0
-						&& <BoxPinsContainer
+					{box.spec.pins && box.spec.pins.length > 0 && (
+						<BoxPinsContainer
 							ref={ref}
 							pins={box.spec.pins}
-							isBoxActive={schemasStore.activeBox
-								? isBoxActive
-								: false
-							}
+							isBoxActive={schemasStore.activeBox ? isBoxActive : false}
 							boxName={box.name}
 							setEditablePin={setEditablePin}
 							groupsTopOffset={groupsTopOffset}
-							titleHeight={titleHeight} />
-					}
+							titleHeight={titleHeight}
+						/>
+					)}
 				</div>
 			</div>
-			<ModalPortal
-				isOpen={isModalOpen}
-				closeModal={() => setIsModalOpen(false)}
-			>
+			<ModalPortal isOpen={isModalOpen} closeModal={() => setIsModalOpen(false)}>
 				<BoxSettings
 					box={box}
 					onClose={() => setIsModalOpen(false)}
@@ -172,11 +166,8 @@ const Box = ({
 					}}
 				/>
 			</ModalPortal>
-			{
-				editablePin
-				&& <ModalPortal
-					isOpen={Boolean(editablePin)}
-					closeModal={() => setEditablePin(null)}>
+			{editablePin && (
+				<ModalPortal isOpen={Boolean(editablePin)} closeModal={() => setEditablePin(null)}>
 					<PinConfigurator
 						pin={editablePin}
 						configuratePin={schemasStore.configuratePin}
@@ -187,7 +178,7 @@ const Box = ({
 						}}
 					/>
 				</ModalPortal>
-			}
+			)}
 		</>
 	);
 };

@@ -100,52 +100,50 @@ const FiltersList = ({
 	};
 
 	return (
-    	<>
-			<div className="modal__elements-list">
-				{
-					(filters && filters?.length > 0)
-						? filters.map(filter =>
-							<div
-								key={`
+		<div className='modal__elements-list'>
+			{filters && filters?.length > 0 ? (
+				filters.map(filter => (
+					<div
+						key={`
 									${filter.metadata[0]['field-name']}
 									${filter.metadata[0]['expected-value']}
 									${filter.metadata[0].operation}
 								`}
-								className="modal__elements-item">
-								<span className="modal__elements-item-name">
-									{
-										filter.metadata[0]['field-name']
-									}
-								</span>
-								<div className="modal__elements-item-buttons-wrapper">
-									<button
-										onClick={() => {
-											setEditableFilter(filter);
-											setIsFilterFormOpen(true);
-										}}
-										className="modal__elements-item-button edit">
-										<i className="modal__elements-item-button-icon" />
-									</button>
-									<button
-										onClick={() => removeFilter(filter)}
-										className="modal__elements-item-button delete">
-										<i className="modal__elements-item-button-icon" />
-									</button>
-								</div>
-							</div>)
-						: <div className="modal__empty">
-							Filters list is empty
+						className='modal__elements-item'>
+						<div className='modal__elements-item-info'>
+							<span className='modal__elements-item-info-name'>
+								{filter.metadata[0]['field-name']}
+							</span>
 						</div>
-				}
-			</div>
+						<div className='modal__elements-item-buttons-wrapper'>
+							<button
+								onClick={() => {
+									setEditableFilter(filter);
+									setIsFilterFormOpen(true);
+								}}
+								className='modal__elements-item-button edit'>
+								<i className='modal__elements-item-button-icon' />
+							</button>
+							<button
+								onClick={() => removeFilter(filter)}
+								className='modal__elements-item-button delete'>
+								<i className='modal__elements-item-button-icon' />
+							</button>
+						</div>
+					</div>
+				))
+			) : (
+				<div className='modal__empty'>Filters list is empty</div>
+			)}
 			<ModalPortal isOpen={isAddFilterFormOpen}>
 				<FormModal
 					title={'Edit filter'}
 					inputConfigList={inputs}
 					onSubmit={submitForm}
-					onClose={() => setIsFilterFormOpen(false)} />
+					onClose={() => setIsFilterFormOpen(false)}
+				/>
 			</ModalPortal>
-		</>
+		</div>
 	);
 };
 

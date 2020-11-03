@@ -31,13 +31,12 @@ interface DictionaryModalProps {
 	onClose: () => void;
 }
 
-const DictionaryModal = ({
-	dictionary,
-	onClose,
-}: DictionaryModalProps) => {
+const DictionaryModal = ({ dictionary, onClose }: DictionaryModalProps) => {
 	const schemasStore = useSchemasStore();
 
-	const [editableDictionary, setEditableDictionary] = React.useState<DictionaryEntity | undefined>(dictionary);
+	const [editableDictionary, setEditableDictionary] = React.useState<
+		DictionaryEntity | undefined
+	>(dictionary);
 	const [isUpdated, setIsUpdated] = React.useState(false);
 
 	React.useEffect(() => {
@@ -67,11 +66,7 @@ const DictionaryModal = ({
 
 	const downloadDictionary = () => {
 		if (dictionary) {
-			downloadFile(
-				dictionaryData.value,
-				dictionary.name,
-				'text/xml',
-			);
+			downloadFile(dictionaryData.value, dictionary.name, 'text/xml');
 		}
 	};
 
@@ -104,20 +99,19 @@ const DictionaryModal = ({
 				onClose();
 			} else {
 				onClose();
-				await openDecisionModal(
-					'Resource has been updated',
-					{
+				await openDecisionModal('Resource has been updated', {
+					mainVariant: {
 						title: 'Rewrite',
 						func: saveChanges,
 					},
-					[
+					variants: [
 						{
 							title: 'Update',
 							// eslint-disable-next-line @typescript-eslint/no-empty-function
 							func: () => {},
 						},
 					],
-				);
+				});
 			}
 			return;
 		}
@@ -155,79 +149,64 @@ const DictionaryModal = ({
 			onDragEnter={() => setIsFileDragging(true)}
 			onDragExit={() => setIsFileDragging(false)}
 			ref={modalRef}
-			className="modal">
-			<div className="modal__header">
-				<h3 className="modal__header-title">
-					{
-						dictionary
-							? dictionary.name
-							: 'Create dictionary'
-					}
+			className='modal'>
+			<div className='modal__header'>
+				<h3 className='modal__header-title'>
+					{dictionary ? dictionary.name : 'Create dictionary'}
 				</h3>
-				<button
-					onClick={() => onClose()}
-					className="modal__header-close-button">
-					<i className="modal__header-close-button-icon" />
+				<button onClick={() => onClose()} className='modal__header-close-button'>
+					<i className='modal__header-close-button-icon' />
 				</button>
 			</div>
-			<div className="modal__content">
-				{
-					isUpdated
-					&& (<div className="modal__update">
-						<button
-							onClick={updateChanges}
-							className="modal__update-button">Update</button>
-						<span className="modal__update-message">Dictionary has been changed</span>
-					</div>)
-				}
-				{
-					!dictionary
-					&& <Input inputConfig={dictionaryNameInput} />
-				}
-				{
-					!isFileDragging
-						? <DictionaryXMLEditor
-							setDictionaryData={setDictionaryData}
-							xmlContent={dictionaryData.value} />
-						: <div
-							onDrop={dropDictionaryHandler}
-							className="modal__dragndrop-area"
-							draggable="true">
-							<i className="modal__dragndrop-area-icon"></i>
-							<span className="modal__dragndrop-area-text">
-								Choose a file or drag it here.
-							</span>
-						</div>
-				}
+			<div className='modal__content'>
+				{isUpdated && (
+					<div className='modal__update'>
+						<button onClick={updateChanges} className='modal__update-button'>
+							Update
+						</button>
+						<span className='modal__update-message'>Dictionary has been changed</span>
+					</div>
+				)}
+				{!dictionary && <Input inputConfig={dictionaryNameInput} />}
+				{!isFileDragging ? (
+					<DictionaryXMLEditor
+						setDictionaryData={setDictionaryData}
+						xmlContent={dictionaryData.value}
+					/>
+				) : (
+					<div
+						onDrop={dropDictionaryHandler}
+						className='modal__dragndrop-area'
+						draggable='true'>
+						<i className='modal__dragndrop-area-icon'></i>
+						<span className='modal__dragndrop-area-text'>
+							Choose a file or drag it here.
+						</span>
+					</div>
+				)}
 			</div>
-			<div
-				onClick={submit}
-				className="modal__buttons">
-				<div className="modal__upload-control">
-					<label
-						className="modal__button upload"
-						htmlFor="dictionary-file-input">
-						<i className="modal__button-icon"/>
+			<div onClick={submit} className='modal__buttons'>
+				<div className='modal__upload-control'>
+					<label className='modal__button upload' htmlFor='dictionary-file-input'>
+						<i className='modal__button-icon' />
 						Upload
 					</label>
 					<input
 						onChange={uploadDictionary}
-						type="file"
-						accept=".xml"
-						className="file-input"
-						id="dictionary-file-input"/>
+						type='file'
+						accept='.xml'
+						className='file-input'
+						id='dictionary-file-input'
+					/>
 				</div>
-				{
-					dictionary
-					&& <button
-						onClick={downloadDictionary}
-						className="modal__button download">
-						<i className="modal__button-icon" />
+				{dictionary && (
+					<button onClick={downloadDictionary} className='modal__button download'>
+						<i className='modal__button-icon' />
 						Download
 					</button>
-				}
-				<button className="modal__button submit">
-					<i className="modal__button-icon" />
+				)}
+				<button className='modal__button submit'>
+					<i className='modal__button-icon' />
 					Submit
 				</button>
 			</div>

@@ -18,7 +18,7 @@
 
 .box {
 	width: 100%;
-	background-color:  white;
+	background-color: white;
 	flex-shrink: 0;
 	position: relative;
 	z-index: 2;
@@ -32,7 +32,7 @@
 	&.active {
 		box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.35);
 		margin: 20px 0;
-		border: 2px solid #FF7733;
+		border: 2px solid #ff7733;
 	}
 
 	&__header {
@@ -110,14 +110,14 @@
 			margin-bottom: 0px;
 		}
 	}
-	
+
 	&__buttons-wrapper {
 		margin-left: auto;
 	}
 
 	&__button {
 		@include button-transparent(13px, 13px);
-		
+
 		&:nth-child(2) {
 			margin-left: 7.5px;
 		}
@@ -129,11 +129,11 @@
 		&.settings &-icon {
 			@include icon(url(../../resources/icons/settings.svg), 13px, 13px);
 		}
-		
+
 		&.settings.active &-icon {
 			@include icon(url(../../resources/icons/settings-active.svg), 13px, 13px);
 		}
-		
+
 		&.remove &-icon {
 			@include icon(url(../../resources/icons/trash.svg), 13px, 13px);
 		}
@@ -170,7 +170,7 @@
 
 		&.open {
 			justify-content: center;
-			background-color: #FFDDCC;
+			background-color: #ffddcc;
 			border-radius: 6px;
 			gap: 4px;
 		}
@@ -189,8 +189,9 @@
 			}
 		}
 
-		&.active &-name, &.active &-counter {
-			color:  $secondaryColor;
+		&.active &-name,
+		&.active &-counter {
+			color: $secondaryColor;
 		}
 
 		&.active &-icon {
@@ -246,7 +247,8 @@
 			transition: background-color 0.1s ease-in-out;
 		}
 
-		&-name, &-counter {
+		&-name,
+		&-counter {
 			color: $primaryColor;
 			font-size: 11px;
 			line-height: 14px;

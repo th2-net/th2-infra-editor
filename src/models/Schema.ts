@@ -17,6 +17,6 @@
 import { BoxEntity } from './Box';
 
 export default interface Schema {
-    commitRef: string;
-    resources: BoxEntity[];
+	commitRef: string;
+	resources: BoxEntity[];
 }

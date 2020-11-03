@@ -23,8 +23,8 @@ export default interface FileBase {
 }
 
 export interface RequestModel {
-    operation: 'add' | 'remove' | 'update';
-    payload: FileBase;
+	operation: 'add' | 'remove' | 'update';
+	payload: FileBase;
 }
 
 export function isFileBase(file: unknown): file is FileBase {

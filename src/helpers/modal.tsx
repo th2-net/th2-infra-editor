@@ -37,14 +37,15 @@ export function openConfirmModal(text: string, confirmButtonText?: string) {
 						ReactDOM.unmountComponentAtNode(el);
 						modalRoot.removeChild(el);
 						res(answer);
-					}} />,
+					}}
+				/>,
 				el,
 			);
 		}
 	});
 }
 
-export function openPromptModal(text: string) {
+export function openPromptModal(text: string, defaultValue?: string) {
 	return new Promise<string | null>((res, rej) => {
 		const modalRoot = document.getElementById('modal-root');
 		if (!modalRoot) rej();
@@ -56,11 +57,13 @@ export function openPromptModal(text: string) {
 			ReactDOM.render(
 				<PromptModal
 					text={text}
+					defaultValue={defaultValue}
 					onAnswer={answer => {
 						ReactDOM.unmountComponentAtNode(el);
 						modalRoot.removeChild(el);
 						res(answer);
-					}} />,
+					}}
+				/>,
 				el,
 			);
 		}
@@ -69,14 +72,16 @@ export function openPromptModal(text: string) {
 
 export function openDecisionModal(
 	text: string,
-	mainVariant: {
-		title: string;
-		func: () => void;
+	options: {
+		mainVariant?: {
+			title: string;
+			func: () => void;
+		};
+		variants: {
+			title: string;
+			func: () => void;
+		}[];
 	},
-	variants: {
-		title: string;
-		func: () => void;
-	}[],
 ) {
 	return new Promise<void>((res, rej) => {
 		const modalRoot = document.getElementById('modal-root');
@@ -89,13 +94,14 @@ export function openDecisionModal(
 			ReactDOM.render(
 				<DecisionModal
 					text={text}
-					mainVariant={mainVariant}
-					variants={variants}
+					mainVariant={options.mainVariant}
+					variants={options.variants}
 					onClose={() => {
 						ReactDOM.unmountComponentAtNode(el);
 						modalRoot.removeChild(el);
 						res();
-					}} />,
+					}}
+				/>,
 				el,
 			);
 		}

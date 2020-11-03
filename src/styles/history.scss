@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
- @import './common/vars';
+@import './common/vars';
 
 .history {
 	&-view {
 		width: 350px;
 		height: 100%;
 		grid-area: history;
-		background-color: #ECF4F9;
-        border-left: 1px solid #00997F;
-        border-right: 1px solid #00997F;
+		background-color: #ecf4f9;
+		border-left: 1px solid #00997f;
+		border-right: 1px solid #00997f;
 		padding: 10px 20px;
 
 		&__controls {
@@ -52,7 +52,7 @@
 		@include scrollbar;
 
 		overflow-y: auto;
-		
+
 		&__title {
 			color: #333333;
 			text-align: center;
@@ -63,7 +63,7 @@
 	&-item {
 		border-radius: 6px;
 		background-color: white;
-		border: 1px solid #00997F;
+		border: 1px solid #00997f;
 		margin-bottom: 10px;
 
 		&.applied {
@@ -80,21 +80,22 @@
 
 		&-change {
 			padding: 10px;
-			
-			&-key, &-value {
+
+			&-key,
+			&-value {
 				color: #333333;
 				font-size: 14px;
 			}
-	
+
 			&-key {
 				display: inline-block;
 				margin-right: 5px;
 				font-weight: 600;
 			}
-	
+
 			&-value {
 				border-radius: 6px;
-				border: 1px solid #00997F;
+				border: 1px solid #00997f;
 				padding: 5px;
 				font-weight: 400;
 				overflow-wrap: break-word;

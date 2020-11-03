@@ -20,12 +20,6 @@ import { useInput } from '../../hooks/useInput';
 import FormModal from '../util/FormModal';
 import { ModalPortal } from '../util/Portal';
 
-interface AttributeProps {
-	attribute: string;
-	changeAttribute: (oldValue: string, newValue: string) => void;
-	removeAttribute: (attribute: string) => void;
-}
-
 interface AttributesListProps {
 	attributes: string[];
 	addAttribute: (attribute: string) => void;
@@ -59,7 +53,9 @@ const AttributesList = ({
 
 	const submitForm = () => {
 		if (editableAttribute) {
-			const attributeIndex = attributes.findIndex(attribute => attribute === editableAttribute);
+			const attributeIndex = attributes.findIndex(
+				attribute => attribute === editableAttribute,
+			);
 			changeAttributesList([
 				...attributes.slice(0, attributeIndex),
 				attributeInput.value,
@@ -72,38 +68,33 @@ const AttributesList = ({
 	};
 
 	return (
-		<>
-			<div className="modal__elements-list">
-				{
-					attributes.length > 0
-						? attributes.map(attribute =>
-							<div
-								key={attribute}
-								className="modal__elements-item">
-								<span className="modal__elements-item-name">
-									{attribute}
-								</span>
-								<div className="modal__elements-item-buttons-wrapper">
-									<button
-										onClick={() => {
-											setEditableAttribute(attribute);
-											setIsAttributeFormOpen(true);
-										}}
-										className="modal__elements-item-button edit">
-										<i className="modal__elements-item-button-icon" />
-									</button>
-									<button
-										onClick={() => removeAttribute(attribute)}
-										className="modal__elements-item-button delete">
-										<i className="modal__elements-item-button-icon" />
-									</button>
-								</div>
-							</div>)
-						: <div className="modal__empty">
-							Attributes list is empty
+		<div className='modal__elements-list'>
+			{attributes.length > 0 ? (
+				attributes.map(attribute => (
+					<div key={attribute} className='modal__elements-item'>
+						<div className='modal__elements-item-info'>
+							<span className='modal__elements-item-info-name'>{attribute}</span>
 						</div>
-				}
-			</div>
+						<div className='modal__elements-item-buttons-wrapper'>
+							<button
+								onClick={() => {
+									setEditableAttribute(attribute);
+									setIsAttributeFormOpen(true);
+								}}
+								className='modal__elements-item-button edit'>
+								<i className='modal__elements-item-button-icon' />
+							</button>
+							<button
+								onClick={() => removeAttribute(attribute)}
+								className='modal__elements-item-button delete'>
+								<i className='modal__elements-item-button-icon' />
+							</button>
+						</div>
+					</div>
+				))
+			) : (
+				<div className='modal__empty'>Attributes list is empty</div>
+			)}
 			{
 				<ModalPortal isOpen={isAttributeFormOpen}>
 					<FormModal
@@ -114,7 +105,7 @@ const AttributesList = ({
 					/>
 				</ModalPortal>
 			}
-		</>
+		</div>
 	);
 };
 
