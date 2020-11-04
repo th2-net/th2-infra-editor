@@ -15,8 +15,13 @@
  ***************************************************************************** */
 
 import React from 'react';
+import AceEditor from 'react-ace';
 import { createBemBlock } from '../../helpers/styleCreators';
 import { InputConfig } from '../../hooks/useInput';
+
+import 'ace-builds/src-noconflict/mode-json';
+import 'ace-builds/src-noconflict/theme-textmate';
+import 'ace-builds/src-noconflict/ext-language_tools';
 
 interface ConfigEditor {
 	configInput: InputConfig;
@@ -30,7 +35,23 @@ const ConfigEditor = ({ configInput }: ConfigEditor) => {
 			<label htmlFor={configInput.bind.name} className='textarea-label'>
 				{configInput.label}
 			</label>
-			<textarea className={textAreaClass} {...configInput.bind} />
+			<AceEditor
+				className={textAreaClass}
+				mode='json'
+				theme='textmate'
+				name='config-editor'
+				onChange={value => configInput.setValue(value)}
+				fontSize={12}
+				width={'auto'}
+				height={'300px'}
+				showGutter={false}
+				highlightActiveLine={true}
+				value={configInput.value}
+				tabSize={4}
+				setOptions={{
+					enableBasicAutocompletion: true,
+				}}
+			/>
 		</div>
 	);
 };

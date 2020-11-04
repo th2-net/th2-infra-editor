@@ -22,10 +22,10 @@ import { LinkArrow } from '../models/Box';
 import '../styles/svg-layout.scss';
 
 interface ArrowProps {
-	connection: LinkArrow;
+	arrow: LinkArrow;
 }
 
-const Arrow = observer(({ connection }: ArrowProps) => {
+const Arrow = observer(({ arrow }: ArrowProps) => {
 	const connectionsStore = useConnectionsStore();
 
 	const arrowLineClass = createBemElement('arrow', 'line');
@@ -33,34 +33,34 @@ const Arrow = observer(({ connection }: ArrowProps) => {
 	const arrowPointerClass = createBemElement('arrow', 'pointer');
 
 	const getBezierPoints = () =>
-		connection.start.left === connection.end.left
-			? `${connection.start.left - (connection.end.top - connection.start.top) / 3},
-				${connection.start.top + (connection.end.top - connection.start.top) / 6} 
-				${connection.start.left - (connection.end.top - connection.start.top) / 3},
-				${connection.end.top - (connection.end.top - connection.start.top) / 6} `
-			: `${connection.end.left - (connection.end.left - connection.start.left) / 5},
-				${connection.start.top} 
-				${connection.start.left + (connection.end.left - connection.start.left) / 5},
-				${connection.end.top}`;
+		arrow.start.left === arrow.end.left
+			? `${arrow.start.left - (arrow.end.top - arrow.start.top) / 3},
+				${arrow.start.top + (arrow.end.top - arrow.start.top) / 6} 
+				${arrow.start.left - (arrow.end.top - arrow.start.top) / 3},
+				${arrow.end.top - (arrow.end.top - arrow.start.top) / 6} `
+			: `${arrow.end.left - (arrow.end.left - arrow.start.left) / 5},
+				${arrow.start.top} 
+				${arrow.start.left + (arrow.end.left - arrow.start.left) / 5},
+				${arrow.end.top}`;
 
 	return (
 		<g
 			className='arrow'
-			onMouseOver={() => connectionsStore.setOutlinerSelectedLink(connection.name)}
+			onMouseOver={() => connectionsStore.setOutlinerSelectedLink(arrow.name)}
 			onMouseLeave={() => connectionsStore.setOutlinerSelectedLink(null)}
 			pointerEvents='all'>
 			<path
-				d={`M ${connection.start.left},${connection.start.top} 
+				d={`M ${arrow.start.left},${arrow.start.top} 
 					C ${getBezierPoints()}
-					${connection.end.left}, ${connection.end.top}`}
+					${arrow.end.left}, ${arrow.end.top}`}
 				className={arrowLineClass}
 			/>
 			<polygon
-				points={`${connection.end.left},${connection.end.top}
-					${connection.end.left - (connection.end.left >= connection.start.left ? 7 : -7)},
-					${connection.end.top - 5}
-					${connection.end.left - (connection.end.left >= connection.start.left ? 7 : -7)},
-					${connection.end.top + 5}`}
+				points={`${arrow.end.left},${arrow.end.top}
+					${arrow.end.left - (arrow.end.left >= arrow.start.left ? 7 : -7)},
+					${arrow.end.top - 5}
+					${arrow.end.left - (arrow.end.left >= arrow.start.left ? 7 : -7)},
+					${arrow.end.top + 5}`}
 				className={arrowPointerClass}
 			/>
 		</g>
@@ -68,16 +68,16 @@ const Arrow = observer(({ connection }: ArrowProps) => {
 });
 
 interface SvgLayoutProps {
-	connections: LinkArrow[];
+	arrows: LinkArrow[];
 }
 
-const SvgLayout = ({ connections }: SvgLayoutProps) => (
+const SvgLayout = ({ arrows }: SvgLayoutProps) => (
 	<svg preserveAspectRatio='none' xmlns='http://www.w3.org/2000/svg' id='svg-layout'>
-		{connections.map(connection => (
+		{arrows.map(arrow => (
 			<Arrow
-				key={`${connection.name}${connection.start.left}${connection.start.top}
-					${connection.end.left}${connection.end.top}`}
-				connection={connection}
+				key={`${arrow.name}${arrow.start.left}${arrow.start.top}
+					${arrow.end.left}${arrow.end.top}`}
+				arrow={arrow}
 			/>
 		))}
 	</svg>

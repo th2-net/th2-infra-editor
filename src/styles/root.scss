@@ -139,3 +139,14 @@ body {
 		gap: 10px;
 	}
 }
+
+
+.ace_editor {
+	& * {
+		font: 12px/normal 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+	}
+
+	.ace_scrollbar {
+		@include scrollbar;
+	}
+}

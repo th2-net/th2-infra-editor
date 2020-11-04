@@ -60,7 +60,7 @@ const Groups = () => {
 					})}
 				</div>
 			</div>
-			<SvgLayout connections={connectionsStore.connectionsArrows} />
+			<SvgLayout arrows={connectionsStore.connectionsArrows} />
 		</div>
 	);
 };

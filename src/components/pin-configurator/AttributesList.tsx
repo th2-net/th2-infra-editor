@@ -101,7 +101,10 @@ const AttributesList = ({
 						title={editableAttribute ?? 'Create attribute'}
 						inputConfigList={[attributeInput]}
 						onSubmit={submitForm}
-						onClose={() => setEditableAttribute(null)}
+						onClose={() => {
+							setIsAttributeFormOpen(false);
+							setEditableAttribute(null);
+						}}
 					/>
 				</ModalPortal>
 			}

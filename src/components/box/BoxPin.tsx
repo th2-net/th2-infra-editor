@@ -129,13 +129,13 @@ const BoxPin = (
 				boxName,
 			);
 
-			const connectionName = await openPromptModal('Connection name', defaultName);
-			if (!connectionName) return;
-			connectionsStore.createLink(connectionName, pin.name, pin['connection-type'], boxName);
+			const linkName = await openPromptModal('Connection name', defaultName);
+			if (!linkName) return;
+			connectionsStore.createLink(linkName, pin.name, pin['connection-type'], boxName);
 		}
 	};
 
-	const dragConnection = (link: Link, targetPin: Pin) => {
+	const dragLink = (link: Link, targetPin: Pin) => {
 		const body = document.querySelector('body');
 		if (body) body.style.userSelect = 'none';
 
@@ -176,7 +176,7 @@ const BoxPin = (
 		};
 	};
 
-	const dropConnection = async () => {
+	const dropLink = async () => {
 		if (!connectionsStore.draggableLink) return;
 
 		document.onmousemove = null;
@@ -277,7 +277,7 @@ const BoxPin = (
 			style={{
 				height: isPinExpanded ? pinHeight : STANDART_PIN_HEIGHT,
 			}}
-			onMouseUp={dropConnection}
+			onMouseUp={dropLink}
 			className={pinClass}>
 			{isPinExpanded ? (
 				leftPinLinks &&
@@ -310,7 +310,7 @@ const BoxPin = (
 							}}
 							onMouseDown={e => {
 								e.stopPropagation();
-								dragConnection(link, pin);
+								dragLink(link, pin);
 							}}
 							className={`box__pin-dot ${
 								openedConnection === link.name ? 'open' : null

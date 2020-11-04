@@ -15,21 +15,57 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { DictionaryRelation } from '../../models/Dictionary';
+import { downloadFile } from '../../helpers/files';
+import { DictionaryEntity, DictionaryRelation } from '../../models/Dictionary';
 
 interface PinsListProps {
 	dictionaryRelations: DictionaryRelation[];
 	removeDictionaryRelation: (relation: DictionaryRelation) => void;
+	dictionaryList: DictionaryEntity[];
+	setEditableDictionary: (dictionary: DictionaryEntity) => void;
 }
 
-const DictionaryList = ({ dictionaryRelations, removeDictionaryRelation }: PinsListProps) => (
-	<div className='modal__elements-list'>
-		{dictionaryRelations.length > 0 ? (
-			dictionaryRelations.map(relation => (
+const DictionaryList = ({
+	dictionaryRelations,
+	removeDictionaryRelation,
+	dictionaryList,
+	setEditableDictionary,
+}: PinsListProps) => {
+	const downloadDictionary = (relation: DictionaryRelation) => {
+		const targetDictionary = dictionaryList.find(
+			dictionary => dictionary.name === relation.dictionary.name,
+		);
+		if (targetDictionary) {
+			downloadFile(targetDictionary.spec.data, targetDictionary.name, 'text/xml');
+		}
+	};
+
+	const editDictionary = (relation: DictionaryRelation) => {
+		const targetDictionary = dictionaryList.find(
+			dictionary => dictionary.name === relation.dictionary.name,
+		);
+		if (targetDictionary) {
+			setEditableDictionary(targetDictionary);
+		}
+	};
+
+	return (
+		<div className='modal__elements-list'>
+			{dictionaryRelations.map(relation => (
 				<div key={relation.name} className='element'>
 					<div className='element__header'>
 						<h3 className='element__title'>{relation.name}</h3>
 						<div className='element__buttons-wrapper'>
+							<button
+								onClick={() => editDictionary(relation)}
+								className='element__button settings'>
+								<i className='element__button-icon' />
+							</button>
+							<button
+								onClick={() => downloadDictionary(relation)}
+								className='element__button download'>
+								<i className='element__button-icon' />
+							</button>
 							<button
 								onClick={() => removeDictionaryRelation(relation)}
 								className='element__button remove'>
@@ -54,11 +90,12 @@ const DictionaryList = ({ dictionaryRelations, removeDictionaryRelation }: PinsL
 						</div>
 					</div>
 				</div>
-			))
-		) : (
-			<div className='modal__empty'>Dictionary list is empty</div>
-		)}
-	</div>
-);
+			))}
+			{dictionaryRelations.length === 0 && (
+				<div className='modal__empty'>Dictionary list is empty</div>
+			)}
+		</div>
+	);
+};
 
 export default DictionaryList;

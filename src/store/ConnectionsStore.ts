@@ -105,10 +105,8 @@ export default class ConnectionsStore {
 		const groupIndex = this.schemasStore.types.indexOf(this.connectionBoxStart.spec.type);
 
 		for (let i = 0; i < this.schemasStore.types.length; i++) {
-			// eslint-disable-next-line no-continue
 			if (i === groupIndex) continue;
 			const nextGroupBoxes = this.getConnectableBoxes(i);
-			// eslint-disable-next-line no-continue
 			if (!nextGroupBoxes.length) continue;
 			boxes.push(...nextGroupBoxes);
 		}
@@ -200,7 +198,7 @@ export default class ConnectionsStore {
 
 	@action
 	public createLink = async (
-		connectionName: string,
+		linkName: string,
 		pinName: string,
 		connectionType: 'mq' | 'grpc',
 		boxName: string,
@@ -211,6 +209,8 @@ export default class ConnectionsStore {
 		},
 	) => {
 		if (
+			!this.schemasStore.activeBox ||
+			!this.schemasStore.activePin ||
 			!this.schemasStore.selectedSchema ||
 			(!this.schemasStore.activeBox && options && !options.fromBox) ||
 			(!this.schemasStore.activePin && options && !options.fromPin) ||
@@ -219,12 +219,10 @@ export default class ConnectionsStore {
 			return;
 
 		const link = {
-			name: connectionName,
+			name: linkName,
 			from: {
-				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				box: options?.fromBox ?? this.schemasStore.activeBox!.name,
-				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				pin: options?.fromPin ?? this.schemasStore.activePin!.name,
+				box: options?.fromBox ?? this.schemasStore.activeBox.name,
+				pin: options?.fromPin ?? this.schemasStore.activePin.name,
 				connectionType,
 			},
 			to: {
@@ -236,12 +234,10 @@ export default class ConnectionsStore {
 		this.links.push(link);
 
 		const newConnection = {
-			name: connectionName,
+			name: linkName,
 			from: {
-				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				box: options?.fromBox ?? this.schemasStore.activeBox!.name,
-				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				pin: options?.fromPin ?? this.schemasStore.activePin!.name,
+				box: options?.fromBox ?? this.schemasStore.activeBox.name,
+				pin: options?.fromPin ?? this.schemasStore.activePin.name,
 			},
 			to: {
 				box: boxName,
@@ -258,12 +254,12 @@ export default class ConnectionsStore {
 		if ((options && options.createSnapshot) || !options) {
 			this.schemasStore.saveEntityChanges(this.linkBox, 'update');
 			this.historyStore.addSnapshot({
-				object: connectionName,
+				object: linkName,
 				type: 'link',
 				operation: 'add',
 				changeList: [
 					{
-						object: connectionName,
+						object: linkName,
 						from: null,
 						to: link,
 					},
@@ -285,14 +281,14 @@ export default class ConnectionsStore {
 		if (createSnapshot) {
 			this.links
 				.filter(
-					connection =>
-						(connection.from.box === boxName && connection.from.pin === pin.name) ||
-						(connection.to.box === boxName && connection.to.pin === pin.name),
+					link =>
+						(link.from.box === boxName && link.from.pin === pin.name) ||
+						(link.to.box === boxName && link.to.pin === pin.name),
 				)
-				.forEach(connection => {
+				.forEach(link => {
 					changes.push({
-						object: connection.name,
-						from: connection,
+						object: link.name,
+						from: link,
 						to: null,
 					});
 				});
@@ -300,59 +296,55 @@ export default class ConnectionsStore {
 
 		this.links = [
 			...this.links.filter(
-				connection =>
-					(connection.from.box !== boxName && connection.from.pin !== pin.name) ||
-					(connection.to.box !== boxName && connection.to.pin !== pin.name),
+				link =>
+					(link.from.box !== boxName && link.from.pin !== pin.name) ||
+					(link.to.box !== boxName && link.to.pin !== pin.name),
 			),
 		];
 
 		if (this.linkBox?.spec['boxes-relation']) {
-			// eslint-disable-next-line max-len
 			this.linkBox.spec['boxes-relation'][
 				`router-${pin['connection-type']}` as 'router-mq' | 'router-grpc'
 			] = [
 				...this.linkBox.spec['boxes-relation'][
 					`router-${pin['connection-type']}` as 'router-mq' | 'router-grpc'
-				].filter(
-					connection =>
-						connection.from.pin !== pin.name && connection.from.box !== boxName,
-				),
+				].filter(link => link.from.pin !== pin.name && link.from.box !== boxName),
 			];
 		}
 		return changes;
 	};
 
 	@action
-	public deleteLink = async (connection: Link, createSnapshot = true) => {
+	public deleteLink = async (removableLink: Link, createSnapshot = true) => {
 		if (this.schemasStore.selectedSchema && this.linkBox) {
 			this.links = [
 				...this.links.filter(
 					link =>
-						link.from.box !== connection.from.box ||
-						link.to.box !== connection.to.box ||
-						link.from.pin !== connection.from.pin ||
-						link.to.pin !== connection.to.pin,
+						link.from.box !== removableLink.from.box ||
+						link.to.box !== removableLink.to.box ||
+						link.from.pin !== removableLink.from.pin ||
+						link.to.pin !== removableLink.to.pin,
 				),
 			];
 			if (this.linkBox?.spec['boxes-relation']) {
 				const linkIndex = this.linkBox.spec['boxes-relation'][
-					`router-${connection.from.connectionType}` as 'router-mq' | 'router-grpc'
-				].findIndex(link => link.name === connection.name);
+					`router-${removableLink.from.connectionType}` as 'router-mq' | 'router-grpc'
+				].findIndex(link => link.name === removableLink.name);
 				this.linkBox.spec['boxes-relation'][
-					`router-${connection.from.connectionType}` as 'router-mq' | 'router-grpc'
+					`router-${removableLink.from.connectionType}` as 'router-mq' | 'router-grpc'
 				].splice(linkIndex, 1);
 			}
 
 			if (createSnapshot) {
 				this.schemasStore.saveEntityChanges(this.linkBox, 'update');
 				this.historyStore.addSnapshot({
-					object: connection.name,
+					object: removableLink.name,
 					type: 'link',
 					operation: 'remove',
 					changeList: [
 						{
-							object: connection.name,
-							from: connection,
+							object: removableLink.name,
+							from: removableLink,
 							to: null,
 						},
 					],
@@ -399,7 +391,7 @@ export default class ConnectionsStore {
 
 	public generateLinkName = (fromBoxName: string, toBoxName: string) => {
 		let defaultName = `${fromBoxName}-${toBoxName}`;
-		const connectionNumber = Math.max(
+		const linkNumber = Math.max(
 			...this.links
 				.filter(link => link.name.includes(defaultName))
 				.map(link => {
@@ -407,8 +399,8 @@ export default class ConnectionsStore {
 					return /\d+/.test(number) ? parseInt(number) : 1;
 				}),
 		);
-		if (connectionNumber !== -Infinity) {
-			defaultName += `-${connectionNumber + 1}`;
+		if (linkNumber !== -Infinity) {
+			defaultName += `-${linkNumber + 1}`;
 		}
 		return defaultName;
 	};
