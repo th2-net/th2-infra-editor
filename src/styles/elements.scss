@@ -194,6 +194,10 @@
 		&.remove &-icon {
 			@include icon(url(../../resources/icons/trash.svg), 13px, 13px);
 		}
+
+		&.download &-icon {
+			@include icon(url(../../resources/icons/download-white.svg), 13px, 13px);
+		}
 	}
 
 	&__link {

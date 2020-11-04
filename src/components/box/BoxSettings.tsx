@@ -19,7 +19,7 @@ import { observer } from 'mobx-react-lite';
 import { BoxEntity, Pin } from '../../models/Box';
 import useOutsideClickListener from '../../hooks/useOutsideClickListener';
 import PinsList from './PinsList';
-import { DictionaryRelation } from '../../models/Dictionary';
+import { DictionaryEntity, DictionaryRelation } from '../../models/Dictionary';
 import '../../styles/modal.scss';
 import { createBemElement } from '../../helpers/styleCreators';
 import BoxConfig from './BoxConfig';
@@ -35,9 +35,10 @@ interface BoxSettingsProps {
 	box: BoxEntity;
 	onClose: () => void;
 	setEditablePin: (pin: Pin) => void;
+	setEditableDictionary: (dictionary: DictionaryEntity) => void;
 }
 
-const BoxSettings = ({ box, onClose, setEditablePin }: BoxSettingsProps) => {
+const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: BoxSettingsProps) => {
 	const schemasStore = useSchemasStore();
 
 	const modalRef = React.useRef<HTMLDivElement>(null);
@@ -346,6 +347,8 @@ const BoxSettings = ({ box, onClose, setEditablePin }: BoxSettingsProps) => {
 								),
 							)
 						}
+						dictionaryList={schemasStore.dictionaryList}
+						setEditableDictionary={dictionary => setEditableDictionary(dictionary)}
 					/>
 				)}
 				<div className='modal__buttons'>

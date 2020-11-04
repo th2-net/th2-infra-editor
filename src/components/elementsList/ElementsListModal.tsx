@@ -191,10 +191,10 @@ const ElementsListModal = ({ top, left, width, onClose }: ElementsListModalProps
 											: -1
 										: 0,
 								)
-								.map(connection => (
+								.map(link => (
 									<ElementsListLinkItem
-										key={connection.name}
-										link={connection}
+										key={link.name}
+										link={link}
 										deleteConnection={connectionsStore.deleteLink}
 										getBoxBorderColor={schemasStore.getBoxBorderColor}
 									/>
@@ -236,6 +236,11 @@ const ElementsListModal = ({ top, left, width, onClose }: ElementsListModalProps
 						onClose={() => setEditableBox(null)}
 						setEditablePin={pin => {
 							setEditablePin(pin);
+							setBoxName(editableBox.name);
+							setEditableBox(null);
+						}}
+						setEditableDictionary={dictionary => {
+							setEditableDictionary(dictionary);
 							setBoxName(editableBox.name);
 							setEditableBox(null);
 						}}

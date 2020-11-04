@@ -15,8 +15,13 @@
  ***************************************************************************** */
 
 import React from 'react';
+import AceEditor from 'react-ace';
 import { createBemBlock } from '../../helpers/styleCreators';
 import { useInput } from '../../hooks/useInput';
+
+import 'ace-builds/src-noconflict/mode-xml';
+import 'ace-builds/src-noconflict/theme-textmate';
+import 'ace-builds/src-noconflict/ext-language_tools';
 
 interface DictionaryXMLEditorProps {
 	xmlContent: string;
@@ -37,6 +42,7 @@ const DictionaryXMLEditor = ({ xmlContent, setDictionaryData }: DictionaryXMLEdi
 		initialValue: xmlContent,
 		id: 'xml-editor',
 		validate: isXMLValid,
+		label: 'XML',
 	});
 
 	const editorClass = createBemBlock('textarea', !xmlInputConfig.isValid ? 'invalid' : null);
@@ -53,7 +59,23 @@ const DictionaryXMLEditor = ({ xmlContent, setDictionaryData }: DictionaryXMLEdi
 			<label htmlFor={xmlInputConfig.bind.name} className='textarea-label'>
 				{xmlInputConfig.label}
 			</label>
-			<textarea className={editorClass} {...xmlInputConfig.bind} />
+			<AceEditor
+				className={editorClass}
+				mode='xml'
+				theme='textmate'
+				name='config-editor'
+				onChange={value => xmlInputConfig.setValue(value)}
+				fontSize={12}
+				width={'600px'}
+				height={'400px'}
+				showGutter={false}
+				highlightActiveLine={true}
+				value={xmlInputConfig.value}
+				tabSize={4}
+				setOptions={{
+					enableBasicAutocompletion: true,
+				}}
+			/>
 		</div>
 	);
 };

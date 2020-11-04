@@ -30,6 +30,8 @@ import useConnectionsStore from '../../hooks/useConnectionsStore';
 import useOutsideClickListener from '../../hooks/useOutsideClickListener';
 import useSubscriptionStore from '../../hooks/useSubscriptionStore';
 import { isEqual } from '../../helpers/object';
+import DictionaryModal from '../dictionary/DictionaryModal';
+import { DictionaryEntity } from '../../models/Dictionary';
 
 interface Props {
 	box: BoxEntity;
@@ -48,6 +50,9 @@ const Box = (
 
 	const [isModalOpen, setIsModalOpen] = React.useState(false);
 	const [editablePin, setEditablePin] = React.useState<Pin | null>(null);
+	const [editableDictionary, setEditableDictionary] = React.useState<DictionaryEntity | null>(
+		null,
+	);
 
 	const boxRef = React.useRef<HTMLDivElement>(null);
 
@@ -89,7 +94,9 @@ const Box = (
 				const body = document.querySelector('body');
 				if (body) body.style.userSelect = 'auto';
 
-				connectionsStore.setConnectionStart(schemasStore.activeBox, schemasStore.activePin);
+				schemasStore.setActivePin(null);
+				connectionsStore.setDraggableLink(null);
+				connectionsStore.setConnectionStart(null, null);
 			}
 		}
 	});
@@ -164,6 +171,10 @@ const Box = (
 						setEditablePin(pin);
 						setIsModalOpen(false);
 					}}
+					setEditableDictionary={dictionary => {
+						setEditableDictionary(dictionary);
+						setIsModalOpen(false);
+					}}
 				/>
 			</ModalPortal>
 			{editablePin && (
@@ -176,6 +187,14 @@ const Box = (
 						onClose={() => {
 							setEditablePin(null);
 						}}
+					/>
+				</ModalPortal>
+			)}
+			{editableDictionary && (
+				<ModalPortal isOpen={Boolean(editableDictionary)}>
+					<DictionaryModal
+						dictionary={editableDictionary}
+						onClose={() => setEditableDictionary(null)}
 					/>
 				</ModalPortal>
 			)}

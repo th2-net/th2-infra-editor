@@ -57,6 +57,9 @@ export default class SubscriptionStore {
 	@observable
 	public boxStates = new Map<string, 'Running' | 'Pending' | 'Failed'>();
 
+	@observable
+	private isReconnecting = false;
+
 	@action
 	public closeConnection = () => {
 		this.subscription?.close();
@@ -150,15 +153,18 @@ export default class SubscriptionStore {
 		this.subscription.onopen = () => {
 			this.isSubscriptionSuccessfull = true;
 			this.isConnectionOpen = true;
+			if (this.isReconnecting) {
+				this.fetchChanges();
+				this.isReconnecting = false;
+			}
 		};
 
 		this.subscription.onerror = e => {
-			if (this.subscription?.readyState === EventSource.CONNECTING) {
-				this.isConnectionOpen = false;
-			} else {
+			if (this.subscription?.readyState !== EventSource.CONNECTING) {
 				console.error(e);
-				this.isConnectionOpen = false;
 			}
+			this.isConnectionOpen = false;
+			this.isReconnecting = true;
 		};
 
 		this.subscription.addEventListener(Events.StatusUpdate, e => {

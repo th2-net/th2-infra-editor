@@ -81,7 +81,7 @@ module.exports = {
 		'@typescript-eslint/no-unused-expressions': ['error'],
 		'import/no-unassigned-import': [
 			'error',
-			{ allow: ['**/*.scss', 'core-js/**', 'regenerator-runtime/**'] },
+			{ allow: ['**/*.scss', 'core-js/**', 'regenerator-runtime/**', 'ace-builds/**'] },
 		],
 		'class-methods-use-this': 'off',
 		'no-new-wrappers': 'off',
@@ -95,6 +95,7 @@ module.exports = {
 		'prefer-destructuring': 'off',
 		'no-useless-constructor': 'off',
 		'prettier/prettier': ['error'],
+		'no-continue': 'off',
 	},
 	settings: {
 		react: {
