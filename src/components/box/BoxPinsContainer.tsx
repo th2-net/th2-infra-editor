@@ -296,7 +296,11 @@ const BoxPinsContainer = (
 		if (
 			!e
 				.composedPath()
-				.some(elem => elem instanceof HTMLElement && elem.className.includes('box__pin'))
+				.some(
+					elem =>
+						elem instanceof HTMLElement &&
+						(elem.className.includes('box__pin') || elem.className.includes('modal')),
+				)
 		) {
 			schemasStore.setActivePin(null);
 			setExpandedPin(null);

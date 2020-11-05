@@ -60,6 +60,7 @@ const DictionaryModal = ({ dictionary, onClose }: DictionaryModalProps) => {
 	const [isFileDragging, setIsFileDragging] = React.useState(false);
 
 	const dictionaryNameInput = useInput({
+		initialValue: dictionary?.name,
 		label: 'Dictionary name',
 		id: 'dicionary-modal__dictionary-name',
 	});
@@ -128,14 +129,17 @@ const DictionaryModal = ({ dictionary, onClose }: DictionaryModalProps) => {
 	};
 
 	const saveChanges = () => {
-		if (dictionary) {
-			schemasStore.configurateDictionary({
-				name: dictionary.name,
-				kind: 'Th2Dictionaries',
-				spec: {
-					data: dictionaryData.value,
+		if (dictionary && dictionaryNameInput.value.trim() && dictionaryNameInput.isValid) {
+			schemasStore.configurateDictionary(
+				{
+					name: dictionaryNameInput.value,
+					kind: 'Th2Dictionaries',
+					spec: {
+						data: dictionaryData.value,
+					},
 				},
-			});
+				dictionary,
+			);
 		}
 	};
 
@@ -170,7 +174,7 @@ const DictionaryModal = ({ dictionary, onClose }: DictionaryModalProps) => {
 						<span className='modal__update-message'>Dictionary has been changed</span>
 					</div>
 				)}
-				{!dictionary && <Input inputConfig={dictionaryNameInput} />}
+				<Input inputConfig={dictionaryNameInput} />
 				{!isFileDragging ? (
 					<DictionaryXMLEditor
 						setDictionaryData={setDictionaryData}

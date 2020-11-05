@@ -86,7 +86,11 @@ const Box = (
 		if (
 			!e
 				.composedPath()
-				.some(elem => elem instanceof HTMLElement && elem.className.includes('box'))
+				.some(
+					elem =>
+						elem instanceof HTMLElement &&
+						(elem.className.includes('box') || elem.className.includes('modal')),
+				)
 		) {
 			schemasStore.setActiveBox(null);
 			if (document.onmousemove) {

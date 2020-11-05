@@ -50,7 +50,7 @@ export default class ConnectionsStore {
 	public outlinerSelectedLink: string | null = null;
 
 	@observable
-	public links: Array<Link> = observable.array<Link>([]);
+	public links: Array<Link> = [];
 
 	@observable
 	public linkBox: LinksDefinition | null = null;
@@ -110,12 +110,6 @@ export default class ConnectionsStore {
 			if (!nextGroupBoxes.length) continue;
 			boxes.push(...nextGroupBoxes);
 		}
-
-		const activeBoxCoords = this.connections.find(
-			connection => connection.connectionOwner.box === this.connectionBoxStart?.name,
-		);
-
-		if (!activeBoxCoords) return [];
 
 		return boxes;
 	}
@@ -209,11 +203,9 @@ export default class ConnectionsStore {
 		},
 	) => {
 		if (
-			!this.schemasStore.activeBox ||
-			!this.schemasStore.activePin ||
 			!this.schemasStore.selectedSchema ||
-			(!this.schemasStore.activeBox && options && !options.fromBox) ||
-			(!this.schemasStore.activePin && options && !options.fromPin) ||
+			!(this.schemasStore.activeBox || (options && options.fromBox)) ||
+			!(this.schemasStore.activePin || (options && options.fromPin)) ||
 			!this.linkBox
 		)
 			return;
@@ -221,8 +213,10 @@ export default class ConnectionsStore {
 		const link = {
 			name: linkName,
 			from: {
-				box: options?.fromBox ?? this.schemasStore.activeBox.name,
-				pin: options?.fromPin ?? this.schemasStore.activePin.name,
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				box: options?.fromBox ?? this.schemasStore.activeBox!.name,
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				pin: options?.fromPin ?? this.schemasStore.activePin!.name,
 				connectionType,
 			},
 			to: {
@@ -236,8 +230,10 @@ export default class ConnectionsStore {
 		const newConnection = {
 			name: linkName,
 			from: {
-				box: options?.fromBox ?? this.schemasStore.activeBox.name,
-				pin: options?.fromPin ?? this.schemasStore.activePin.name,
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				box: options?.fromBox ?? this.schemasStore.activeBox!.name,
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				pin: options?.fromPin ?? this.schemasStore.activePin!.name,
 			},
 			to: {
 				box: boxName,

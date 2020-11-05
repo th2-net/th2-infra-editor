@@ -198,6 +198,8 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 					filters: [],
 				},
 			]);
+			pinNameConfigInput.reset();
+			pinTypeConfigInput.reset();
 		} else {
 			// eslint-disable-next-line no-alert
 			window.alert(`Pin ${pinNameConfigInput.value} already exists`);
@@ -219,6 +221,9 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 					},
 				},
 			]);
+			[relationNameInput, dictionaryNameInput, dictionaryTypeInput].forEach(input =>
+				input.reset(),
+			);
 		} else {
 			// eslint-disable-next-line no-alert
 			window.alert(`Dictionary ${relationNameInput.value} already exists`);

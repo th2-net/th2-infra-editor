@@ -14,9 +14,24 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { BoxEntity } from './Box';
+import FileBase from './FileBase';
 
 export default interface Schema {
 	commitRef: string;
-	resources: BoxEntity[];
+	resources: FileBase[];
+}
+
+export interface SchemaSettings extends FileBase {
+	spec: {
+		'k8s-propagation': 'true' | 'false';
+		'k8s-governance': 'true' | 'false';
+	};
+}
+
+export function isSettingsEntity(object: unknown) {
+	return (
+		typeof object === 'object' &&
+		object !== null &&
+		(object as SchemaSettings).kind === 'SettingsFile'
+	);
 }
