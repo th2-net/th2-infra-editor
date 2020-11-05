@@ -39,6 +39,7 @@ const Input = ({ inputConfig }: InputProps) => {
 				type='text'
 				className={inputClass}
 				list={inputConfig.autocomplete?.datalistKey}
+				autoComplete='off'
 			/>
 			{inputConfig.autocomplete && inputConfig.value.length > 0 && (
 				<datalist id={inputConfig.autocomplete.datalistKey}>

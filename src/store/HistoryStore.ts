@@ -98,16 +98,16 @@ export default class HistoryStore {
 			return;
 		}
 		if (isBoxEntity(change.from) && isBoxEntity(change.to)) {
-			this.rootStore.schemasStore.boxes = observable.array([
+			this.rootStore.schemasStore.boxes = [
 				...this.rootStore.schemasStore.boxes.filter(box => box.name !== change.from?.name),
 				change.from,
-			]);
+			];
 		}
 		if (isLink(change.from) && isLink(change.to)) {
 			this.rootStore.schemasStore.connectionsStore.changeLink(change.from, change.to, false);
 		}
 		if (isDictionaryEntity(change.from) && isDictionaryEntity(change.to)) {
-			this.rootStore.schemasStore.configurateDictionary(change.from, false);
+			this.rootStore.schemasStore.configurateDictionary(change.from, change.to, false);
 		}
 	};
 
@@ -148,16 +148,16 @@ export default class HistoryStore {
 			return;
 		}
 		if (isBoxEntity(change.from) && isBoxEntity(change.to)) {
-			this.rootStore.schemasStore.boxes = observable.array([
+			this.rootStore.schemasStore.boxes = [
 				...this.rootStore.schemasStore.boxes.filter(box => box.name !== change.from?.name),
 				change.to,
-			]);
+			];
 		}
 		if (isLink(change.from) && isLink(change.to)) {
 			this.rootStore.schemasStore.connectionsStore.changeLink(change.to, change.from, false);
 		}
 		if (isDictionaryEntity(change.from) && isDictionaryEntity(change.to)) {
-			this.rootStore.schemasStore.configurateDictionary(change.to);
+			this.rootStore.schemasStore.configurateDictionary(change.to, change.from, false);
 		}
 	};
 

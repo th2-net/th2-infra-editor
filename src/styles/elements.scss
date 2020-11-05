@@ -57,15 +57,15 @@
 			margin-right: 5px;
 
 			&.boxes {
-				@include icon(url('../../resources/icons/box-active.svg'));
+				@include icon(url('../../resources/icons/box-active.svg'), 15px, 15px);
 			}
 
 			&.link {
-				@include icon(url('../../resources/icons/link-active.svg'));
+				@include icon(url('../../resources/icons/link-active.svg'), 15px, 15px);
 			}
 
 			&.dictionary {
-				@include icon(url('../../resources/icons/dictionary-active.svg'));
+				@include icon(url('../../resources/icons/dictionary-active.svg'), 15px, 15px);
 			}
 		}
 	}
@@ -75,7 +75,7 @@
 		font-weight: bold;
 		font-size: 12px;
 		line-height: 15px;
-		max-width: 165px;
+		flex-grow: 1;
 		overflow-wrap: break-word;
 	}
 

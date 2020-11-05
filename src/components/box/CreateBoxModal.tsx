@@ -57,7 +57,6 @@ const CreateBoxModal = ({ createBox, typeVariants, onClose }: CreateBoxModalProp
 		label: 'Image-version',
 		id: 'image-version',
 		name: 'image-version',
-		validate: value => value.split('.').every(number => /^\d+$/.test(number)),
 	});
 
 	const nodePortInput = useInput({

@@ -14,10 +14,10 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable } from 'mobx';
+import { action, observable, reaction } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import { rightJoin } from '../helpers/array';
-import { isBoxEntity } from '../models/Box';
+import { BoxEntity, isBoxEntity } from '../models/Box';
 import {
 	DictionaryEntity,
 	DictionaryLinksEntity,
@@ -42,7 +42,14 @@ export default class SubscriptionStore {
 		private connectionsStore: ConnectionsStore,
 		schemaName: string,
 	) {
-		this.init(schemaName);
+		if (schemasStore.schemaSettings?.spec['k8s-propagation'] === 'true') {
+			this.init(schemaName);
+		}
+
+		reaction(
+			() => schemasStore.schemaSettings?.spec['k8s-propagation'],
+			propagation => propagation === 'true' && this.init(schemaName),
+		);
 	}
 
 	@observable
@@ -79,7 +86,7 @@ export default class SubscriptionStore {
 			this.schemaAbortController.signal,
 		);
 
-		const boxes = observable.array(result.resources.filter(resItem => isBoxEntity(resItem)));
+		const boxes = result.resources.filter(resItem => isBoxEntity(resItem)) as BoxEntity[];
 
 		const addedBoxes = rightJoin(
 			this.schemasStore.boxes.map(box => box.name),

@@ -131,6 +131,7 @@ const BoxPin = (
 
 			const linkName = await openPromptModal('Connection name', defaultName);
 			if (!linkName) return;
+
 			connectionsStore.createLink(linkName, pin.name, pin['connection-type'], boxName);
 		}
 	};
@@ -349,6 +350,8 @@ const BoxPin = (
 					onClick={e => {
 						if (isMenuOpen) {
 							e.stopPropagation();
+							schemasStore.setActiveBox(null);
+							schemasStore.setActivePin(null);
 							setEditablePin(pin);
 						}
 					}}

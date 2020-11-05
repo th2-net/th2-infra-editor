@@ -54,6 +54,7 @@ const DictionaryList = ({
 			{dictionaryRelations.map(relation => (
 				<div key={relation.name} className='element'>
 					<div className='element__header'>
+						<i className='element__header-icon dictionary' />
 						<h3 className='element__title'>{relation.name}</h3>
 						<div className='element__buttons-wrapper'>
 							<button
