@@ -42,13 +42,17 @@ export default class SubscriptionStore {
 		private connectionsStore: ConnectionsStore,
 		schemaName: string,
 	) {
-		if (schemasStore.schemaSettings?.spec['k8s-propagation'] === 'true') {
+		if (
+			schemasStore.schemaSettings &&
+			['sync', 'rule'].includes(schemasStore.schemaSettings.spec['k8s-propagation'])
+		) {
 			this.init(schemaName);
 		}
 
 		reaction(
 			() => schemasStore.schemaSettings?.spec['k8s-propagation'],
-			propagation => propagation === 'true' && this.init(schemaName),
+			propagation =>
+				propagation && ['sync', 'rule'].includes(propagation) && this.init(schemaName),
 		);
 	}
 
