@@ -58,6 +58,16 @@ const Groups = () => {
 							<Fragment key={group.title}></Fragment>
 						);
 					})}
+					<Group
+						boxes={schemasStore.boxes.filter(box =>
+							schemasStore.groups.every(
+								group => !group.types.includes(box.spec.type),
+							),
+						)}
+						color={'#CACC66'}
+						title={'Th2Resources'}
+						groupsTopOffset={groupsRef.current?.getBoundingClientRect().top}
+					/>
 				</div>
 			</div>
 			<SvgLayout arrows={connectionsStore.connectionsArrows} />

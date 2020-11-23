@@ -59,7 +59,7 @@ export default class SchemasStore {
 		},
 		{
 			title: 'Th2Report',
-			types: ['th2-report-data-provider', 'th2-report-data-viewer'],
+			types: ['th2-rpt-data-provider', 'th2-rpt-viewer'],
 			color: '#C066CC',
 		},
 	];
