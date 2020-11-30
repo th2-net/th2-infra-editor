@@ -54,7 +54,13 @@ export default class SchemasStore {
 		},
 		{
 			title: 'Th2Act',
-			types: ['th2-act', 'th2-verifier', 'th2-book-checker', 'th2-recon', 'th2-script'],
+			types: [
+				'th2-act',
+				'th2-verifier',
+				'th2-book-checker',
+				'th2-check2-recon',
+				'th2-script',
+			],
 			color: '#666DCC',
 		},
 		{

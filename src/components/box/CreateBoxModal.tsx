@@ -84,7 +84,7 @@ const CreateBoxModal = ({ createBox, typeVariants, onClose }: CreateBoxModalProp
 			if (inputValues.every(Boolean) && typeof nodePort === 'number' && nodePort <= 65535) {
 				createBox({
 					name,
-					kind: 'Th2GenericBox',
+					kind: 'Th2Box',
 					spec: {
 						pins: [],
 						'image-name': imageName,
