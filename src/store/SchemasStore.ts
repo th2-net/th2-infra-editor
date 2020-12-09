@@ -14,7 +14,6 @@ import { diff } from 'deep-object-diff';
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-
 import { action, observable, reaction } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import { rightJoin } from '../helpers/array';
@@ -43,24 +42,29 @@ export default class SchemasStore {
 
 	public readonly groups = [
 		{
-			title: 'Th2Connector',
-			types: ['th2-connector'],
+			title: 'Conn',
+			types: ['th2-conn', 'th2-read', 'th2-hand'],
 			color: '#FF9966',
 		},
 		{
-			title: 'Th2Codec',
+			title: 'Codec',
 			types: ['th2-codec'],
 			color: '#66CC91',
 		},
 		{
-			title: 'Th2Act',
-			types: ['th2-act', 'th2-verifier', 'th2-book-checker', 'th2-recon', 'th2-script'],
+			title: 'act',
+			types: ['th2-act'],
 			color: '#666DCC',
 		},
 		{
-			title: 'Th2Report',
-			types: ['th2-rpt-data-provider', 'th2-rpt-viewer'],
+			title: 'check',
+			types: ['th2-check1', 'th2-check2-recon'],
 			color: '#C066CC',
+		},
+		{
+			title: 'script',
+			types: ['th2-script'],
+			color: '#669966',
 		},
 	];
 

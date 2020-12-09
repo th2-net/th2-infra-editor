@@ -95,13 +95,7 @@ export interface LinkArrow {
 }
 
 export function isBoxEntity(object: unknown): object is BoxEntity {
-	return (
-		typeof object === 'object' &&
-		object !== null &&
-		(object as BoxEntity).kind === 'Th2GenericBox' &&
-		(object as BoxEntity).spec.type !== undefined &&
-		(object as BoxEntity).spec['image-name'] !== undefined
-	);
+	return typeof object === 'object' && object !== null && (object as BoxEntity).kind === 'Th2Box';
 }
 
 export function isPin(object: unknown): object is Pin {
