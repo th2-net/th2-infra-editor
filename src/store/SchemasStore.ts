@@ -42,12 +42,12 @@ export default class SchemasStore {
 
 	public readonly groups = [
 		{
-			title: 'Conn',
+			title: 'conn',
 			types: ['th2-conn', 'th2-read', 'th2-hand'],
 			color: '#FF9966',
 		},
 		{
-			title: 'Codec',
+			title: 'codec',
 			types: ['th2-codec'],
 			color: '#66CC91',
 		},
