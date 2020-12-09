@@ -89,8 +89,8 @@ export default class ConnectionsStore {
 		this.links = links.flatMap(link => {
 			if (link.spec['boxes-relation']) {
 				return [
-					...convertLinks(link.spec['boxes-relation']['router-mq'], 'mq'),
-					...convertLinks(link.spec['boxes-relation']['router-grpc'], 'grpc'),
+					...convertLinks(link.spec['boxes-relation']['router-mq'] || [], 'mq'),
+					...convertLinks(link.spec['boxes-relation']['router-grpc'] || [], 'grpc'),
 				];
 			}
 			return [];

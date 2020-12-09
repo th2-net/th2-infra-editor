@@ -23,6 +23,11 @@ export default interface LinksDefinition extends FileBase {
 			['router-mq']: Router<MqConnection>[];
 			['router-grpc']: Router<GrpcConnection>[];
 		};
+		['dictionaries-relation']?: {
+			box: string;
+			dictionary: { name: string; type: string };
+			name: string;
+		}[];
 	};
 }
 
@@ -51,18 +56,7 @@ export interface Link {
 }
 
 export function isLinksDefinition(file: FileBase): file is LinksDefinition {
-	try {
-		const b = file as LinksDefinition;
-		if (b.spec['boxes-relation']) {
-			return [
-				Array.isArray(b.spec['boxes-relation']['router-grpc']),
-				Array.isArray(b.spec['boxes-relation']['router-mq']),
-			].every(Boolean);
-		}
-		return false;
-	} catch (e) {
-		return false;
-	}
+	return file.kind === 'Th2Link';
 }
 
 export function isLink(object: unknown): object is Link {

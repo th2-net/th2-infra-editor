@@ -42,12 +42,7 @@ export interface DictionaryLinksEntity extends FileBase {
 }
 
 export function isDictionaryEntity(file: unknown): file is DictionaryEntity {
-	return (
-		typeof file === 'object' &&
-		file !== null &&
-		(file as DictionaryEntity).spec !== undefined &&
-		(file as DictionaryEntity).spec.data !== undefined
-	);
+	return typeof file === 'object' && file !== null && (file as FileBase).kind === 'Th2Dictionary';
 }
 
 export function isDictionaryLinksEntity(file: unknown): file is DictionaryEntity {

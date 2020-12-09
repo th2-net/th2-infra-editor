@@ -16,8 +16,9 @@
 
 import { RequestModel } from '../models/FileBase';
 import Schema from '../models/Schema';
+import ApiSchema from './ApiSchema';
 
-export default class Api {
+export default class Api implements ApiSchema {
 	async fetchSchemasList(): Promise<string[]> {
 		const res = await fetch('backend/schemas');
 
@@ -70,8 +71,6 @@ export default class Api {
 	}
 
 	subscribeOnChanges(schemaName: string): EventSource {
-		return new EventSource(
-			`http://th2-schema-test:30000/editor/backend/subscriptions/schema/${schemaName}`,
-		);
+		return new EventSource(`backend/subscriptions/schema/${schemaName}`);
 	}
 }
