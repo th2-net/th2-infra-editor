@@ -27,7 +27,7 @@ export interface SchemaSettings extends FileBase {
 	};
 }
 
-export function isSettingsEntity(object: unknown) {
+export function isSettingsEntity(object: unknown): object is SchemaSettings {
 	return (
 		typeof object === 'object' &&
 		object !== null &&

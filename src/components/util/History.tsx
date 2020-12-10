@@ -14,34 +14,28 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { hot } from 'react-hot-loader/root';
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import Header from './Header';
-import Groups from './groups/Groups';
-import SplashScreen from './SplashScreen';
-import History from './util/History';
-import useRootStore from '../hooks/useRootStore';
-import '../styles/root.scss';
+import useHistoryStore from '../../hooks/useHistoryStore';
+import { useKeyPress } from '../../hooks/useKeyPress';
 
-function App() {
-	const { rootStore } = useRootStore();
+function History() {
+	const historyStore = useHistoryStore();
+
+	const isCtrlKeyPressed = useKeyPress('Control');
+	const isZKeyPressed = useKeyPress('z');
+	const isYKeyPressed = useKeyPress('y');
 
 	React.useEffect(() => {
-		rootStore.init();
-	}, []);
+		if (isCtrlKeyPressed && isZKeyPressed) {
+			historyStore.toPreviousSnapshot();
+		}
+		if (isCtrlKeyPressed && isYKeyPressed) {
+			historyStore.toNextSnapshot();
+		}
+	}, [isCtrlKeyPressed, isZKeyPressed, isYKeyPressed]);
 
-	return (
-		<div className='root'>
-			<History />
-			<Header />
-			{rootStore.schemasStore.isLoading ? (
-				<SplashScreen />
-			) : (
-				rootStore.schemasStore.boxes.length > 0 && <Groups />
-			)}
-		</div>
-	);
+	return null;
 }
 
-export default hot(observer(App));
+export default observer(History);

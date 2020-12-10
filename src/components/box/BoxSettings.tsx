@@ -203,7 +203,6 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 			pinNameConfigInput.reset();
 			pinTypeConfigInput.reset();
 		} else {
-			// eslint-disable-next-line no-alert
 			window.alert(`Pin ${pinNameConfigInput.value} already exists`);
 		}
 	};
@@ -227,7 +226,6 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 				input.reset(),
 			);
 		} else {
-			// eslint-disable-next-line no-alert
 			window.alert(`Dictionary ${relationNameInput.value} already exists`);
 		}
 	};

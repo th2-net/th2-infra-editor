@@ -99,7 +99,6 @@ const CreateBoxModal = ({ createBox, typeVariants, onClose }: CreateBoxModalProp
 				onClose();
 			}
 		} else {
-			// eslint-disable-next-line no-alert
 			alert('Invalid box info');
 		}
 	};

@@ -96,6 +96,7 @@ module.exports = {
 		'no-useless-constructor': 'off',
 		'prettier/prettier': ['error'],
 		'no-continue': 'off',
+		'no-alert': 'off',
 	},
 	settings: {
 		react: {
