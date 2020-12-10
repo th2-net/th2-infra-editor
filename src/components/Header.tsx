@@ -17,20 +17,20 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import CreateBoxModal from './box/CreateBoxModal';
-import { ModalPortal } from './util/Portal';
-import useSchemasStore from '../hooks/useSchemasStore';
-import { createBemElement } from '../helpers/styleCreators';
+import ChangeLogModal from './changeLog/ChangeLogModal';
 import DictionaryModal from './dictionary/DictionaryModal';
 import ElementsListModal from './elementsList/ElementsListModal';
 import FormModal from './util/FormModal';
+import { ModalPortal } from './util/Portal';
 import { useInput } from '../hooks/useInput';
-import ChangeLogModal from './changeLog/ChangeLogModal';
+import useSchemasStore from '../hooks/useSchemasStore';
+import { createBemElement } from '../helpers/styleCreators';
 import '../styles/header.scss';
 
 const Header = () => {
 	const schemasStore = useSchemasStore();
 
-	const [isAddSchemaModalOpen, setIsAddSchemaModalOpen] = React.useState(false);
+	const [isCreateSchemaModalOpen, setIsCreateSchemaModalOpen] = React.useState(false);
 	const [isCreateBoxModalOpen, setIsCreateBoxModalOpen] = React.useState(false);
 	const [isCreateDictionaryModalOpen, setIsCreateDictionaryModalOpen] = React.useState(false);
 	const [isElementListOpen, setIsElementListOpen] = React.useState(false);
@@ -93,19 +93,19 @@ const Header = () => {
 				<i className='header__button-icon' />
 				Save changes
 			</button>
-			<button className='header__button schema' onClick={() => setIsAddSchemaModalOpen(true)}>
+			<button
+				className='header__button schema'
+				onClick={() => setIsCreateSchemaModalOpen(true)}>
 				<i className='header__button-icon' />
 				Create schema
 			</button>
-			<button
-				className='header__button boxes'
-				onClick={() => setIsCreateBoxModalOpen(!isCreateBoxModalOpen)}>
+			<button className='header__button boxes' onClick={() => setIsCreateBoxModalOpen(true)}>
 				<i className='header__button-icon' />
 				Create resource
 			</button>
 			<button
 				className='header__button dictionary'
-				onClick={() => setIsCreateDictionaryModalOpen(!isCreateDictionaryModalOpen)}>
+				onClick={() => setIsCreateDictionaryModalOpen(true)}>
 				<i className='header__button-icon' />
 				Create dictionary
 			</button>
@@ -128,12 +128,12 @@ const Header = () => {
 				<i className='header__button-icon' />
 				Change log
 			</button>
-			<ModalPortal isOpen={isAddSchemaModalOpen}>
+			<ModalPortal isOpen={isCreateSchemaModalOpen}>
 				<FormModal
-					title={'Create schema'}
+					title='Create schema'
 					inputConfigList={[schemasNameInput]}
 					onSubmit={() => schemasStore.createSchema(schemasNameInput.value)}
-					onClose={() => setIsAddSchemaModalOpen(false)}
+					onClose={() => setIsCreateSchemaModalOpen(false)}
 				/>
 			</ModalPortal>
 			<ModalPortal

@@ -16,9 +16,9 @@
 
 import React from 'react';
 import Box from '../box/Box';
+import { PinsContainerMethods } from '../box/BoxPinsContainer';
 import { BoxEntity } from '../../models/Box';
 import '../../styles/group.scss';
-import { PinsContainerMethods } from '../box/BoxPinsContainer';
 
 const GROUP_OFFSET = 150;
 interface Props {

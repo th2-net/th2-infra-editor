@@ -15,7 +15,6 @@
  ***************************************************************************** */
 
 export default interface FileBase {
-	apiVersion?: string;
 	kind: string;
 	name: string;
 	sourceHash?: string;
@@ -25,19 +24,4 @@ export default interface FileBase {
 export interface RequestModel {
 	operation: 'add' | 'remove' | 'update';
 	payload: FileBase;
-}
-
-export function isFileBase(file: unknown): file is FileBase {
-	try {
-		if (typeof file !== 'object' || file === null) return false;
-		const f = file as FileBase;
-		return [
-			typeof f.apiVersion === 'string',
-			typeof f.kind === 'string',
-			typeof f.name === 'string',
-			typeof f.spec === 'object',
-		].every(Boolean);
-	} catch (error) {
-		return false;
-	}
 }

@@ -17,14 +17,9 @@
 import { action, observable, reaction } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import { rightJoin } from '../helpers/array';
-import { BoxEntity, isBoxEntity } from '../models/Box';
-import {
-	DictionaryEntity,
-	DictionaryLinksEntity,
-	isDictionaryEntity,
-	isDictionaryLinksEntity,
-} from '../models/Dictionary';
-import LinksDefinition, { isLinksDefinition } from '../models/LinksDefinition';
+import { isBoxEntity } from '../models/Box';
+import { isDictionaryEntity, isDictionaryLinksEntity } from '../models/Dictionary';
+import { isLinksDefinition } from '../models/LinksDefinition';
 import ConnectionsStore from './ConnectionsStore';
 import RootStore from './RootStore';
 import SchemasStore from './SchemasStore';
@@ -85,75 +80,87 @@ export default class SubscriptionStore {
 		}
 		this.schemaAbortController = new AbortController();
 
-		const result = await this.api.fetchSchemaState(
-			this.schemasStore.selectedSchema,
-			this.schemaAbortController.signal,
-		);
+		try {
+			const result = await this.api.fetchSchemaState(
+				this.schemasStore.selectedSchema,
+				this.schemaAbortController.signal,
+			);
 
-		const boxes = result.resources.filter(resItem => isBoxEntity(resItem)) as BoxEntity[];
+			const boxes = result.resources.filter(isBoxEntity);
 
-		const addedBoxes = rightJoin(
-			this.schemasStore.boxes.map(box => box.name),
-			boxes.map(box => box.name),
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		).map(boxName => boxes.find(box => box.name === boxName)!);
+			const addedBoxes = rightJoin(
+				this.schemasStore.boxes.map(box => box.name),
+				boxes.map(box => box.name),
+			)
+				.map(boxName => boxes.find(box => box.name === boxName))
+				.filter(isBoxEntity);
 
-		const deletedBoxes = rightJoin(
-			boxes.map(box => box.name),
-			this.schemasStore.boxes.map(box => box.name),
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		).map(boxName => this.schemasStore.boxes.find(box => box.name === boxName)!);
+			const deletedBoxes = rightJoin(
+				boxes.map(box => box.name),
+				this.schemasStore.boxes.map(box => box.name),
+			)
+				.map(boxName => this.schemasStore.boxes.find(box => box.name === boxName))
+				.filter(isBoxEntity)
+				.filter(
+					box =>
+						this.schemasStore.preparedRequests.findIndex(
+							req =>
+								isBoxEntity(req.payload) &&
+								req.operation === 'add' &&
+								req.payload.name === box.name,
+						) === -1,
+				);
 
-		const changedBoxes = boxes.filter(
-			box =>
-				!this.schemasStore.boxes.find(
-					changedBox =>
-						changedBox.name === box.name && changedBox.sourceHash === box.sourceHash,
-				),
-		);
+			const changedBoxes = boxes.filter(
+				box =>
+					!this.schemasStore.boxes.find(
+						changedBox =>
+							changedBox.name === box.name &&
+							changedBox.sourceHash === box.sourceHash,
+					),
+			);
 
-		addedBoxes.forEach(box => this.schemasStore.addBox(box));
-		deletedBoxes.forEach(box => this.schemasStore.deleteBox(box.name, false));
-		changedBoxes.forEach(box =>
-			this.schemasStore.configurateBox(box, {
-				createSnapshot: false,
-			}),
-		);
+			addedBoxes.forEach(box => this.schemasStore.addBox(box));
+			deletedBoxes.forEach(box => this.schemasStore.deleteBox(box.name, false));
+			changedBoxes.forEach(box =>
+				this.schemasStore.configurateBox(box, {
+					createSnapshot: false,
+				}),
+			);
 
-		const links = result.resources.filter(resItem =>
-			isLinksDefinition(resItem),
-		) as LinksDefinition[];
-		if (links[0].sourceHash !== this.connectionsStore.linkBox?.sourceHash) {
-			this.connectionsStore.linkBox = links[0];
-			this.connectionsStore.setLinks(links);
-		}
+			const links = result.resources.filter(isLinksDefinition);
+			if (links[0] && links[0].sourceHash !== this.connectionsStore.linkBox?.sourceHash) {
+				this.connectionsStore.linkBox = links[0];
+				this.connectionsStore.setLinks(links);
+			}
 
-		const dictionaryList = result.resources.filter(resItem =>
-			isDictionaryEntity(resItem),
-		) as DictionaryEntity[];
-		if (
-			dictionaryList.some(
-				targetDictionary =>
-					!this.schemasStore.dictionaryList.find(
+			const dictionaryList = result.resources.filter(isDictionaryEntity);
+			if (
+				dictionaryList.some(
+					targetDictionary =>
+						!this.schemasStore.dictionaryList.find(
+							dictionary => dictionary.sourceHash === targetDictionary.sourceHash,
+						),
+				) ||
+				this.schemasStore.dictionaryList.some(targetDictionary =>
+					dictionaryList.find(
 						dictionary => dictionary.sourceHash === targetDictionary.sourceHash,
 					),
-			) ||
-			this.schemasStore.dictionaryList.some(targetDictionary =>
-				dictionaryList.find(
-					dictionary => dictionary.sourceHash === targetDictionary.sourceHash,
-				),
-			)
-		) {
-			this.schemasStore.dictionaryList = dictionaryList;
-		}
+				)
+			) {
+				this.schemasStore.dictionaryList = dictionaryList;
+			}
 
-		const dictionaryLinksEntity = (result.resources.filter(resItem =>
-			isDictionaryLinksEntity(resItem),
-		) as DictionaryLinksEntity[])[0];
-		if (
-			dictionaryLinksEntity.sourceHash !== this.schemasStore.dictionaryLinksEntity?.sourceHash
-		) {
-			this.schemasStore.setDictionaryLinks(dictionaryLinksEntity);
+			const dictionaryLinksEntity = result.resources.filter(isDictionaryLinksEntity)[0];
+			if (
+				dictionaryLinksEntity &&
+				dictionaryLinksEntity.sourceHash !==
+					this.schemasStore.dictionaryLinksEntity?.sourceHash
+			) {
+				this.schemasStore.setDictionaryLinks(dictionaryLinksEntity);
+			}
+		} catch (error) {
+			console.error(error);
 		}
 	};
 

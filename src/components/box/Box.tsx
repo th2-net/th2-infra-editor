@@ -17,21 +17,21 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
 import { BoxEntity, Pin } from '../../models/Box';
-import useSchemasStore from '../../hooks/useSchemasStore';
-import { ModalPortal } from '../util/Portal';
 import BoxSettings from './BoxSettings';
-import '../../styles/box.scss';
+import DictionaryModal from '../dictionary/DictionaryModal';
 import PinConfigurator from '../pin-configurator/PinConfigurator';
-import { openConfirmModal } from '../../helpers/modal';
+import { ModalPortal } from '../util/Portal';
 import BoxPinsContainer, { PinsContainerMethods } from './BoxPinsContainer';
 import useConnectionsStore from '../../hooks/useConnectionsStore';
 import useOutsideClickListener from '../../hooks/useOutsideClickListener';
+import useSchemasStore from '../../hooks/useSchemasStore';
 import useSubscriptionStore from '../../hooks/useSubscriptionStore';
+import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
+import { openConfirmModal } from '../../helpers/modal';
 import { isEqual } from '../../helpers/object';
-import DictionaryModal from '../dictionary/DictionaryModal';
 import { DictionaryEntity } from '../../models/Dictionary';
+import '../../styles/box.scss';
 
 interface Props {
 	box: BoxEntity;

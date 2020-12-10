@@ -1,4 +1,3 @@
-import { RequestModel } from '../models/FileBase';
 /** *****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
@@ -15,6 +14,7 @@ import { RequestModel } from '../models/FileBase';
  *  limitations under the License.
  ***************************************************************************** */
 
+import { RequestModel } from '../models/FileBase';
 import Schema from '../models/Schema';
 
 export default interface ApiSchema {

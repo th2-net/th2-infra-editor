@@ -19,6 +19,7 @@ import useOutsideClickListener from '../../hooks/useOutsideClickListener';
 import { BoxEntity } from '../../models/Box';
 import { useInput } from '../../hooks/useInput';
 import Input from '../util/Input';
+import { createStyleSelector } from '../../helpers/styleCreators';
 import '../../styles/modal.scss';
 
 interface CreateBoxModalProps {
@@ -101,6 +102,12 @@ const CreateBoxModal = ({ createBox, typeVariants, onClose }: CreateBoxModalProp
 		}
 	};
 
+	const submitButtonClassName = createStyleSelector(
+		'modal__button',
+		'submit',
+		inputs.every(input => input.isValid) ? '' : 'disable',
+	);
+
 	return (
 		<div ref={modalRef} className='modal'>
 			<div className='modal__header'>
@@ -116,7 +123,7 @@ const CreateBoxModal = ({ createBox, typeVariants, onClose }: CreateBoxModalProp
 				))}
 			</div>
 			<div className='modal__buttons'>
-				<button onClick={createNewBox} className='modal__button submit'>
+				<button onClick={createNewBox} className={submitButtonClassName}>
 					<i className='modal__button-icon' />
 					Submit
 				</button>
