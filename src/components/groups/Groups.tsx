@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { Fragment } from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import Group from './Group';
 import SvgLayout from '../SvgLayout';
@@ -44,7 +44,7 @@ const Groups = () => {
 							group.types.some(type => type === box.spec.type),
 						);
 
-						return boxes.length > 0 ? (
+						return (
 							<Group
 								key={group.title}
 								title={group.title}
@@ -54,8 +54,6 @@ const Groups = () => {
 								groupsTopOffset={groupsRef.current?.getBoundingClientRect().top}
 								color={group.color}
 							/>
-						) : (
-							<Fragment key={group.title}></Fragment>
 						);
 					})}
 					<Group
@@ -64,8 +62,8 @@ const Groups = () => {
 								group => !group.types.includes(box.spec.type),
 							),
 						)}
-						color={'#CACC66'}
-						title={'Th2Resources'}
+						color='#CACC66'
+						title='Th2Resources'
 						groupsTopOffset={groupsRef.current?.getBoundingClientRect().top}
 					/>
 				</div>

@@ -45,7 +45,7 @@ export function isDictionaryEntity(file: unknown): file is DictionaryEntity {
 	return typeof file === 'object' && file !== null && (file as FileBase).kind === 'Th2Dictionary';
 }
 
-export function isDictionaryLinksEntity(file: unknown): file is DictionaryEntity {
+export function isDictionaryLinksEntity(file: unknown): file is DictionaryLinksEntity {
 	return (
 		typeof file === 'object' &&
 		file !== null &&

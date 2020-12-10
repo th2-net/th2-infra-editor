@@ -36,10 +36,6 @@ import RootStore from './RootStore';
 import SubscriptionStore from './SubscriptionStore';
 
 export default class SchemasStore {
-	public connectionsStore: ConnectionsStore;
-
-	public subscriptionStore: SubscriptionStore | null = null;
-
 	public readonly groups = [
 		{
 			title: 'conn',
@@ -70,6 +66,10 @@ export default class SchemasStore {
 
 	public readonly connectionTypes = ['grpc', 'mq'];
 
+	public connectionsStore: ConnectionsStore;
+
+	public subscriptionStore: SubscriptionStore | null = null;
+
 	constructor(
 		private rootStore: RootStore,
 		private api: ApiSchema,
@@ -82,28 +82,7 @@ export default class SchemasStore {
 			types => (this.types = [...new Set(types)]),
 		);
 
-		reaction(
-			() => this.selectedSchema,
-			selectedSchema => {
-				this.historyStore.clearHistory();
-				this.preparedRequests = [];
-				this.connectionsStore.connections = [];
-				this.activeBox = null;
-				this.activePin = null;
-				this.isLoading = true;
-				if (selectedSchema) {
-					this.fetchSchemaState(selectedSchema);
-					this.subscriptionStore?.closeConnection();
-					this.subscriptionStore = new SubscriptionStore(
-						rootStore,
-						api,
-						this,
-						this.connectionsStore,
-						selectedSchema,
-					);
-				}
-			},
-		);
+		reaction(() => this.selectedSchema, this.onSchemaChange);
 	}
 
 	@observable
@@ -177,15 +156,18 @@ export default class SchemasStore {
 		}
 	};
 
-	@action setActiveBox = (box: BoxEntity | null) => {
+	@action
+	public setActiveBox = (box: BoxEntity | null) => {
 		this.activeBox = box;
 	};
 
-	@action setActivePin = (pin: Pin | null) => {
+	@action
+	public setActivePin = (pin: Pin | null) => {
 		this.activePin = pin;
 	};
 
-	@action setExpandedBox = (box: BoxEntity | null) => {
+	@action
+	public setExpandedBox = (box: BoxEntity | null) => {
 		this.expandedBox = box;
 	};
 
@@ -294,7 +276,7 @@ export default class SchemasStore {
 			this.preparedRequests = [];
 		} catch (error) {
 			// eslint-disable-next-line no-alert
-			alert("Could'nt save changes");
+			alert("Couldn't save changes");
 		} finally {
 			this.isSaving = false;
 		}
@@ -571,5 +553,26 @@ export default class SchemasStore {
 			return '#C066CC';
 		}
 		return 'red';
+	};
+
+	@action
+	private onSchemaChange = (selectedSchema: string | null) => {
+		this.historyStore.clearHistory();
+		this.preparedRequests = [];
+		this.connectionsStore.connections = [];
+		this.activeBox = null;
+		this.activePin = null;
+		this.isLoading = true;
+		if (selectedSchema) {
+			this.fetchSchemaState(selectedSchema);
+			this.subscriptionStore?.closeConnection();
+			this.subscriptionStore = new SubscriptionStore(
+				this.rootStore,
+				this.api,
+				this,
+				this.connectionsStore,
+				selectedSchema,
+			);
+		}
 	};
 }

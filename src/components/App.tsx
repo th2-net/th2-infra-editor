@@ -19,8 +19,8 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import Header from './Header';
 import Groups from './groups/Groups';
-import useRootStore from '../hooks/useRootStore';
 import SplashScreen from './SplashScreen';
+import useRootStore from '../hooks/useRootStore';
 import useHistoryStore from '../hooks/useHistoryStore';
 import { useKeyPress } from '../hooks/useKeyPress';
 import '../styles/root.scss';
@@ -38,13 +38,11 @@ function App() {
 	const isYKeyPressed = useKeyPress('y');
 
 	React.useEffect(() => {
-		if (isCtrlKeyPressed) {
-			if (isZKeyPressed) {
-				historyStore.toPreviousSnapshot();
-			}
-			if (isYKeyPressed) {
-				historyStore.toNextSnapshot();
-			}
+		if (isCtrlKeyPressed && isZKeyPressed) {
+			historyStore.toPreviousSnapshot();
+		}
+		if (isCtrlKeyPressed && isYKeyPressed) {
+			historyStore.toNextSnapshot();
 		}
 	}, [isCtrlKeyPressed, isZKeyPressed, isYKeyPressed]);
 
