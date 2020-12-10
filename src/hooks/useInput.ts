@@ -71,10 +71,6 @@ export const useInput = ({
 
 	React.useEffect(() => {
 		if (validate) {
-			if (value.length === 0) {
-				setIsValid(true);
-				return;
-			}
 			setIsValid(validate(value));
 		}
 	}, [value]);

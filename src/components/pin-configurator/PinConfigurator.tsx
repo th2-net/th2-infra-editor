@@ -147,7 +147,7 @@ const PinConfigurator = ({
 		<div ref={editorRef} className='modal'>
 			<div className='modal__header'>
 				<h3 className='modal__header-title'>{editablePin.name}</h3>
-				<button onClick={() => onClose()} className='modal__header-close-button'>
+				<button onClick={onClose} className='modal__header-close-button'>
 					<i className='modal__header-close-button-icon' />
 				</button>
 			</div>

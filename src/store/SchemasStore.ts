@@ -1,4 +1,3 @@
-import { diff } from 'deep-object-diff';
 /** *****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
@@ -14,7 +13,9 @@ import { diff } from 'deep-object-diff';
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-import { action, observable, reaction } from 'mobx';
+
+import { action, observable, reaction, toJS } from 'mobx';
+import { diff } from 'deep-object-diff';
 import ApiSchema from '../api/ApiSchema';
 import { rightJoin } from '../helpers/array';
 import { isEqual } from '../helpers/object';
@@ -457,7 +458,7 @@ export default class SchemasStore {
 					...targetBox.spec.pins.slice(pinIndex + 1, targetBox.spec.pins.length),
 				];
 				this.saveEntityChanges(targetBox, 'update');
-				const newValue = JSON.parse(JSON.stringify(targetBox)) as BoxEntity;
+				const newValue = toJS(targetBox);
 				this.historyStore.addSnapshot({
 					object: boxName,
 					type: 'box',

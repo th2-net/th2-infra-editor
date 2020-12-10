@@ -41,7 +41,7 @@ const DictionaryXMLEditor = ({ xmlContent, setDictionaryData }: DictionaryXMLEdi
 	const xmlInputConfig = useInput({
 		initialValue: xmlContent,
 		id: 'xml-editor',
-		validate: isXMLValid,
+		validate: xml => (xml.length === 0 ? true : isXMLValid(xml)),
 		label: 'XML',
 	});
 
