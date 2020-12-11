@@ -29,9 +29,13 @@ export default class RootStore {
 	}
 
 	async init() {
-		await this.schemasStore.fetchSchemas();
-		if (this.schemasStore.schemas.length) {
-			this.schemasStore.setSelectedSchema(this.schemasStore.schemas[0]);
+		try {
+			await this.schemasStore.fetchSchemas();
+			if (this.schemasStore.schemas.length > 0) {
+				this.schemasStore.setSelectedSchema(this.schemasStore.schemas[0]);
+			}
+		} catch (error) {
+			console.error(error);
 		}
 	}
 }

@@ -21,7 +21,7 @@ import { useInput } from '../../hooks/useInput';
 import Input from '../util/Input';
 import AttributesList from './AttributesList';
 import FiltersList from './FiltersList';
-import { createBemElement } from '../../helpers/styleCreators';
+import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
 import { isEqual } from '../../helpers/object';
 import { openDecisionModal } from '../../helpers/modal';
 
@@ -142,6 +142,12 @@ const PinConfigurator = ({
 		setIsUpdated(false);
 	};
 
+	const submitButtonClassName = createStyleSelector(
+		'modal__button',
+		'submit',
+		!connectionTypeInput.isValid ? 'disable' : null,
+	);
+
 	return (
 		<div ref={editorRef} className='modal'>
 			<div className='modal__header'>
@@ -221,7 +227,7 @@ const PinConfigurator = ({
 						Add filter
 					</button>
 				)}
-				<button onClick={submit} className='modal__button submit'>
+				<button onClick={submit} className={submitButtonClassName}>
 					<i className='modal__button-icon' />
 					Submit
 				</button>

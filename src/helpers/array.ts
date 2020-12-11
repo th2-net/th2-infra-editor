@@ -27,3 +27,9 @@ export function rightJoin<T>(arr1: T[], arr2: T[]): T[] {
 	});
 	return array;
 }
+
+export function sortByKey<T, K extends keyof T>(arr: T[], key: K): T[] {
+	const copy = arr.slice();
+	copy.sort((a, b) => (a[key] > b[key] ? 1 : -1));
+	return copy;
+}
