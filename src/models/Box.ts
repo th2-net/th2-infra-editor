@@ -1,4 +1,3 @@
-import { DictionaryRelation } from './Dictionary';
 /** *****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
@@ -14,7 +13,9 @@ import { DictionaryRelation } from './Dictionary';
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
+
 import FileBase from './FileBase';
+import { DictionaryRelation } from './Dictionary';
 
 export interface BoxEntity extends FileBase {
 	spec: {
@@ -52,7 +53,7 @@ export interface BoxEntity extends FileBase {
 }
 
 export interface Pin {
-	attributes: Array<string>;
+	attributes?: Array<string>;
 	['connection-type']: 'mq' | 'grpc';
 	filters?: Array<Filter>;
 	name: string;
