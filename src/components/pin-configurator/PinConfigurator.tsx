@@ -53,7 +53,7 @@ const PinConfigurator = ({
 		}
 	}, [pin]);
 
-	const [attributes, setAttributes] = React.useState(editablePin.attributes);
+	const [attributes, setAttributes] = React.useState<Array<string>>(editablePin.attributes || []);
 	const [filters, setFilters] = React.useState(() => editablePin.filters ?? []);
 
 	const [isAttributeFormOpen, setIsAttributeFormOpen] = React.useState(false);
