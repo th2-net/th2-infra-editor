@@ -1,4 +1,3 @@
-import { diff } from 'deep-object-diff';
 /** *****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
@@ -14,7 +13,9 @@ import { diff } from 'deep-object-diff';
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***************************************************************************** */
-import { action, observable, reaction } from 'mobx';
+
+import { action, observable, reaction, toJS } from 'mobx';
+import { diff } from 'deep-object-diff';
 import ApiSchema from '../api/ApiSchema';
 import { rightJoin } from '../helpers/array';
 import { isEqual } from '../helpers/object';
@@ -134,7 +135,6 @@ export default class SchemasStore {
 		if (!this.selectedSchema) return;
 
 		if (this.boxes.find(box => box.name === newBox.name)) {
-			// eslint-disable-next-line no-alert
 			alert(`Box "${newBox.name}" already exists`);
 			return;
 		}
@@ -193,16 +193,14 @@ export default class SchemasStore {
 
 	@action
 	public deleteDictionary = (dictionaryName: string, createSnapshot = true) => {
-		const oldValue = JSON.parse(
-			JSON.stringify(
-				this.dictionaryList.find(dictionary => dictionary.name === dictionaryName),
-			),
-		) as DictionaryEntity;
+		const oldValue = toJS(
+			this.dictionaryList.find(dictionary => dictionary.name === dictionaryName),
+		);
 		this.dictionaryList = this.dictionaryList.filter(
 			dictionary => dictionary.name !== dictionaryName,
 		);
 
-		if (createSnapshot) {
+		if (createSnapshot && oldValue) {
 			this.saveEntityChanges(oldValue, 'remove');
 			this.historyStore.addSnapshot({
 				object: dictionaryName,
@@ -237,27 +235,24 @@ export default class SchemasStore {
 			this.schemaAbortController.signal,
 		);
 
-		this.boxes = result.resources.filter(resItem => isBoxEntity(resItem)) as BoxEntity[];
+		this.boxes = result.resources.filter(isBoxEntity);
 
-		const links = result.resources.filter(resItem =>
-			isLinksDefinition(resItem),
-		) as LinksDefinition[];
+		const links = result.resources.filter(isLinksDefinition);
 		this.connectionsStore.linkBox = links[0];
 		this.connectionsStore.setLinks(links);
 
-		this.dictionaryList = result.resources.filter(resItem =>
-			isDictionaryEntity(resItem),
-		) as DictionaryEntity[];
+		this.dictionaryList = result.resources.filter(isDictionaryEntity);
 
-		const dictionaryLinksEntity = result.resources.filter(resItem =>
-			isDictionaryLinksEntity(resItem),
-		);
-		this.setDictionaryLinks(dictionaryLinksEntity[0] as DictionaryLinksEntity);
+		const dictionaryLinksEntity = result.resources.filter(isDictionaryLinksEntity);
+		if (dictionaryLinksEntity.length > 0) {
+			this.setDictionaryLinks(dictionaryLinksEntity[0]);
+		}
 
-		const schemaSettings = result.resources.filter(resItem =>
-			isSettingsEntity(resItem),
-		)[0] as SchemaSettings;
-		this.schemaSettings = schemaSettings;
+		const schemaSettings = result.resources.filter(isSettingsEntity)[0];
+
+		if (schemaSettings) {
+			this.schemaSettings = schemaSettings;
+		}
 
 		this.isLoading = false;
 	}
@@ -275,7 +270,6 @@ export default class SchemasStore {
 			await this.api.sendSchemaRequest(this.selectedSchema, this.preparedRequests);
 			this.preparedRequests = [];
 		} catch (error) {
-			// eslint-disable-next-line no-alert
 			alert("Couldn't save changes");
 		} finally {
 			this.isSaving = false;
@@ -447,7 +441,7 @@ export default class SchemasStore {
 	public configuratePin = (pin: Pin, boxName: string) => {
 		const targetBox = this.boxes.find(box => box.name === boxName);
 		if (targetBox && targetBox.spec.pins) {
-			const oldValue = JSON.parse(JSON.stringify(targetBox)) as BoxEntity;
+			const oldValue = toJS(targetBox);
 			const pinIndex = targetBox.spec.pins.findIndex(boxPin => boxPin.name === pin.name);
 
 			if (pinIndex >= 0) {
@@ -457,7 +451,7 @@ export default class SchemasStore {
 					...targetBox.spec.pins.slice(pinIndex + 1, targetBox.spec.pins.length),
 				];
 				this.saveEntityChanges(targetBox, 'update');
-				const newValue = JSON.parse(JSON.stringify(targetBox)) as BoxEntity;
+				const newValue = toJS(targetBox);
 				this.historyStore.addSnapshot({
 					object: boxName,
 					type: 'box',

@@ -64,7 +64,7 @@ const CreateBoxModal = ({ createBox, typeVariants, onClose }: CreateBoxModalProp
 		label: 'Node-port',
 		id: 'node-port',
 		name: 'node-port',
-		validate: (value: string) => /^\d+$/.test(value),
+		validate: (value: string) => (value.trim().length > 0 ? /^\d+$/.test(value) : true),
 	});
 
 	useOutsideClickListener(modalRef, () => {
@@ -82,22 +82,23 @@ const CreateBoxModal = ({ createBox, typeVariants, onClose }: CreateBoxModalProp
 				nodePort = parseInt(nodePortString);
 			}
 
-			if (inputValues.every(Boolean) && typeof nodePort === 'number' && nodePort <= 65535) {
+			if (inputValues.every(Boolean)) {
+				const spec: BoxEntity['spec'] = {
+					pins: [],
+					'image-name': imageName,
+					'image-version': imageVersion,
+					type,
+				};
+
+				if (typeof nodePort === 'number' && nodePort <= 65535) spec['node-port'] = nodePort;
 				createBox({
 					name,
 					kind: 'Th2GenericBox',
-					spec: {
-						pins: [],
-						'image-name': imageName,
-						'image-version': imageVersion,
-						'node-port': nodePort,
-						type,
-					},
+					spec,
 				});
 				onClose();
 			}
 		} else {
-			// eslint-disable-next-line no-alert
 			alert('Invalid box info');
 		}
 	};

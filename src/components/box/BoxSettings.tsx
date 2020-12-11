@@ -16,20 +16,20 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { BoxEntity, Pin } from '../../models/Box';
-import useOutsideClickListener from '../../hooks/useOutsideClickListener';
+import DictionaryList from './DictionaryList';
 import PinsList from './PinsList';
-import { DictionaryEntity, DictionaryRelation } from '../../models/Dictionary';
-import '../../styles/modal.scss';
-import { createBemElement } from '../../helpers/styleCreators';
 import BoxConfig from './BoxConfig';
-import { useInput } from '../../hooks/useInput';
 import { ModalPortal } from '../util/Portal';
 import FormModal from '../util/FormModal';
-import DictionaryList from './DictionaryList';
+import { useInput } from '../../hooks/useInput';
 import useSchemasStore from '../../hooks/useSchemasStore';
-import { isEqual } from '../../helpers/object';
+import useOutsideClickListener from '../../hooks/useOutsideClickListener';
 import { openDecisionModal } from '../../helpers/modal';
+import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
+import { isEqual } from '../../helpers/object';
+import { BoxEntity, Pin } from '../../models/Box';
+import { DictionaryEntity, DictionaryRelation } from '../../models/Dictionary';
+import '../../styles/modal.scss';
 
 interface BoxSettingsProps {
 	box: BoxEntity;
@@ -77,6 +77,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		label: 'image-name',
 		name: 'image-name',
 		id: 'image-name',
+		validate: name => name.length > 0,
 	});
 
 	const imageVersionInput = useInput({
@@ -84,6 +85,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		label: 'image-version',
 		name: 'image-version',
 		id: 'image-version',
+		validate: version => version.length > 0,
 	});
 
 	const nodePortInput = useInput({
@@ -91,7 +93,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		label: 'node-port',
 		name: 'node-port',
 		id: 'node-port',
-		validate: value => /^\d+$/.test(value),
+		validate: value => (value.trim().length === 0 ? true : /^\d+$/.test(value)),
 	});
 
 	const boxConfigInput = useInput({
@@ -102,8 +104,8 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		validate: value => {
 			if (value.length === 0) return true;
 			try {
-				JSON.parse(value);
-				return true;
+				const config = JSON.parse(value);
+				return typeof config === 'object';
 			} catch {
 				return false;
 			}
@@ -201,7 +203,6 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 			pinNameConfigInput.reset();
 			pinTypeConfigInput.reset();
 		} else {
-			// eslint-disable-next-line no-alert
 			window.alert(`Pin ${pinNameConfigInput.value} already exists`);
 		}
 	};
@@ -225,17 +226,15 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 				input.reset(),
 			);
 		} else {
-			// eslint-disable-next-line no-alert
 			window.alert(`Dictionary ${relationNameInput.value} already exists`);
 		}
 	};
 
 	const submit = async () => {
 		if (
-			[imageNameInput, imageVersionInput, nodePortInput].every(
-				config => config.isValid && config.value.trim(),
-			) &&
-			boxConfigInput.isValid
+			[imageNameInput, imageVersionInput, nodePortInput, boxConfigInput].every(
+				config => config.isValid,
+			)
 		) {
 			if (!isUpdated) {
 				saveChanges();
@@ -260,20 +259,24 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 	};
 
 	const saveChanges = () => {
+		const spec: BoxEntity['spec'] = {
+			'image-name': imageNameInput.value,
+			'image-version': imageVersionInput.value,
+			pins: pinList,
+			type: editableBox.spec.type,
+		};
+
+		const port = nodePortInput.value ? parseInt(nodePortInput.value) : undefined;
+
+		if (port) spec['node-port'] = port;
+		if (boxConfigInput.isValid && boxConfigInput.value)
+			spec['custom-config'] = JSON.parse(boxConfigInput.value);
+
 		schemasStore.configurateBox(
 			{
 				name: editableBox.name,
 				kind: editableBox.kind,
-				spec: {
-					'image-name': imageNameInput.value,
-					'image-version': imageVersionInput.value,
-					'node-port': nodePortInput.value ? parseInt(nodePortInput.value) : undefined,
-					'custom-config': boxConfigInput.value
-						? JSON.parse(boxConfigInput.value)
-						: undefined,
-					pins: pinList,
-					type: editableBox.spec.type,
-				},
+				spec,
 			},
 			{
 				dictionaryRelations: relatedDictionaryList,
@@ -286,6 +289,16 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		setEditableBox(box);
 		setIsUpdated(false);
 	};
+
+	const submitButtonClassname = createStyleSelector(
+		'	modal__button',
+		'submit',
+		[imageNameInput, imageVersionInput, nodePortInput, boxConfigInput].some(
+			config => !config.isValid,
+		)
+			? 'disable'
+			: null,
+	);
 
 	return (
 		<>
@@ -373,7 +386,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 							Add dictionary
 						</button>
 					)}
-					<button onClick={submit} className='modal__button submit'>
+					<button onClick={submit} className={submitButtonClassname}>
 						<i className='modal__button-icon' />
 						Submit
 					</button>

@@ -1,4 +1,3 @@
-/* eslint-disable no-alert */
 /** ****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *

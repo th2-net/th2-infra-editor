@@ -14,7 +14,7 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction } from 'mobx';
+import { action, computed, observable, reaction, toJS } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
 import LinksDefinition, { Link } from '../models/LinksDefinition';
 import { BoxEntity, Connection, LinkArrow, Pin } from '../models/Box';
@@ -361,10 +361,10 @@ export default class ConnectionsStore {
 			fromPin: newLink.from.pin,
 		});
 
-		const oldValue = JSON.parse(JSON.stringify(oldLink || this.draggableLink)) as Link;
-		const newValue = JSON.parse(JSON.stringify(newLink)) as Link;
+		const oldValue = toJS(oldLink || this.draggableLink);
+		const newValue = toJS(newLink);
 
-		if (createSnapshot) {
+		if (createSnapshot && oldValue) {
 			this.schemasStore.saveEntityChanges(this.linkBox, 'update');
 			this.historyStore.addSnapshot({
 				object: oldValue.name,
