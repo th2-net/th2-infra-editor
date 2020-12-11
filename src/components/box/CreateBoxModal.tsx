@@ -95,7 +95,7 @@ const CreateBoxModal = ({ createBox, typeVariants, onClose }: CreateBoxModalProp
 			if (typeof nodePort === 'number') spec['node-port'] = nodePort;
 			createBox({
 				name,
-				kind: 'Th2GenericBox',
+				kind: 'Th2Box',
 				spec,
 			});
 			onClose();
