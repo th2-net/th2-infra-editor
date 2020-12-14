@@ -35,7 +35,7 @@ const CreateBoxModal = ({ createBox, typeVariants, onClose }: CreateBoxModalProp
 		label: 'Name',
 		id: 'name',
 		name: 'name',
-		validate: (value: string) => !value.includes('_'),
+		validate: name => !name.includes('_') && name.trim().length > 0,
 	});
 
 	const typeInput = useInput({
@@ -52,19 +52,22 @@ const CreateBoxModal = ({ createBox, typeVariants, onClose }: CreateBoxModalProp
 		label: 'Image-name',
 		id: 'image-name',
 		name: 'image-name',
+		validate: imageName => imageName.trim().length > 0,
 	});
 
 	const imageVersionInput = useInput({
 		label: 'Image-version',
 		id: 'image-version',
 		name: 'image-version',
+		validate: imageVersion => imageVersion.trim().length > 0,
 	});
 
 	const nodePortInput = useInput({
 		label: 'Node-port',
 		id: 'node-port',
 		name: 'node-port',
-		validate: (value: string) => (value.trim().length > 0 ? /^\d+$/.test(value) : true),
+		validate: (value: string) =>
+			value.trim().length > 0 ? /^\d+$/.test(value) && parseInt(value) <= 65535 : true,
 	});
 
 	useOutsideClickListener(modalRef, () => {
@@ -82,22 +85,20 @@ const CreateBoxModal = ({ createBox, typeVariants, onClose }: CreateBoxModalProp
 				nodePort = parseInt(nodePortString);
 			}
 
-			if (inputValues.every(Boolean)) {
-				const spec: BoxEntity['spec'] = {
-					pins: [],
-					'image-name': imageName,
-					'image-version': imageVersion,
-					type,
-				};
+			const spec: BoxEntity['spec'] = {
+				pins: [],
+				'image-name': imageName,
+				'image-version': imageVersion,
+				type,
+			};
 
-				if (typeof nodePort === 'number' && nodePort <= 65535) spec['node-port'] = nodePort;
-				createBox({
-					name,
-					kind: 'Th2GenericBox',
-					spec,
-				});
-				onClose();
-			}
+			if (typeof nodePort === 'number') spec['node-port'] = nodePort;
+			createBox({
+				name,
+				kind: 'Th2Box',
+				spec,
+			});
+			onClose();
 		} else {
 			alert('Invalid box info');
 		}

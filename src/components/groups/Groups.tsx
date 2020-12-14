@@ -31,41 +31,16 @@ const Groups = () => {
 	return (
 		<div className='groups__wrapper'>
 			<div ref={groupsRef} className='groups'>
-				<div
-					className='groups__list'
-					style={{
-						gridTemplateColumns: `repeat(${Math.max(
-							schemasStore.types.length,
-							6,
-						)}, 252px)`,
-					}}>
-					{schemasStore.groups.map(group => {
-						const boxes = schemasStore.boxes.filter(box =>
-							group.types.some(type => type === box.spec.type),
-						);
-
+				<div className='groups__list'>
+					{schemasStore.groups.map(({ types, ...group }) => {
 						return (
 							<Group
 								key={group.title}
-								title={group.title}
-								boxes={boxes.sort((first, second) =>
-									first.name > second.name ? 1 : -1,
-								)}
 								groupsTopOffset={groupsRef.current?.getBoundingClientRect().top}
-								color={group.color}
+								{...group}
 							/>
 						);
 					})}
-					<Group
-						boxes={schemasStore.boxes.filter(box =>
-							schemasStore.groups.every(
-								group => !group.types.includes(box.spec.type),
-							),
-						)}
-						color='#CACC66'
-						title='Th2Resources'
-						groupsTopOffset={groupsRef.current?.getBoundingClientRect().top}
-					/>
 				</div>
 			</div>
 			<SvgLayout arrows={connectionsStore.connectionsArrows} />

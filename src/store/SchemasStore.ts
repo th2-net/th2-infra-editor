@@ -14,10 +14,10 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, observable, reaction, toJS } from 'mobx';
+import { action, computed, observable, reaction, toJS } from 'mobx';
 import { diff } from 'deep-object-diff';
 import ApiSchema from '../api/ApiSchema';
-import { rightJoin } from '../helpers/array';
+import { rightJoin, sortByKey } from '../helpers/array';
 import { isEqual } from '../helpers/object';
 import { BoxEntity, isBoxEntity, Pin } from '../models/Box';
 import {
@@ -37,7 +37,7 @@ import RootStore from './RootStore';
 import SubscriptionStore from './SubscriptionStore';
 
 export default class SchemasStore {
-	public readonly groups = [
+	private readonly groupsConfig = [
 		{
 			title: 'conn',
 			types: ['th2-conn', 'th2-read', 'th2-hand'],
@@ -63,6 +63,11 @@ export default class SchemasStore {
 			types: ['th2-script'],
 			color: '#669966',
 		},
+		{
+			title: 'Th2Resources',
+			color: '#CACC66',
+			types: [],
+		},
 	];
 
 	public readonly connectionTypes = ['grpc', 'mq'];
@@ -77,11 +82,6 @@ export default class SchemasStore {
 		private historyStore: HistoryStore,
 	) {
 		this.connectionsStore = new ConnectionsStore(rootStore, api, this, historyStore);
-
-		reaction(
-			() => this.boxes.map(box => box.spec.type),
-			types => (this.types = [...new Set(types)]),
-		);
 
 		reaction(() => this.selectedSchema, this.onSchemaChange);
 	}
@@ -108,9 +108,6 @@ export default class SchemasStore {
 	public activePin: Pin | null = null;
 
 	@observable
-	public types: Array<string> = [];
-
-	@observable
 	public preparedRequests: RequestModel[] = [];
 
 	@observable
@@ -125,6 +122,30 @@ export default class SchemasStore {
 	@observable
 	public schemaSettings: SchemaSettings | null = null;
 
+	@computed
+	public get groups() {
+		return this.groupsConfig.map(group => {
+			let boxes: BoxEntity[];
+			if (group.title === 'Th2Resources') {
+				boxes = this.boxes.filter(box =>
+					this.groupsConfig.every(g => !g.types.includes(box.spec.type)),
+				);
+			} else {
+				boxes = this.boxes.filter(box => group.types.some(type => type === box.spec.type));
+			}
+
+			return {
+				...group,
+				boxes: sortByKey(boxes, 'name'),
+			};
+		});
+	}
+
+	@computed
+	public get types(): Array<string> {
+		return [...new Set(this.boxes.map(box => box.spec.type))];
+	}
+
 	@action
 	public addBox = (box: BoxEntity) => {
 		this.boxes.push(box);
@@ -138,7 +159,9 @@ export default class SchemasStore {
 			alert(`Box "${newBox.name}" already exists`);
 			return;
 		}
+
 		this.addBox(newBox);
+
 		if (createSnapshot) {
 			this.saveEntityChanges(newBox, 'add');
 			this.historyStore.addSnapshot({
@@ -174,6 +197,7 @@ export default class SchemasStore {
 	@action
 	public createDictionary = (dictionary: DictionaryEntity, createSnapshot = true) => {
 		this.dictionaryList.push(dictionary);
+
 		if (createSnapshot) {
 			this.saveEntityChanges(dictionary, 'add');
 			this.historyStore.addSnapshot({
@@ -184,7 +208,7 @@ export default class SchemasStore {
 					{
 						object: dictionary.name,
 						from: null,
-						to: JSON.parse(JSON.stringify(dictionary)),
+						to: toJS(dictionary),
 					},
 				],
 			});
@@ -219,48 +243,69 @@ export default class SchemasStore {
 
 	@action
 	public async fetchSchemas() {
-		this.schemas = await this.api.fetchSchemasList();
+		try {
+			this.schemas = await this.api.fetchSchemasList();
+		} catch (error) {
+			if (error.name !== 'AbortError') {
+				console.error('Error occured while loading schemas');
+				console.error(error);
+			}
+		}
 	}
 
 	schemaAbortController: AbortController | null = null;
 
 	@action
 	public async fetchSchemaState(schemaName: string) {
+		this.isLoading = true;
 		if (this.schemaAbortController) {
 			this.schemaAbortController.abort();
 		}
 		this.schemaAbortController = new AbortController();
-		const result = await this.api.fetchSchemaState(
-			schemaName,
-			this.schemaAbortController.signal,
-		);
 
-		this.boxes = result.resources.filter(isBoxEntity);
+		try {
+			const result = await this.api.fetchSchemaState(
+				schemaName,
+				this.schemaAbortController.signal,
+			);
 
-		const links = result.resources.filter(isLinksDefinition);
-		this.connectionsStore.linkBox = links[0];
-		this.connectionsStore.setLinks(links);
+			this.boxes = result.resources.filter(isBoxEntity);
 
-		this.dictionaryList = result.resources.filter(isDictionaryEntity);
+			const links = result.resources.filter(isLinksDefinition);
 
-		const dictionaryLinksEntity = result.resources.filter(isDictionaryLinksEntity);
-		if (dictionaryLinksEntity.length > 0) {
-			this.setDictionaryLinks(dictionaryLinksEntity[0]);
+			this.connectionsStore.setLinks(links);
+
+			if (links.length > 0) {
+				this.connectionsStore.linkBox = links[0];
+			}
+
+			this.dictionaryList = result.resources.filter(isDictionaryEntity);
+
+			const dictionaryLinksEntity = result.resources.filter(isDictionaryLinksEntity);
+
+			if (dictionaryLinksEntity.length > 0) {
+				this.setDictionaryLinks(dictionaryLinksEntity[0]);
+			}
+
+			const schemaSettings = result.resources.filter(isSettingsEntity);
+
+			if (schemaSettings.length > 0) {
+				this.schemaSettings = schemaSettings[0];
+			}
+		} catch (error) {
+			if (error.name !== 'AbortError') {
+				console.error(`Error occured while fetching schema ${schemaName}`);
+				console.error(error);
+			}
+		} finally {
+			this.isLoading = false;
 		}
-
-		const schemaSettings = result.resources.filter(isSettingsEntity)[0];
-
-		if (schemaSettings) {
-			this.schemaSettings = schemaSettings;
-		}
-
-		this.isLoading = false;
 	}
 
 	@action
-	public setSelectedSchema(schema: string) {
+	public setSelectedSchema = (schema: string) => {
 		this.selectedSchema = schema;
-	}
+	};
 
 	@action
 	public saveChanges = async () => {
@@ -278,9 +323,16 @@ export default class SchemasStore {
 
 	@action
 	public createSchema = async (schemaName: string) => {
-		await this.api.createSchema(schemaName);
-		this.schemas.push(schemaName);
-		this.selectedSchema = schemaName;
+		try {
+			await this.api.createSchema(schemaName);
+			this.schemas.push(schemaName);
+			this.selectedSchema = schemaName;
+		} catch (error) {
+			if (error.name !== 'AbortError') {
+				console.error(`Error occured while creating schema ${schemaName}`);
+				console.error(error);
+			}
+		}
 	};
 
 	@action
@@ -296,7 +348,7 @@ export default class SchemasStore {
 
 		if (!removableBox) return;
 
-		const changes = new Array<Change>();
+		const changes: Array<Change> = [];
 
 		if (removableBox.spec.pins) {
 			removableBox.spec.pins.forEach(pin =>
@@ -332,17 +384,17 @@ export default class SchemasStore {
 
 	@action
 	public saveEntityChanges = (
-		updatedBox: BoxEntity | LinksDefinition | DictionaryLinksEntity | DictionaryEntity,
+		entity: BoxEntity | LinksDefinition | DictionaryLinksEntity | DictionaryEntity,
 		operation: 'add' | 'update' | 'remove',
 	) => {
 		if (
 			!this.preparedRequests.some(
-				request => request.payload === updatedBox && request.operation === operation,
+				request => request.payload === entity && request.operation === operation,
 			)
 		) {
 			this.preparedRequests.push({
 				operation,
-				payload: updatedBox,
+				payload: entity,
 			});
 		}
 	};
@@ -355,10 +407,8 @@ export default class SchemasStore {
 			createSnapshot?: boolean;
 		},
 	) => {
-		const oldValue = JSON.parse(
-			JSON.stringify(this.boxes.find(box => box.name === updatedBox.name)),
-		);
-		const newValue = JSON.parse(JSON.stringify(updatedBox));
+		const oldValue = toJS(this.boxes.find(box => box.name === updatedBox.name)) || null;
+		const newValue = toJS(updatedBox);
 		this.boxes = [...this.boxes.filter(box => box.name !== updatedBox.name), updatedBox];
 
 		let changeList: Change[] = [];
@@ -369,7 +419,7 @@ export default class SchemasStore {
 
 		if (options?.createSnapshot !== false) {
 			this.saveEntityChanges(updatedBox, 'update');
-			if (Object.entries(diff(oldValue, newValue)).length !== 0) {
+			if (Object.entries(diff(oldValue || {}, newValue)).length !== 0) {
 				changeList.unshift({
 					object: updatedBox.name,
 					from: oldValue,
@@ -537,16 +587,9 @@ export default class SchemasStore {
 
 	public getBoxBorderColor = (boxName: string) => {
 		const boxType = this.boxes.find(box => box.name === boxName)?.spec.type;
-
-		if (boxType) {
-			const findedGroup = this.groups.find(group => group.types.includes(boxType));
-
-			if (findedGroup) {
-				return findedGroup.color;
-			}
-			return '#C066CC';
-		}
-		return 'red';
+		if (!boxType) return 'red';
+		const targetGroup = this.groups.find(group => group.types.includes(boxType));
+		return targetGroup ? targetGroup.color : '#C066CC';
 	};
 
 	@action
@@ -556,7 +599,7 @@ export default class SchemasStore {
 		this.connectionsStore.connections = [];
 		this.activeBox = null;
 		this.activePin = null;
-		this.isLoading = true;
+
 		if (selectedSchema) {
 			this.fetchSchemaState(selectedSchema);
 			this.subscriptionStore?.closeConnection();

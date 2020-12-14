@@ -31,6 +31,7 @@
 	&__list {
 		display: grid;
 		grid-auto-flow: column;
+		grid-auto-columns: 252px;
 		grid-column-gap: 60px;
 		width: 100%;
 		height: 100%;
