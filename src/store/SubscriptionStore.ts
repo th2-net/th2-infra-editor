@@ -16,7 +16,6 @@
 
 import { action, observable, reaction } from 'mobx';
 import ApiSchema from '../api/ApiSchema';
-import { rightJoin } from '../helpers/array';
 import { isBoxEntity } from '../models/Box';
 import { isDictionaryEntity, isDictionaryLinksEntity } from '../models/Dictionary';
 import { isLinksDefinition } from '../models/LinksDefinition';
@@ -37,17 +36,14 @@ export default class SubscriptionStore {
 		private connectionsStore: ConnectionsStore,
 		schemaName: string,
 	) {
-		if (
-			schemasStore.schemaSettings &&
-			['sync', 'rule'].includes(schemasStore.schemaSettings.spec['k8s-propagation'])
-		) {
-			this.init(schemaName);
-		}
-
 		reaction(
-			() => schemasStore.schemaSettings?.spec['k8s-propagation'],
-			propagation =>
-				propagation && ['sync', 'rule'].includes(propagation) && this.init(schemaName),
+			() => schemasStore.schemaSettings,
+			schemaSettings => {
+				const propagation = schemaSettings?.spec['k8s-propagation'];
+				if (propagation && ['sync', 'rule'].includes(propagation)) {
+					this.init(schemaName);
+				}
+			},
 		);
 	}
 
@@ -75,9 +71,8 @@ export default class SubscriptionStore {
 
 	private fetchChanges = async () => {
 		if (!this.schemasStore.selectedSchema) return;
-		if (this.schemaAbortController) {
-			this.schemaAbortController.abort();
-		}
+
+		this.schemaAbortController?.abort();
 		this.schemaAbortController = new AbortController();
 
 		try {
@@ -88,37 +83,40 @@ export default class SubscriptionStore {
 
 			const boxes = result.resources.filter(isBoxEntity);
 
-			const addedBoxes = rightJoin(
-				this.schemasStore.boxes.map(box => box.name),
-				boxes.map(box => box.name),
-			)
-				.map(boxName => boxes.find(box => box.name === boxName))
+			const addedBoxes = boxes.filter(
+				updatedBox =>
+					this.schemasStore.boxes.findIndex(box => box.name === updatedBox.name) === -1,
+			);
+
+			const unsavedBoxes = this.schemasStore.preparedRequests
+				.filter(request => isBoxEntity(request.payload) && request.operation === 'add')
+				.map(request => request.payload)
 				.filter(isBoxEntity);
 
-			const deletedBoxes = rightJoin(
-				boxes.map(box => box.name),
-				this.schemasStore.boxes.map(box => box.name),
-			)
-				.map(boxName => this.schemasStore.boxes.find(box => box.name === boxName))
-				.filter(isBoxEntity)
+			const deletedBoxes = this.schemasStore.boxes
 				.filter(
-					box =>
-						this.schemasStore.preparedRequests.findIndex(
-							req =>
-								isBoxEntity(req.payload) &&
-								req.operation === 'add' &&
-								req.payload.name === box.name,
+					currentBox => boxes.findIndex(newBox => newBox.name === currentBox.name) === -1,
+				)
+				.filter(
+					deletedBox =>
+						unsavedBoxes.findIndex(
+							unsavedBox => unsavedBox.name === deletedBox.name,
 						) === -1,
 				);
 
-			const changedBoxes = boxes.filter(
-				box =>
-					!this.schemasStore.boxes.find(
-						changedBox =>
-							changedBox.name === box.name &&
-							changedBox.sourceHash === box.sourceHash,
-					),
-			);
+			const changedBoxes = boxes
+				.filter(
+					box =>
+						unsavedBoxes.findIndex(unsavedBox => unsavedBox.name === box.name) === -1,
+				)
+				.filter(
+					box =>
+						!this.schemasStore.boxes.find(
+							changedBox =>
+								changedBox.name === box.name &&
+								changedBox.sourceHash === box.sourceHash,
+						),
+				);
 
 			addedBoxes.forEach(box => this.schemasStore.addBox(box));
 			deletedBoxes.forEach(box => this.schemasStore.deleteBox(box.name, false));

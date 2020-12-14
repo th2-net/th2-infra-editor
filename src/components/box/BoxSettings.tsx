@@ -52,9 +52,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 	const [isAddDictionaryFormOpen, setIsAddDictionaryFormOpen] = React.useState(false);
 
 	React.useEffect(() => {
-		if (!isEqual(editableBox, box)) {
-			setIsUpdated(true);
-		}
+		setIsUpdated(!isEqual(editableBox, box));
 	}, [box]);
 
 	const relatedDictionary = React.useMemo(
