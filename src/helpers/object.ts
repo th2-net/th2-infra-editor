@@ -19,10 +19,14 @@ export function isEqual(obj1: Record<string, any>, obj2: Record<string, any>): b
 	return Object.entries(obj1).every(([key, value1]) => {
 		const value2 = obj2[key];
 
-		if (typeof value1 === 'object' && typeof value2 === 'object') {
+		if (value1 && value2 && typeof value1 === 'object' && typeof value2 === 'object') {
 			return isEqual(value1, value2);
 		}
 
 		return value1 === value2;
 	});
+}
+
+export function copyObject<T>(obj: T): T {
+	return JSON.parse(JSON.stringify(obj));
 }

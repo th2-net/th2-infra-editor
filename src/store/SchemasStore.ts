@@ -14,11 +14,11 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { action, computed, observable, reaction, toJS } from 'mobx';
+import { action, observable, reaction, computed } from 'mobx';
 import { diff } from 'deep-object-diff';
 import ApiSchema from '../api/ApiSchema';
 import { rightJoin, sortByKey } from '../helpers/array';
-import { isEqual } from '../helpers/object';
+import { copyObject, isEqual } from '../helpers/object';
 import { BoxEntity, isBoxEntity, Pin } from '../models/Box';
 import {
 	DictionaryEntity,
@@ -208,7 +208,7 @@ export default class SchemasStore {
 					{
 						object: dictionary.name,
 						from: null,
-						to: toJS(dictionary),
+						to: copyObject(dictionary),
 					},
 				],
 			});
@@ -217,12 +217,8 @@ export default class SchemasStore {
 
 	@action
 	public deleteDictionary = (dictionaryName: string, createSnapshot = true) => {
-		const oldValue = toJS(
-			this.dictionaryList.find(dictionary => dictionary.name === dictionaryName),
-		);
-		this.dictionaryList = this.dictionaryList.filter(
-			dictionary => dictionary.name !== dictionaryName,
-		);
+		const oldValue = copyObject(this.dictionaryList.find(d => d.name === dictionaryName));
+		this.dictionaryList = this.dictionaryList.filter(d => d.name !== dictionaryName);
 
 		if (createSnapshot && oldValue) {
 			this.saveEntityChanges(oldValue, 'remove');
@@ -258,9 +254,7 @@ export default class SchemasStore {
 	@action
 	public async fetchSchemaState(schemaName: string) {
 		this.isLoading = true;
-		if (this.schemaAbortController) {
-			this.schemaAbortController.abort();
-		}
+		this.schemaAbortController?.abort();
 		this.schemaAbortController = new AbortController();
 
 		try {
@@ -272,23 +266,18 @@ export default class SchemasStore {
 			this.boxes = result.resources.filter(isBoxEntity);
 
 			const links = result.resources.filter(isLinksDefinition);
-
-			this.connectionsStore.setLinks(links);
-
 			if (links.length > 0) {
 				this.connectionsStore.linkBox = links[0];
 			}
+			this.connectionsStore.setLinks(links);
 
 			this.dictionaryList = result.resources.filter(isDictionaryEntity);
-
 			const dictionaryLinksEntity = result.resources.filter(isDictionaryLinksEntity);
-
 			if (dictionaryLinksEntity.length > 0) {
 				this.setDictionaryLinks(dictionaryLinksEntity[0]);
 			}
 
 			const schemaSettings = result.resources.filter(isSettingsEntity);
-
 			if (schemaSettings.length > 0) {
 				this.schemaSettings = schemaSettings[0];
 			}
@@ -389,13 +378,20 @@ export default class SchemasStore {
 	) => {
 		if (
 			!this.preparedRequests.some(
-				request => request.payload === entity && request.operation === operation,
+				request =>
+					request.payload.name === entity.name &&
+					request.operation === operation &&
+					!hasChanges(request.payload, entity),
 			)
 		) {
 			this.preparedRequests.push({
 				operation,
 				payload: entity,
 			});
+		}
+
+		function hasChanges<T extends object>(obj1: T, obj2: T) {
+			return Object.keys(diff(obj1, obj2)).length > 0;
 		}
 	};
 
@@ -407,8 +403,8 @@ export default class SchemasStore {
 			createSnapshot?: boolean;
 		},
 	) => {
-		const oldValue = toJS(this.boxes.find(box => box.name === updatedBox.name)) || null;
-		const newValue = toJS(updatedBox);
+		const oldValue = copyObject(this.boxes.find(box => box.name === updatedBox.name)) || null;
+		const newValue = copyObject(updatedBox);
 		this.boxes = [...this.boxes.filter(box => box.name !== updatedBox.name), updatedBox];
 
 		let changeList: Change[] = [];
@@ -489,9 +485,9 @@ export default class SchemasStore {
 
 	@action
 	public configuratePin = (pin: Pin, boxName: string) => {
-		const targetBox = this.boxes.find(box => box.name === boxName);
+		const targetBox = this.boxes.find(box => box.name === boxName) || null;
 		if (targetBox && targetBox.spec.pins) {
-			const oldValue = toJS(targetBox);
+			const oldValue = copyObject(targetBox);
 			const pinIndex = targetBox.spec.pins.findIndex(boxPin => boxPin.name === pin.name);
 
 			if (pinIndex >= 0) {
@@ -501,7 +497,7 @@ export default class SchemasStore {
 					...targetBox.spec.pins.slice(pinIndex + 1, targetBox.spec.pins.length),
 				];
 				this.saveEntityChanges(targetBox, 'update');
-				const newValue = toJS(targetBox);
+				const newValue = copyObject(targetBox);
 				this.historyStore.addSnapshot({
 					object: boxName,
 					type: 'box',
