@@ -51,10 +51,7 @@ export default class ConnectionsStore {
 	public outlinerSelectedLink: string | null = null;
 
 	@observable
-	public links: Array<Link> = [];
-
-	@observable
-	public linkBox: LinksDefinition | null = null;
+	public linkBoxes: LinksDefinition[] | null = null;
 
 	@observable
 	public connections: Array<Connection> = [];
@@ -85,9 +82,10 @@ export default class ConnectionsStore {
 		this.connectionPinStart = pin;
 	};
 
-	@action
-	public setLinks = (links: LinksDefinition[]) => {
-		this.links = links.flatMap(link => {
+	@computed
+	public get links(): Link[] {
+		if (this.linkBoxes === null) return [];
+		return this.linkBoxes.flatMap(link => {
 			if (link.spec['boxes-relation']) {
 				return [
 					...convertLinks(link.spec['boxes-relation']['router-mq'] || [], 'mq'),
@@ -96,7 +94,7 @@ export default class ConnectionsStore {
 			}
 			return [];
 		});
-	};
+	}
 
 	@computed
 	public get connectionChain(): BoxEntity[] {
@@ -207,7 +205,7 @@ export default class ConnectionsStore {
 			!this.schemasStore.selectedSchema ||
 			!(this.schemasStore.activeBox || (options && options.fromBox)) ||
 			!(this.schemasStore.activePin || (options && options.fromPin)) ||
-			!this.linkBox
+			!this.linkBoxes
 		)
 			return;
 
@@ -241,15 +239,22 @@ export default class ConnectionsStore {
 				pin: pinName,
 			},
 		};
-		if (this.linkBox.spec['boxes-relation']) {
-			this.linkBox.spec['boxes-relation'][
-				`router-${connectionType}` as 'router-mq' | 'router-grpc'
-			].push(newConnection);
-		}
+
+		const editorGeneratedLinksBox = {
+			kind: 'Th2Link',
+			name: 'editor-generated-links',
+			spec: {
+				'boxes-relation': {
+					'router-grpc': connectionType === 'grpc' ? [newConnection] : [],
+					'router-mq': connectionType === 'mq' ? [newConnection] : [],
+				},
+			},
+		} as LinksDefinition;
+
 		this.schemasStore.activeBox = null;
 		this.schemasStore.activePin = null;
 		if ((options && options.createSnapshot) || !options) {
-			this.schemasStore.saveEntityChanges(this.linkBox, 'update');
+			this.schemasStore.saveEntityChanges(editorGeneratedLinksBox, 'update');
 			this.historyStore.addSnapshot({
 				object: linkName,
 				type: 'link',
@@ -271,7 +276,7 @@ export default class ConnectionsStore {
 		boxName: string,
 		createSnapshot = true,
 	): Change[] => {
-		if (!this.linkBox) return [];
+		if (!this.linkBoxes) return [];
 
 		const changes = new Array<Change>();
 
@@ -279,8 +284,8 @@ export default class ConnectionsStore {
 			this.links
 				.filter(
 					link =>
-						(link.from.box === boxName && link.from.pin === pin.name) ||
-						(link.to.box === boxName && link.to.pin === pin.name),
+						(link.from.box === boxName || link.from.pin === pin.name) &&
+						(link.to.box === boxName || link.to.pin === pin.name),
 				)
 				.forEach(link => {
 					changes.push({
@@ -291,49 +296,49 @@ export default class ConnectionsStore {
 				});
 		}
 
-		this.links = [
-			...this.links.filter(
-				link =>
-					(link.from.box !== boxName && link.from.pin !== pin.name) ||
-					(link.to.box !== boxName && link.to.pin !== pin.name),
-			),
-		];
-
-		if (this.linkBox?.spec['boxes-relation']) {
-			this.linkBox.spec['boxes-relation'][
-				`router-${pin['connection-type']}` as 'router-mq' | 'router-grpc'
-			] = [
-				...this.linkBox.spec['boxes-relation'][
-					`router-${pin['connection-type']}` as 'router-mq' | 'router-grpc'
-				].filter(link => link.from.pin !== pin.name && link.from.box !== boxName),
-			];
+		if (this.linkBoxes) {
+			this.linkBoxes = this.linkBoxes.map(_linkBox => {
+				const linkBox = _linkBox;
+				if (
+					linkBox.spec['boxes-relation'] &&
+					linkBox.spec['boxes-relation'][
+						`router-${pin['connection-type']}` as 'router-mq' | 'router-grpc'
+					]
+				) {
+					linkBox.spec['boxes-relation'][
+						`router-${pin['connection-type']}` as 'router-mq' | 'router-grpc'
+					] = linkBox.spec['boxes-relation'][
+						`router-${pin['connection-type']}` as 'router-mq' | 'router-grpc'
+					].filter(link => {
+						return (
+							(link.from.pin !== pin.name || link.from.box !== boxName) &&
+							(link.to.pin !== pin.name || link.to.box !== boxName)
+						);
+					});
+				}
+				return linkBox;
+			});
 		}
 		return changes;
 	};
 
 	@action
 	public deleteLink = async (removableLink: Link, createSnapshot = true) => {
-		if (this.schemasStore.selectedSchema && this.linkBox) {
-			this.links = [
-				...this.links.filter(
-					link =>
-						link.from.box !== removableLink.from.box ||
-						link.to.box !== removableLink.to.box ||
-						link.from.pin !== removableLink.from.pin ||
-						link.to.pin !== removableLink.to.pin,
-				),
-			];
-			if (this.linkBox?.spec['boxes-relation']) {
-				const linkIndex = this.linkBox.spec['boxes-relation'][
+		if (this.schemasStore.selectedSchema && this.linkBoxes) {
+			const changedLinkBox = this.defineChangedLinkBox(removableLink);
+			if (!changedLinkBox) return;
+
+			if (changedLinkBox.spec['boxes-relation']) {
+				const linkIndex = changedLinkBox.spec['boxes-relation'][
 					`router-${removableLink.from.connectionType}` as 'router-mq' | 'router-grpc'
 				].findIndex(link => link.name === removableLink.name);
-				this.linkBox.spec['boxes-relation'][
+				changedLinkBox.spec['boxes-relation'][
 					`router-${removableLink.from.connectionType}` as 'router-mq' | 'router-grpc'
 				].splice(linkIndex, 1);
 			}
 
 			if (createSnapshot) {
-				this.schemasStore.saveEntityChanges(this.linkBox, 'update');
+				this.schemasStore.saveEntityChanges(changedLinkBox, 'update');
 				this.historyStore.addSnapshot({
 					object: removableLink.name,
 					type: 'link',
@@ -352,7 +357,7 @@ export default class ConnectionsStore {
 
 	@action
 	public changeLink = (newLink: Link, oldLink?: Link, createSnapshot = true) => {
-		if (!(this.draggableLink || oldLink) || !this.linkBox) return;
+		if (!(this.draggableLink || oldLink) || !this.linkBoxes) return;
 
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		this.deleteLink(oldLink || this.draggableLink!, false);
@@ -365,8 +370,10 @@ export default class ConnectionsStore {
 		const oldValue = copyObject(oldLink || this.draggableLink || null);
 		const newValue = copyObject(newLink);
 
-		if (createSnapshot && oldValue) {
-			this.schemasStore.saveEntityChanges(this.linkBox, 'update');
+		const changeLinkBox = this.defineChangedLinkBox(newLink);
+
+		if (createSnapshot && oldValue && changeLinkBox) {
+			this.schemasStore.saveEntityChanges(changeLinkBox, 'update');
 			this.historyStore.addSnapshot({
 				object: oldValue.name,
 				type: 'link',
@@ -400,5 +407,15 @@ export default class ConnectionsStore {
 			defaultName += `-${linkNumber + 1}`;
 		}
 		return defaultName;
+	};
+
+	private defineChangedLinkBox = (targetLink: Link) => {
+		return this.linkBoxes?.find(linkBox => {
+			const links =
+				linkBox.spec['boxes-relation']?.[
+					`router-${targetLink.from.connectionType}` as 'router-mq' | 'router-grpc'
+				];
+			return links?.some(link => link.name === targetLink.name);
+		});
 	};
 }

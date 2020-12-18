@@ -43,6 +43,7 @@ interface BoxPinProps {
 	togglePin: (isOpen: boolean) => void;
 	isConnectable: boolean;
 	boxName: string;
+	initBoxConnections: () => void;
 	groupsTopOffset?: number;
 	titleHeight?: number;
 }
@@ -56,6 +57,7 @@ const BoxPin = (
 		togglePin,
 		isConnectable,
 		boxName,
+		initBoxConnections,
 		groupsTopOffset,
 		titleHeight,
 	}: BoxPinProps,
@@ -147,13 +149,13 @@ const BoxPin = (
 		const connectablePin = connectableBox.spec.pins.find(
 			boxPin => boxPin.name === link.from.pin,
 		);
-
 		if (!connectablePin) return;
 
 		connectionsStore.setConnectionStart(connectableBox, connectablePin);
-
 		document.onmousemove = (e: MouseEvent) => {
-			connectionsStore.setDraggableLink(link);
+			if (!connectionsStore.draggableLink) {
+				connectionsStore.setDraggableLink(link);
+			}
 			connectionsStore.addConnection([
 				{
 					name: link.name,
@@ -174,6 +176,11 @@ const BoxPin = (
 					},
 				},
 			]);
+		};
+		document.onmouseup = () => {
+			document.onmousemove = null;
+			connectionsStore.setDraggableLink(null);
+			initBoxConnections();
 		};
 	};
 
@@ -245,6 +252,7 @@ const BoxPin = (
 				)
 			) {
 				schemasStore.deletePinConnections(pin, boxName);
+				togglePin(false);
 			}
 		}
 	};
