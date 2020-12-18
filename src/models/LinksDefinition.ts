@@ -56,7 +56,9 @@ export interface Link {
 }
 
 export function isLinksDefinition(file: FileBase): file is LinksDefinition {
-	return file.kind === 'Th2Link';
+	return (
+		file.kind === 'Th2Link' && (file as LinksDefinition).spec['boxes-relation'] !== undefined
+	);
 }
 
 export function isLink(object: unknown): object is Link {

@@ -37,7 +37,7 @@ module.exports = webpackMerge(commonConfig, {
 		historyApiFallback: true,
 		proxy: {
 			'/backend': {
-				target: 'http://th2-schema-test:30000/editor/',
+				target: 'http://th2-qa:30000/editor/',
 				changeOrigin: true,
 				secure: false,
 			},

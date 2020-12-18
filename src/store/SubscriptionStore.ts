@@ -126,10 +126,21 @@ export default class SubscriptionStore {
 				}),
 			);
 
-			const links = result.resources.filter(isLinksDefinition);
-			if (links[0] && links[0].sourceHash !== this.connectionsStore.linkBox?.sourceHash) {
-				this.connectionsStore.linkBox = links[0];
-				this.connectionsStore.setLinks(links);
+			const linkBoxes = result.resources.filter(isLinksDefinition);
+			if (linkBoxes) {
+				linkBoxes.forEach(linkBox => {
+					const linkBoxIndex = this.connectionsStore.linkBoxes?.findIndex(
+						lb => lb.name === linkBox.name,
+					);
+					if (
+						linkBoxIndex &&
+						this.connectionsStore.linkBoxes &&
+						linkBox.sourceHash !==
+							this.connectionsStore.linkBoxes[linkBoxIndex].sourceHash
+					) {
+						this.connectionsStore.linkBoxes[linkBoxIndex] = linkBox;
+					}
+				});
 			}
 
 			const dictionaryList = result.resources.filter(isDictionaryEntity);

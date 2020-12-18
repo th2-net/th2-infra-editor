@@ -265,11 +265,7 @@ export default class SchemasStore {
 
 			this.boxes = result.resources.filter(isBoxEntity);
 
-			const links = result.resources.filter(isLinksDefinition);
-			if (links.length > 0) {
-				this.connectionsStore.linkBox = links[0];
-			}
-			this.connectionsStore.setLinks(links);
+			this.connectionsStore.linkBoxes = result.resources.filter(isLinksDefinition);
 
 			this.dictionaryList = result.resources.filter(isDictionaryEntity);
 			const dictionaryLinksEntity = result.resources.filter(isDictionaryLinksEntity);
@@ -568,7 +564,27 @@ export default class SchemasStore {
 
 	@action
 	public deletePinConnections = async (pin: Pin, boxName: string) => {
-		if (this.selectedSchema && this.connectionsStore.linkBox) {
+		if (this.selectedSchema && this.connectionsStore.linkBoxes) {
+			this.connectionsStore.linkBoxes.forEach(linkBox => {
+				if (
+					['router-grpc', 'router-mq'].some(connectionType => {
+						return (
+							linkBox.spec['boxes-relation']?.[
+								connectionType as 'router-grpc' | 'router-mq'
+							] &&
+							linkBox.spec['boxes-relation']?.[
+								connectionType as 'router-grpc' | 'router-mq'
+							].some(
+								link =>
+									(link.from.box === boxName && link.from.pin === pin.name) ||
+									(link.to.box === boxName && link.to.pin === pin.name),
+							)
+						);
+					})
+				) {
+					this.saveEntityChanges(linkBox, 'update');
+				}
+			});
 			const changes = this.connectionsStore.removeConnectionsFromLinkBox(pin, boxName);
 			this.historyStore.addSnapshot({
 				object: pin.name,
@@ -576,8 +592,6 @@ export default class SchemasStore {
 				operation: 'remove',
 				changeList: changes,
 			});
-
-			this.saveEntityChanges(this.connectionsStore.linkBox, 'update');
 		}
 	};
 

@@ -32,7 +32,7 @@ const Groups = () => {
 		<div className='groups__wrapper'>
 			<div ref={groupsRef} className='groups'>
 				<div className='groups__list'>
-					{schemasStore.groups.map(({ types, ...group }) => {
+					{schemasStore.groups.map(({ ...group }) => {
 						return (
 							<Group
 								key={group.title}

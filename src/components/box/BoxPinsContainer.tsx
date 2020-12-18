@@ -344,6 +344,7 @@ const BoxPinsContainer = (
 								  schemasStore.activePin?.['connection-type']
 								: false
 						}
+						initBoxConnections={initBoxConnections}
 						boxName={boxName}
 						groupsTopOffset={groupsTopOffset}
 						titleHeight={titleHeight}
