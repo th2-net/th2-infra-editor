@@ -297,6 +297,12 @@ const BoxPin = (
 					...rightPinLinks.out,
 				].map((link, index) => {
 					const linkSide = index < leftPinLinksAmount ? 'left' : 'right';
+					const pinDotClass = createBemElement(
+						'box',
+						'pin-dot',
+						openedConnection === link.name ? 'open' : null,
+						linkSide,
+					);
 
 					return (
 						<div
@@ -321,9 +327,7 @@ const BoxPin = (
 								e.stopPropagation();
 								dragLink(link, pin);
 							}}
-							className={`box__pin-dot ${
-								openedConnection === link.name ? 'open' : null
-							} ${linkSide}`}>
+							className={pinDotClass}>
 							<button
 								onClick={() => deleteLink(link)}
 								className='box__pin-dot-delete-btn'
