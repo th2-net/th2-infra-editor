@@ -61,6 +61,10 @@ const PinConfigurator = ({
 
 	const editorRef = React.useRef<HTMLDivElement>(null);
 
+	// React.useEffect(() => {
+	// 	console.log(isAttributeFormOpen);
+	// }, [isAttributeFormOpen]);
+
 	useOutsideClickListener(editorRef, (e: MouseEvent) => {
 		if (
 			!e
@@ -199,6 +203,7 @@ const PinConfigurator = ({
 						setAttributes(changedAttributesList)
 					}
 					isFormOpen={isAttributeFormOpen}
+					toggleAddForm={setIsAttributeFormOpen}
 				/>
 			)}
 			{currentSection === 'filters' && (
@@ -210,6 +215,7 @@ const PinConfigurator = ({
 					}
 					changeFiltersList={changedFiltersList => setFilters(changedFiltersList)}
 					isFormOpen={isFilterFormOpen}
+					toggleAddForm={setIsFilterFormOpen}
 				/>
 			)}
 			<div className='modal__buttons'>

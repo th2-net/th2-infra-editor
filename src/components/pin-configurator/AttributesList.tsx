@@ -25,6 +25,7 @@ interface AttributesListProps {
 	removeAttribute: (attribute: string) => void;
 	changeAttributesList: (attributes: string[]) => void;
 	isFormOpen: boolean;
+	toggleAddForm: (isOpen: boolean) => void;
 }
 
 const AttributesList = ({
@@ -33,12 +34,11 @@ const AttributesList = ({
 	removeAttribute,
 	changeAttributesList,
 	isFormOpen,
+	toggleAddForm,
 }: AttributesListProps) => {
-	const [isAttributeFormOpen, setIsAttributeFormOpen] = React.useState(isFormOpen);
 	const [editableAttribute, setEditableAttribute] = React.useState<string | null>(null);
 
 	React.useEffect(() => {
-		setIsAttributeFormOpen(isFormOpen);
 		if (isFormOpen) {
 			setEditableAttribute(null);
 		}
@@ -63,7 +63,7 @@ const AttributesList = ({
 		} else {
 			addAttribute(attributeInput.value);
 		}
-		setIsAttributeFormOpen(false);
+		toggleAddForm(false);
 	};
 
 	return (
@@ -78,7 +78,7 @@ const AttributesList = ({
 							<button
 								onClick={() => {
 									setEditableAttribute(attribute);
-									setIsAttributeFormOpen(true);
+									toggleAddForm(true);
 								}}
 								className='modal__elements-item-button edit'>
 								<i className='modal__elements-item-button-icon' />
@@ -95,13 +95,13 @@ const AttributesList = ({
 				<div className='modal__empty'>Attributes list is empty</div>
 			)}
 			{
-				<ModalPortal isOpen={isAttributeFormOpen}>
+				<ModalPortal isOpen={isFormOpen}>
 					<FormModal
 						title={editableAttribute ?? 'Create attribute'}
 						inputConfigList={[attributeInput]}
 						onSubmit={submitForm}
 						onClose={() => {
-							setIsAttributeFormOpen(false);
+							toggleAddForm(false);
 							setEditableAttribute(null);
 						}}
 					/>
