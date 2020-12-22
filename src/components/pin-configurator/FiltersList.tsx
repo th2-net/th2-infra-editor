@@ -26,6 +26,7 @@ interface FiltersListProps {
 	removeFilter: (filter: Filter) => void;
 	changeFiltersList: (filters: Filter[]) => void;
 	isFormOpen: boolean;
+	toggleAddForm: (isOpen: boolean) => void;
 }
 
 const FiltersList = ({
@@ -34,12 +35,11 @@ const FiltersList = ({
 	removeFilter,
 	changeFiltersList,
 	isFormOpen,
+	toggleAddForm,
 }: FiltersListProps) => {
-	const [isAddFilterFormOpen, setIsFilterFormOpen] = React.useState(isFormOpen);
 	const [editableFilter, setEditableFilter] = React.useState<Filter | null>(null);
 
 	React.useEffect(() => {
-		setIsFilterFormOpen(isFormOpen);
 		if (isFormOpen) {
 			setEditableFilter(null);
 		}
@@ -118,7 +118,7 @@ const FiltersList = ({
 							<button
 								onClick={() => {
 									setEditableFilter(filter);
-									setIsFilterFormOpen(true);
+									toggleAddForm(true);
 								}}
 								className='modal__elements-item-button edit'>
 								<i className='modal__elements-item-button-icon' />
@@ -134,12 +134,12 @@ const FiltersList = ({
 			) : (
 				<div className='modal__empty'>Filters list is empty</div>
 			)}
-			<ModalPortal isOpen={isAddFilterFormOpen}>
+			<ModalPortal isOpen={isFormOpen}>
 				<FormModal
 					title={'Edit filter'}
 					inputConfigList={inputs}
 					onSubmit={submitForm}
-					onClose={() => setIsFilterFormOpen(false)}
+					onClose={() => toggleAddForm(false)}
 				/>
 			</ModalPortal>
 		</div>

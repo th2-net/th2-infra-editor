@@ -199,6 +199,7 @@ const PinConfigurator = ({
 						setAttributes(changedAttributesList)
 					}
 					isFormOpen={isAttributeFormOpen}
+					toggleAddForm={setIsAttributeFormOpen}
 				/>
 			)}
 			{currentSection === 'filters' && (
@@ -210,6 +211,7 @@ const PinConfigurator = ({
 					}
 					changeFiltersList={changedFiltersList => setFilters(changedFiltersList)}
 					isFormOpen={isFilterFormOpen}
+					toggleAddForm={setIsFilterFormOpen}
 				/>
 			)}
 			<div className='modal__buttons'>
