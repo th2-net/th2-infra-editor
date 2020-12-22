@@ -61,10 +61,6 @@ const PinConfigurator = ({
 
 	const editorRef = React.useRef<HTMLDivElement>(null);
 
-	// React.useEffect(() => {
-	// 	console.log(isAttributeFormOpen);
-	// }, [isAttributeFormOpen]);
-
 	useOutsideClickListener(editorRef, (e: MouseEvent) => {
 		if (
 			!e
