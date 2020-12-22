@@ -85,12 +85,10 @@ const BoxPinsContainer = (
 	React.useEffect(() => {
 		initBoxConnections();
 	}, [
-		pins,
 		pinsRefs,
 		expandedPin,
 		connectionsStore.links,
 		schemasStore.activeBox,
-		schemasStore.activePin,
 		schemasStore.expandedBox,
 	]);
 
@@ -106,9 +104,7 @@ const BoxPinsContainer = (
 	useImperativeHandle(
 		ref,
 		() => ({
-			updateConnections: () => {
-				initBoxConnections();
-			},
+			updateConnections: () => initBoxConnections(),
 		}),
 		[isContainerExpanded, pinsRefs],
 	);
@@ -146,14 +142,14 @@ const BoxPinsContainer = (
 	): Connection => {
 		const pinClientRect = pinRef.current?.getBoundingClientRect();
 
-		const leftPinsAmount = getPinLinksBySide(pin, 'left');
-		const rightPinsAmount = getPinLinksBySide(pin, 'right');
+		const leftPinLinks = getPinLinksBySide(pin, 'left');
+		const rightPinLinks = getPinLinksBySide(pin, 'right');
 
 		const leftTop = pinClientRect
 			? pinClientRect.top +
 			  (position
 					? (pinClientRect.height /
-							(leftPinsAmount.in.length + leftPinsAmount.out.length + 1)) *
+							(leftPinLinks.in.length + leftPinLinks.out.length + 1)) *
 					  position
 					: pinClientRect.height / 2) -
 			  (groupsTopOffset ?? 0) -
@@ -164,7 +160,7 @@ const BoxPinsContainer = (
 			? pinClientRect.top +
 			  (position
 					? (pinClientRect.height /
-							(rightPinsAmount.in.length + rightPinsAmount.out.length + 1)) *
+							(rightPinLinks.in.length + rightPinLinks.out.length + 1)) *
 					  position
 					: pinClientRect.height / 2) -
 			  (groupsTopOffset ?? 0) -
@@ -335,9 +331,7 @@ const BoxPinsContainer = (
 						setEditablePin={setEditablePin}
 						getPinLinks={getPinLinksBySide}
 						isPinExpanded={expandedPin ? expandedPin.name === pin.name : false}
-						togglePin={isOpen => {
-							setExpandedPin(isOpen ? pin : null);
-						}}
+						togglePin={isOpen => setExpandedPin(isOpen ? pin : null)}
 						isConnectable={
 							isBoxConnectable
 								? pin['connection-type'] ===
