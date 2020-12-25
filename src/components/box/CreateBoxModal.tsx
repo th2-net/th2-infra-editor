@@ -21,6 +21,8 @@ import { useInput } from '../../hooks/useInput';
 import Input from '../util/Input';
 import { createStyleSelector } from '../../helpers/styleCreators';
 import '../../styles/modal.scss';
+import { useCheckbox } from '../../hooks/useCheckbox';
+import Checkbox from '../util/Checkbox';
 
 interface CreateBoxModalProps {
 	createBox: (box: BoxEntity) => void;
@@ -68,6 +70,13 @@ const CreateBoxModal = ({ createBox, typeVariants, onClose }: CreateBoxModalProp
 		name: 'node-port',
 		validate: (value: string) =>
 			value.trim().length > 0 ? /^\d+$/.test(value) && parseInt(value) <= 65535 : true,
+	});
+
+	const serviceEnabledCheckbox = useCheckbox({
+		initialState: false,
+		id: 'Service-enabled',
+		name: 'service-enabled',
+		label: 'service-enabled',
 	});
 
 	useOutsideClickListener(modalRef, () => {
@@ -128,6 +137,7 @@ const CreateBoxModal = ({ createBox, typeVariants, onClose }: CreateBoxModalProp
 				{inputs.map(inputConfig => (
 					<Input key={inputConfig.bind.id} inputConfig={inputConfig} />
 				))}
+				<Checkbox checkboxConfig={serviceEnabledCheckbox} />
 			</div>
 			<div className='modal__buttons'>
 				<button onClick={createNewBox} className={submitButtonClassName}>

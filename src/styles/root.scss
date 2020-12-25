@@ -150,3 +150,24 @@ body {
 		@include scrollbar;
 	}
 }
+
+.checkbox {
+	outline: none;
+
+	&:checked {
+		background-color: red;
+	}
+
+	&-wrapper {
+		display: flex;
+		align-items: center;
+		gap: 7px;
+		margin-bottom: 10px;
+	}
+
+	&-label {
+		color: $secondaryTextColor;
+		font-size: 11px;
+		line-height: 14px;
+	}
+}

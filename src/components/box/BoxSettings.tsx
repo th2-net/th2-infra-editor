@@ -30,6 +30,7 @@ import { copyObject, isEqual } from '../../helpers/object';
 import { BoxEntity, Pin } from '../../models/Box';
 import { DictionaryEntity, DictionaryRelation } from '../../models/Dictionary';
 import '../../styles/modal.scss';
+import { useCheckbox } from '../../hooks/useCheckbox';
 
 interface BoxSettingsProps {
 	box: BoxEntity;
@@ -92,6 +93,13 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		name: 'node-port',
 		id: 'node-port',
 		validate: value => (value.trim().length === 0 ? true : /^\d+$/.test(value)),
+	});
+
+	const serviceEnabledCheckbox = useCheckbox({
+		initialState: editableBox.spec['extended-settings'].service.enabled,
+		id: 'service-enabled',
+		name: 'service-enabled',
+		label: 'service-enabled',
 	});
 
 	const boxConfigInput = useInput({
@@ -262,6 +270,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		copyBox.spec['image-version'] = imageVersionInput.value;
 		copyBox.spec.pins = pinsList;
 		copyBox.spec.type = editableBox.spec.type;
+		copyBox.spec['extended-settings'].service.enabled = serviceEnabledCheckbox.isChecked;
 
 		const port = nodePortInput.value ? parseInt(nodePortInput.value) : undefined;
 
@@ -333,6 +342,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 							imageVersionInputConfig={imageVersionInput}
 							nodePortInputConfig={nodePortInput}
 							boxConfigInput={boxConfigInput}
+							serviceEnabledCheckbox={serviceEnabledCheckbox}
 						/>
 					)}
 				</div>

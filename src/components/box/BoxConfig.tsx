@@ -15,7 +15,9 @@
  ***************************************************************************** */
 
 import React from 'react';
+import { CheckboxConfig } from '../../hooks/useCheckbox';
 import { InputConfig } from '../../hooks/useInput';
+import Checkbox from '../util/Checkbox';
 import Input from '../util/Input';
 import ConfigEditor from './ConfigEditor';
 
@@ -24,6 +26,7 @@ interface BoxConfigProps {
 	imageVersionInputConfig: InputConfig;
 	nodePortInputConfig: InputConfig;
 	boxConfigInput: InputConfig;
+	serviceEnabledCheckbox: CheckboxConfig;
 }
 
 const BoxConfig = ({
@@ -31,11 +34,13 @@ const BoxConfig = ({
 	imageVersionInputConfig,
 	nodePortInputConfig,
 	boxConfigInput,
+	serviceEnabledCheckbox,
 }: BoxConfigProps) => (
 	<>
 		{[imageNameInputConfig, imageVersionInputConfig, nodePortInputConfig].map(config => (
 			<Input key={config.bind.id} inputConfig={config} />
 		))}
+		<Checkbox checkboxConfig={serviceEnabledCheckbox} />
 		<ConfigEditor configInput={boxConfigInput} />
 	</>
 );
