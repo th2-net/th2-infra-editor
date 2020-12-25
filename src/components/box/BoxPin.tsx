@@ -16,6 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import React from 'react';
+import { createLink } from '../../helpers/link';
 import { openConfirmModal, openDecisionModal, openPromptModal } from '../../helpers/modal';
 import { createBemElement } from '../../helpers/styleCreators';
 import useConnectionsStore from '../../hooks/useConnectionsStore';
@@ -125,16 +126,37 @@ const BoxPin = (
 			expandPin();
 			schemasStore.setActivePin(!isPinExpanded ? pin : null);
 		} else {
-			if (!schemasStore.activeBox) return;
+			if (!schemasStore.activeBox || !schemasStore.activePin) return;
 			const defaultName = connectionsStore.generateLinkName(
 				schemasStore.activeBox.name,
 				boxName,
 			);
 
 			const linkName = await openPromptModal('Connection name', defaultName);
-			if (!linkName) return;
+			if (linkName === null) return;
+			if (connectionsStore.links.find(link => link.name === linkName)) {
+				alert(`Link ${linkName} already exists`);
+				schemasStore.setActiveBox(null);
+				schemasStore.setActivePin(null);
+				return;
+			}
 
-			connectionsStore.createLink(linkName, pin.name, pin['connection-type'], boxName);
+			const link = createLink(
+				linkName,
+				{
+					box: schemasStore.activeBox.name,
+					pin: schemasStore.activePin.name,
+					connectionType: pin['connection-type'],
+				},
+				{
+					box: boxName,
+					pin: pin.name,
+					connectionType: pin['connection-type'],
+				},
+			);
+			connectionsStore.addLink(link);
+			schemasStore.setActiveBox(null);
+			schemasStore.setActivePin(null);
 		}
 	};
 
@@ -149,13 +171,13 @@ const BoxPin = (
 		const connectablePin = connectableBox.spec.pins.find(
 			boxPin => boxPin.name === link.from.pin,
 		);
+
 		if (!connectablePin) return;
 
 		connectionsStore.setConnectionStart(connectableBox, connectablePin);
+		connectionsStore.setDraggableLink(link);
+
 		document.onmousemove = (e: MouseEvent) => {
-			if (!connectionsStore.draggableLink) {
-				connectionsStore.setDraggableLink(link);
-			}
 			connectionsStore.addConnection([
 				{
 					name: link.name,
@@ -179,68 +201,65 @@ const BoxPin = (
 		};
 		document.onmouseup = () => {
 			document.onmousemove = null;
+			document.onmouseup = null;
+			connectionsStore.setConnectionStart(null, null);
 			connectionsStore.setDraggableLink(null);
+			if (body) body.style.userSelect = 'auto';
 			initBoxConnections();
 		};
 	};
 
-	const dropLink = async () => {
-		if (!connectionsStore.draggableLink) return;
-
-		document.onmousemove = null;
-		const body = document.querySelector('body');
-		if (body) body.style.userSelect = 'auto';
+	const dropLink = () => {
+		if (!connectionsStore.draggableLink || boxName === schemasStore.activeBox?.name) return;
 
 		connectionsStore.setConnectionStart(schemasStore.activeBox, schemasStore.activePin);
 
 		const draggableLink = connectionsStore.draggableLink;
 
-		if (draggableLink) {
-			const changedSide: 'from' | 'to' =
-				schemasStore.activeBox?.name === draggableLink.from.box &&
-				schemasStore.activePin?.name === draggableLink.from.pin
-					? 'from'
-					: 'to';
+		const changedSide: 'from' | 'to' =
+			schemasStore.activeBox?.name === draggableLink.from.box &&
+			schemasStore.activePin?.name === draggableLink.from.pin
+				? 'from'
+				: 'to';
 
-			const newName = await connectionsStore.generateLinkName(
-				changedSide === 'from' ? boxName : draggableLink.from.box,
-				changedSide === 'to' ? boxName : draggableLink.to.box,
-			);
+		const newName = connectionsStore.generateLinkName(
+			changedSide === 'from' ? boxName : draggableLink.from.box,
+			changedSide === 'to' ? boxName : draggableLink.to.box,
+		);
 
-			const changeLink = (linkName: string, oldLink?: Link): Link => {
-				const link = {
-					name: linkName,
-					from: {
-						box: changedSide === 'from' ? boxName : draggableLink.from.box,
-						pin: changedSide === 'from' ? pin.name : draggableLink.from.pin,
-						connectionType: draggableLink.from.connectionType,
-					},
-					to: {
-						box: changedSide === 'to' ? boxName : draggableLink.to.box,
-						pin: changedSide === 'to' ? pin.name : draggableLink.to.pin,
-						connectionType: draggableLink.from.connectionType,
-					},
-				};
-				connectionsStore.changeLink(link, oldLink);
-				return link;
+		const changeLink = (linkName: string, oldLink: Link): Link => {
+			const link = {
+				name: linkName,
+				from: {
+					box: changedSide === 'from' ? boxName : draggableLink.from.box,
+					pin: changedSide === 'from' ? pin.name : draggableLink.from.pin,
+					connectionType: draggableLink.from.connectionType,
+				},
+				to: {
+					box: changedSide === 'to' ? boxName : draggableLink.to.box,
+					pin: changedSide === 'to' ? pin.name : draggableLink.to.pin,
+					connectionType: draggableLink.from.connectionType,
+				},
 			};
+			connectionsStore.changeLink(link, oldLink);
+			return link;
+		};
 
-			const newLink = changeLink(newName);
+		const newLink = changeLink(newName, draggableLink);
 
-			openDecisionModal(`Link has been renamed to ${newName}`, {
-				variants: [
-					{
-						title: 'Rename',
-						func: async () => {
-							const name = await openPromptModal('Link name', newName);
-							if (!name) return;
+		openDecisionModal(`Link has been renamed to ${newName}`, {
+			variants: [
+				{
+					title: 'Rename',
+					func: async () => {
+						const name = await openPromptModal('Link name', newName);
+						if (!name) return;
 
-							changeLink(name, newLink);
-						},
+						changeLink(name, newLink);
 					},
-				],
-			});
-		}
+				},
+			],
+		});
 	};
 
 	const deleteAllRelatedLinks = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
