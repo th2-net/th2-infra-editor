@@ -96,6 +96,9 @@ const FiltersList = ({
 				],
 			});
 		}
+		fieldNameInput.reset();
+		expectedValueInput.reset();
+		operationInput.reset();
 	};
 
 	return (
