@@ -34,3 +34,23 @@ export function convertLinks(
 		},
 	}));
 }
+
+export function createLink(
+	name: string,
+	from: {
+		box: string;
+		pin: string;
+		connectionType: 'mq' | 'grpc';
+	},
+	to: {
+		box: string;
+		pin: string;
+		connectionType: 'mq' | 'grpc';
+	},
+): Link {
+	return {
+		name,
+		from,
+		to,
+	};
+}

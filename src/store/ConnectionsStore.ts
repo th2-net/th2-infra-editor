@@ -190,85 +190,47 @@ export default class ConnectionsStore {
 	}
 
 	@action
-	public createLink = async (
-		linkName: string,
-		pinName: string,
-		connectionType: 'mq' | 'grpc',
-		boxName: string,
-		options?: {
-			createSnapshot?: boolean;
-			fromBox?: string;
-			fromPin?: string;
-		},
-	) => {
-		if (
-			!this.schemasStore.selectedSchema ||
-			!(this.schemasStore.activeBox || (options && options.fromBox)) ||
-			!(this.schemasStore.activePin || (options && options.fromPin)) ||
-			!this.linkBoxes
-		)
-			return;
+	public addLink(link: Link, createSnapshot = true) {
+		if (!this.linkBoxes) return;
 
-		const link = {
-			name: linkName,
-			from: {
-				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				box: options?.fromBox ?? this.schemasStore.activeBox!.name,
-				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				pin: options?.fromPin ?? this.schemasStore.activePin!.name,
-				connectionType,
-			},
-			to: {
-				box: boxName,
-				pin: pinName,
-				connectionType,
-			},
-		};
-		this.links.push(link);
-
-		const newConnection = {
-			name: linkName,
-			from: {
-				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				box: options?.fromBox ?? this.schemasStore.activeBox!.name,
-				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				pin: options?.fromPin ?? this.schemasStore.activePin!.name,
-			},
-			to: {
-				box: boxName,
-				pin: pinName,
-			},
-		};
-
-		const editorGeneratedLinksBox = {
-			kind: 'Th2Link',
-			name: 'editor-generated-links',
-			spec: {
-				'boxes-relation': {
-					'router-grpc': connectionType === 'grpc' ? [newConnection] : [],
-					'router-mq': connectionType === 'mq' ? [newConnection] : [],
-				},
-			},
-		} as LinksDefinition;
-
-		this.schemasStore.activeBox = null;
-		this.schemasStore.activePin = null;
-		if ((options && options.createSnapshot) || !options) {
+		let editorGeneratedLinksBox = this.linkBoxes?.find(
+			linkBox => linkBox.name === 'editor-generated-links',
+		);
+		if (editorGeneratedLinksBox && editorGeneratedLinksBox.spec['boxes-relation']) {
+			editorGeneratedLinksBox.spec['boxes-relation'][
+				`router-${link.from.connectionType}` as 'router-mq' | 'router-grpc'
+			].push(link);
 			this.schemasStore.saveEntityChanges(editorGeneratedLinksBox, 'update');
+		} else {
+			editorGeneratedLinksBox = {
+				kind: 'Th2Link',
+				name: 'editor-generated-links',
+				spec: {
+					'boxes-relation': {
+						'router-grpc': link.from.connectionType === 'grpc' ? [link] : [],
+						'router-mq': link.from.connectionType === 'mq' ? [link] : [],
+					},
+				},
+			} as LinksDefinition;
+			this.linkBoxes.push(editorGeneratedLinksBox);
+			this.schemasStore.saveEntityChanges(editorGeneratedLinksBox, 'add');
+		}
+
+		if (createSnapshot) {
 			this.historyStore.addSnapshot({
-				object: linkName,
+				object: link.name,
 				type: 'link',
 				operation: 'add',
 				changeList: [
 					{
-						object: linkName,
+						object: link.name,
 						from: null,
 						to: link,
 					},
 				],
 			});
 		}
-	};
+	}
 
 	@action
 	public removeConnectionsFromLinkBox = (
@@ -326,6 +288,7 @@ export default class ConnectionsStore {
 	public deleteLink = async (removableLink: Link, createSnapshot = true) => {
 		if (this.schemasStore.selectedSchema && this.linkBoxes) {
 			const changedLinkBox = this.defineChangedLinkBox(removableLink);
+
 			if (!changedLinkBox) return;
 
 			if (changedLinkBox.spec['boxes-relation']) {
@@ -356,18 +319,13 @@ export default class ConnectionsStore {
 	};
 
 	@action
-	public changeLink = (newLink: Link, oldLink?: Link, createSnapshot = true) => {
-		if (!(this.draggableLink || oldLink) || !this.linkBoxes) return;
+	public changeLink = (newLink: Link, oldLink: Link, createSnapshot = true) => {
+		if (!oldLink || !this.linkBoxes) return;
 
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		this.deleteLink(oldLink || this.draggableLink!, false);
-		this.createLink(newLink.name, newLink.to.pin, newLink.from.connectionType, newLink.to.box, {
-			createSnapshot: false,
-			fromBox: newLink.from.box,
-			fromPin: newLink.from.pin,
-		});
+		this.deleteLink(oldLink, false);
+		this.addLink(newLink, false);
 
-		const oldValue = copyObject(oldLink || this.draggableLink || null);
+		const oldValue = copyObject(oldLink || null);
 		const newValue = copyObject(newLink);
 
 		const changeLinkBox = this.defineChangedLinkBox(newLink);
@@ -387,14 +345,10 @@ export default class ConnectionsStore {
 				],
 			});
 		}
-
-		this.schemasStore.activeBox = null;
-		this.schemasStore.activePin = null;
-		this.draggableLink = null;
 	};
 
 	public generateLinkName = (fromBoxName: string, toBoxName: string) => {
-		let defaultName = `${fromBoxName}-${toBoxName}`;
+		let defaultName = `${fromBoxName}-to-${toBoxName}`;
 		const linkNumber = Math.max(
 			...this.links
 				.filter(link => link.name.includes(defaultName))
