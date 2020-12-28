@@ -210,7 +210,11 @@ const BoxPin = (
 	};
 
 	const dropLink = () => {
-		if (!connectionsStore.draggableLink || boxName === schemasStore.activeBox?.name) return;
+		if (
+			!connectionsStore.draggableLink ||
+			(boxName === schemasStore.activeBox?.name && pin.name === schemasStore.activePin?.name)
+		)
+			return;
 
 		connectionsStore.setConnectionStart(schemasStore.activeBox, schemasStore.activePin);
 
