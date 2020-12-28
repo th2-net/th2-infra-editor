@@ -120,11 +120,14 @@ export default class SubscriptionStore {
 
 			addedBoxes.forEach(box => this.schemasStore.addBox(box));
 			deletedBoxes.forEach(box => this.schemasStore.deleteBox(box.name, false));
-			changedBoxes.forEach(box =>
-				this.schemasStore.configurateBox(box, {
+			changedBoxes.forEach(box => {
+				const updatedBox = this.schemasStore.boxes.find(_box => _box.name === box.name);
+				if (!updatedBox) return;
+
+				this.schemasStore.configurateBox(updatedBox, box, {
 					createSnapshot: false,
-				}),
-			);
+				});
+			});
 
 			const linkBoxes = result.resources.filter(isLinksDefinition);
 			if (linkBoxes) {
