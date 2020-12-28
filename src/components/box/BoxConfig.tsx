@@ -20,6 +20,7 @@ import Input from '../util/Input';
 import ConfigEditor from './ConfigEditor';
 
 interface BoxConfigProps {
+	boxNameInputConfig: InputConfig;
 	imageNameInputConfig: InputConfig;
 	imageVersionInputConfig: InputConfig;
 	nodePortInputConfig: InputConfig;
@@ -27,13 +28,19 @@ interface BoxConfigProps {
 }
 
 const BoxConfig = ({
+	boxNameInputConfig,
 	imageNameInputConfig,
 	imageVersionInputConfig,
 	nodePortInputConfig,
 	boxConfigInput,
 }: BoxConfigProps) => (
 	<>
-		{[imageNameInputConfig, imageVersionInputConfig, nodePortInputConfig].map(config => (
+		{[
+			boxNameInputConfig,
+			imageNameInputConfig,
+			imageVersionInputConfig,
+			nodePortInputConfig,
+		].map(config => (
 			<Input key={config.bind.id} inputConfig={config} />
 		))}
 		<ConfigEditor configInput={boxConfigInput} />
