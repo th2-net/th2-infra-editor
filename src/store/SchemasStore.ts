@@ -393,22 +393,26 @@ export default class SchemasStore {
 
 	@action
 	public configurateBox = (
+		oldBox: BoxEntity,
 		updatedBox: BoxEntity,
 		options?: {
 			dictionaryRelations?: DictionaryRelation[];
 			createSnapshot?: boolean;
 		},
 	) => {
-		const changedBox = this.boxes.find(box => box.name === updatedBox.name);
-		if (!changedBox) return;
-		const isChanged = Boolean(Object.values(diff(changedBox, updatedBox)).length);
+		const isChanged = Boolean(Object.values(diff(oldBox, updatedBox)).length);
 
 		let oldValue;
 		let newValue;
 		if (isChanged) {
-			oldValue = copyObject(this.boxes.find(box => box.name === updatedBox.name)) || null;
+			oldValue = copyObject(oldBox);
 			newValue = copyObject(updatedBox);
-			this.boxes = [...this.boxes.filter(box => box.name !== updatedBox.name), updatedBox];
+			if (oldBox.name === updatedBox.name) {
+				this.boxes = [...this.boxes.filter(box => box.name !== oldBox.name), updatedBox];
+			} else {
+				this.deleteBox(oldBox.name, false);
+				this.createBox(updatedBox, false);
+			}
 		}
 
 		let changeList: Change[] = [];
@@ -422,7 +426,12 @@ export default class SchemasStore {
 
 		if (options?.createSnapshot !== false) {
 			if (isChanged && oldValue && newValue) {
-				this.saveEntityChanges(updatedBox, 'update');
+				if (oldBox.name === updatedBox.name) {
+					this.saveEntityChanges(updatedBox, 'update');
+				} else {
+					this.saveEntityChanges(oldBox, 'remove');
+					this.saveEntityChanges(updatedBox, 'add');
+				}
 				changeList.unshift({
 					object: updatedBox.name,
 					from: oldValue,

@@ -70,6 +70,14 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		[schemasStore.dictionaryList],
 	);
 
+	const boxNameInput = useInput({
+		initialValue: editableBox.name,
+		label: 'name',
+		name: 'box-name',
+		id: 'box-name',
+		validate: name => name.trim().length > 0,
+	});
+
 	const imageNameInput = useInput({
 		initialValue: editableBox.spec['image-name'],
 		label: 'image-name',
@@ -230,7 +238,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 
 	const submit = async () => {
 		if (
-			[imageNameInput, imageVersionInput, nodePortInput, boxConfigInput].every(
+			[boxNameInput, imageNameInput, imageVersionInput, nodePortInput, boxConfigInput].every(
 				config => config.isValid,
 			)
 		) {
@@ -258,6 +266,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 
 	const saveChanges = () => {
 		const copyBox = copyObject(box);
+		copyBox.name = boxNameInput.value;
 		copyBox.spec['image-name'] = imageNameInput.value;
 		copyBox.spec['image-version'] = imageVersionInput.value;
 		copyBox.spec.pins = pinsList;
@@ -269,7 +278,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		if (boxConfigInput.isValid && boxConfigInput.value)
 			copyBox.spec['custom-config'] = JSON.parse(boxConfigInput.value);
 
-		schemasStore.configurateBox(copyBox, {
+		schemasStore.configurateBox(editableBox, copyBox, {
 			dictionaryRelations: relatedDictionaryList,
 			createSnapshot: true,
 		});
@@ -283,7 +292,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 	const submitButtonClassname = createStyleSelector(
 		'modal__button',
 		'submit',
-		[imageNameInput, imageVersionInput, nodePortInput, boxConfigInput].some(
+		[boxNameInput, imageNameInput, imageVersionInput, nodePortInput, boxConfigInput].some(
 			config => !config.isValid,
 		)
 			? 'disable'
@@ -329,6 +338,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 					</div>
 					{currentSection === 'config' && (
 						<BoxConfig
+							boxNameInputConfig={boxNameInput}
 							imageNameInputConfig={imageNameInput}
 							imageVersionInputConfig={imageVersionInput}
 							nodePortInputConfig={nodePortInput}
