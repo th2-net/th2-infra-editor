@@ -178,7 +178,7 @@ const BoxPin = (
 		connectionsStore.setDraggableLink(link);
 
 		document.onmousemove = (e: MouseEvent) => {
-			connectionsStore.addConnection([
+			connectionsStore.addConnections([
 				{
 					name: link.name,
 					connectionOwner: {
