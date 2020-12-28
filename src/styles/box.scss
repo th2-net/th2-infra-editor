@@ -114,14 +114,13 @@
 
 	&__buttons-wrapper {
 		margin-left: auto;
+		display: flex;
+		gap: 7.5px;
+		align-items: center;
 	}
 
 	&__button {
 		@include button-transparent(13px, 13px);
-
-		&:nth-child(2) {
-			margin-left: 7.5px;
-		}
 
 		&-icon {
 			display: inline-block;
@@ -137,6 +136,10 @@
 
 		&.remove &-icon {
 			@include icon(url(../../resources/icons/trash.svg), 13px, 13px);
+		}
+
+		&.copy &-icon {
+			@include icon(url(../../resources/icons/copy.svg), 13px, 13px);
 		}
 	}
 

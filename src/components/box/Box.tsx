@@ -28,7 +28,7 @@ import useSchemasStore from '../../hooks/useSchemasStore';
 import useSubscriptionStore from '../../hooks/useSubscriptionStore';
 import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
 import { openConfirmModal } from '../../helpers/modal';
-import { isEqual } from '../../helpers/object';
+import { copyObject, isEqual } from '../../helpers/object';
 import { DictionaryEntity } from '../../models/Dictionary';
 import '../../styles/box.scss';
 
@@ -81,6 +81,12 @@ const Box = (
 		}
 	};
 
+	const copyBoxHandler = () => {
+		const copyBox = copyObject(box);
+		copyBox.name = `${copyBox.name}-copy`;
+		schemasStore.createBox(copyBox);
+	};
+
 	useOutsideClickListener(boxRef, e => {
 		if (
 			!e
@@ -129,6 +135,9 @@ const Box = (
 					)}
 					<span className='box__title'>{box.name}</span>
 					<div className='box__buttons-wrapper'>
+						<button className='box__button copy' onClick={copyBoxHandler}>
+							<i className='box__button-icon' />
+						</button>
 						<button className='box__button remove' onClick={deleteBoxHandler}>
 							<i className='box__button-icon' />
 						</button>
