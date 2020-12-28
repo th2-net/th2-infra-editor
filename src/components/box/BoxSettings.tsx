@@ -26,7 +26,7 @@ import useSchemasStore from '../../hooks/useSchemasStore';
 import useOutsideClickListener from '../../hooks/useOutsideClickListener';
 import { openDecisionModal } from '../../helpers/modal';
 import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
-import { isEqual } from '../../helpers/object';
+import { copyObject, isEqual } from '../../helpers/object';
 import { BoxEntity, Pin } from '../../models/Box';
 import { DictionaryEntity, DictionaryRelation } from '../../models/Dictionary';
 import '../../styles/modal.scss';
@@ -151,7 +151,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		relatedDictionary,
 	);
 
-	const [pinList, setPinList] = React.useState(editableBox.spec.pins ?? []);
+	const [pinsList, setPinList] = React.useState(editableBox.spec.pins ?? []);
 
 	useOutsideClickListener(modalRef, (e: MouseEvent) => {
 		if (
@@ -184,13 +184,13 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 
 	const addPinToList = () => {
 		if (
-			!pinList.find(pin => pin.name === pinNameConfigInput.value) &&
+			!pinsList.find(pin => pin.name === pinNameConfigInput.value) &&
 			pinNameConfigInput.value.trim() &&
 			pinTypeConfigInput.value.trim() &&
 			pinTypeConfigInput.isValid
 		) {
 			setPinList([
-				...pinList,
+				...pinsList,
 				{
 					name: pinNameConfigInput.value,
 					'connection-type': pinTypeConfigInput.value as 'mq' | 'grpc',
@@ -257,30 +257,22 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 	};
 
 	const saveChanges = () => {
-		const spec: BoxEntity['spec'] = {
-			'image-name': imageNameInput.value,
-			'image-version': imageVersionInput.value,
-			pins: pinList,
-			type: editableBox.spec.type,
-		};
+		const copyBox = copyObject(box);
+		copyBox.spec['image-name'] = imageNameInput.value;
+		copyBox.spec['image-version'] = imageVersionInput.value;
+		copyBox.spec.pins = pinsList;
+		copyBox.spec.type = editableBox.spec.type;
 
 		const port = nodePortInput.value ? parseInt(nodePortInput.value) : undefined;
 
-		if (port) spec['node-port'] = port;
+		if (port) copyBox.spec['node-port'] = port;
 		if (boxConfigInput.isValid && boxConfigInput.value)
-			spec['custom-config'] = JSON.parse(boxConfigInput.value);
+			copyBox.spec['custom-config'] = JSON.parse(boxConfigInput.value);
 
-		schemasStore.configurateBox(
-			{
-				name: editableBox.name,
-				kind: editableBox.kind,
-				spec,
-			},
-			{
-				dictionaryRelations: relatedDictionaryList,
-				createSnapshot: true,
-			},
-		);
+		schemasStore.configurateBox(copyBox, {
+			dictionaryRelations: relatedDictionaryList,
+			createSnapshot: true,
+		});
 	};
 
 	const updateChanges = () => {
@@ -289,7 +281,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 	};
 
 	const submitButtonClassname = createStyleSelector(
-		'	modal__button',
+		'modal__button',
 		'submit',
 		[imageNameInput, imageVersionInput, nodePortInput, boxConfigInput].some(
 			config => !config.isValid,
@@ -325,13 +317,13 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 						</div>
 						<div onClick={() => setCurrentSection('pins')} className={pinsButtonClass}>
 							<i className='modal__content-switcher-button-icon' />
-							{`${pinList.length} ${pinList.length === 1 ? 'pin' : 'pins'}`}
+							{`${pinsList.length} ${pinsList.length === 1 ? 'pin' : 'pins'}`}
 						</div>
 						<div
 							onClick={() => setCurrentSection('dictionary')}
 							className={dictionaryButtonClass}>
 							{`${relatedDictionaryList.length} ${
-								pinList.length === 1 ? 'dictionary' : 'dictionaries'
+								pinsList.length === 1 ? 'dictionary' : 'dictionaries'
 							}`}
 						</div>
 					</div>
@@ -346,9 +338,9 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 				</div>
 				{currentSection === 'pins' && (
 					<PinsList
-						pins={pinList}
+						pins={pinsList}
 						removePinFromBox={deletedPin =>
-							setPinList(pinList.filter(pin => pin.name !== deletedPin.name))
+							setPinList(pinsList.filter(pin => pin.name !== deletedPin.name))
 						}
 						setEditablePin={pin => setEditablePin(pin)}
 					/>

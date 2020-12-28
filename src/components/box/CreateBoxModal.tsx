@@ -90,6 +90,11 @@ const CreateBoxModal = ({ createBox, typeVariants, onClose }: CreateBoxModalProp
 				'image-name': imageName,
 				'image-version': imageVersion,
 				type,
+				'extended-settings': {
+					service: {
+						enabled: true,
+					},
+				},
 			};
 
 			if (typeof nodePort === 'number') spec['node-port'] = nodePort;

@@ -22,12 +22,12 @@ export interface BoxEntity extends FileBase {
 		['custom-config']?: {
 			[prop: string]: string;
 		};
-		['extended-settings']?: {
-			['chart-cfg']: {
+		['extended-settings']: {
+			['chart-cfg']?: {
 				path: string;
 				ref: string;
 			};
-			resources: {
+			resources?: {
 				limits: {
 					cpu: string;
 					memory: string;
@@ -39,7 +39,7 @@ export interface BoxEntity extends FileBase {
 			};
 			service: {
 				enabled: boolean;
-				targetPort: string;
+				targetPort?: string;
 			};
 		};
 		['image-name']: string;

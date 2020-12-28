@@ -63,6 +63,7 @@ const AttributesList = ({
 		} else {
 			addAttribute(attributeInput.value);
 		}
+		attributeInput.reset();
 		toggleAddForm(false);
 	};
 

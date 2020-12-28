@@ -399,19 +399,30 @@ export default class SchemasStore {
 			createSnapshot?: boolean;
 		},
 	) => {
-		const oldValue = copyObject(this.boxes.find(box => box.name === updatedBox.name)) || null;
-		const newValue = copyObject(updatedBox);
-		this.boxes = [...this.boxes.filter(box => box.name !== updatedBox.name), updatedBox];
+		const changedBox = this.boxes.find(box => box.name === updatedBox.name);
+		if (!changedBox) return;
+		const isChanged = Boolean(Object.values(diff(changedBox, updatedBox)).length);
+
+		let oldValue;
+		let newValue;
+		if (isChanged) {
+			oldValue = copyObject(this.boxes.find(box => box.name === updatedBox.name)) || null;
+			newValue = copyObject(updatedBox);
+			this.boxes = [...this.boxes.filter(box => box.name !== updatedBox.name), updatedBox];
+		}
 
 		let changeList: Change[] = [];
 
 		if (options?.dictionaryRelations) {
-			changeList = this.configurateBoxDictionaryRelations(options.dictionaryRelations);
+			changeList = this.configurateBoxDictionaryRelations(
+				options.dictionaryRelations,
+				updatedBox.name,
+			);
 		}
 
 		if (options?.createSnapshot !== false) {
-			this.saveEntityChanges(updatedBox, 'update');
-			if (Object.entries(diff(oldValue || {}, newValue)).length !== 0) {
+			if (isChanged && oldValue && newValue) {
+				this.saveEntityChanges(updatedBox, 'update');
 				changeList.unshift({
 					object: updatedBox.name,
 					from: oldValue,
@@ -430,20 +441,21 @@ export default class SchemasStore {
 	@action
 	public configurateBoxDictionaryRelations = (
 		dictionaryRelations: DictionaryRelation[],
+		boxName: string,
 	): Change[] => {
 		if (!this.dictionaryLinksEntity) return [];
 
+		const boxRelations = this.dictionaryLinksEntity.spec['dictionaries-relation'].filter(
+			link => link.box === boxName,
+		);
+
 		let operation: 'add' | 'remove' = 'add';
 
-		let relations = rightJoin(
-			this.dictionaryLinksEntity.spec['dictionaries-relation'],
-			dictionaryRelations,
-		);
+		let relations = rightJoin(boxRelations, dictionaryRelations);
 		if (!relations.length) {
-			relations = rightJoin(
-				dictionaryRelations,
-				this.dictionaryLinksEntity.spec['dictionaries-relation'],
-			);
+			relations = rightJoin(dictionaryRelations, boxRelations);
+			if (!relations.length) return [];
+
 			operation = 'remove';
 		}
 
