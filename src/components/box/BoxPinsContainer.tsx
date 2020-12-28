@@ -111,7 +111,7 @@ const BoxPinsContainer = (
 
 	const initBoxConnections = () => {
 		if (isContainerExpanded) {
-			connectionsStore.addConnection(
+			connectionsStore.addConnections(
 				pinsRefs.flatMap((pinRef, index) =>
 					getPinConnections(filteredPins[index].name).map((connection, connectionIndex) =>
 						getConnection(
@@ -124,7 +124,7 @@ const BoxPinsContainer = (
 				),
 			);
 		} else {
-			connectionsStore.addConnection(
+			connectionsStore.addConnections(
 				pins.flatMap(pin =>
 					getPinConnections(pin.name).map(connection =>
 						getConnection(closedPinRef, pin, connection.name),

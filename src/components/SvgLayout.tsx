@@ -17,7 +17,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { createBemElement } from '../helpers/styleCreators';
-import useConnectionsStore from '../hooks/useConnectionsStore';
 import { LinkArrow } from '../models/Box';
 import '../styles/svg-layout.scss';
 
@@ -26,11 +25,17 @@ interface ArrowProps {
 }
 
 const Arrow = observer(({ arrow }: ArrowProps) => {
-	const connectionsStore = useConnectionsStore();
+	const arrowLineClass = createBemElement(
+		'arrow',
+		'line',
+		arrow.isHighlighted ? 'highlighted' : null,
+	);
 
-	const arrowLineClass = createBemElement('arrow', 'line');
-
-	const arrowPointerClass = createBemElement('arrow', 'pointer');
+	const arrowPointerClass = createBemElement(
+		'arrow',
+		'pointer',
+		arrow.isHighlighted ? 'highlighted' : null,
+	);
 
 	const getBezierPoints = () =>
 		arrow.start.left === arrow.end.left
@@ -44,11 +49,7 @@ const Arrow = observer(({ arrow }: ArrowProps) => {
 				${arrow.end.top}`;
 
 	return (
-		<g
-			className='arrow'
-			onMouseOver={() => connectionsStore.setOutlinerSelectedLink(arrow.name)}
-			onMouseLeave={() => connectionsStore.setOutlinerSelectedLink(null)}
-			pointerEvents='all'>
+		<g className='arrow' pointerEvents='all'>
 			<path
 				d={`M ${arrow.start.left},${arrow.start.top} 
 					C ${getBezierPoints()}

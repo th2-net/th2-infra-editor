@@ -45,10 +45,7 @@ export default class ConnectionsStore {
 	}
 
 	@observable
-	public selectedLink: string | null = null;
-
-	@observable
-	public outlinerSelectedLink: string | null = null;
+	public outlinerSelectedLink: Link | null = null;
 
 	@observable
 	public linkBoxes: LinksDefinition[] | null = null;
@@ -65,11 +62,7 @@ export default class ConnectionsStore {
 	@observable
 	public connectionPinStart: Pin | null = null;
 
-	@action setSelectedLink = (link: string | null) => {
-		this.selectedLink = link;
-	};
-
-	@action setOutlinerSelectedLink = (link: string | null) => {
+	@action setOutlinerSelectedLink = (link: Link | null) => {
 		this.outlinerSelectedLink = link;
 	};
 
@@ -131,8 +124,7 @@ export default class ConnectionsStore {
 	}
 
 	@action
-	public addConnection = (connections: Connection[]) => {
-		if (!connections.length) return;
+	public addConnections = (connections: Connection[]) => {
 		connections.forEach(pinConnection => {
 			const coordIndex = this.connections.findIndex(
 				coonection =>
@@ -181,6 +173,11 @@ export default class ConnectionsStore {
 								endConnection.coords.rightPoint.left
 									? endConnection.coords.leftPoint
 									: endConnection.coords.rightPoint,
+							isHighlighted: this.schemasStore.activeBox
+								? this.schemasStore.activeBox?.name === startBox.name
+								: this.outlinerSelectedLink
+								? this.outlinerSelectedLink.name === link.name
+								: false,
 						};
 					}
 				}

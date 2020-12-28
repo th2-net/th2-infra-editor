@@ -18,6 +18,8 @@
 
 .groups {
 	grid-area: groups;
+	position: relative;
+	z-index: 2;
 
 	&__wrapper {
 		@include scrollbar(#9e9e9e);

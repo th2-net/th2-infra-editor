@@ -93,6 +93,7 @@ export interface LinkArrow {
 	name: string;
 	start: ConnectionCoord;
 	end: ConnectionCoord;
+	isHighlighted: boolean;
 }
 
 export function isBoxEntity(object: unknown): object is BoxEntity {
