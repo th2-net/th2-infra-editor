@@ -17,49 +17,60 @@
 import React from 'react';
 import { downloadFile } from '../../helpers/files';
 import { openConfirmModal } from '../../helpers/modal';
+import { createBemElement } from '../../helpers/styleCreators';
 import { DictionaryEntity } from '../../models/Dictionary';
 
 interface ElementsListDictionaryItemProps {
 	dictionary: DictionaryEntity;
 	deleteDictionary: (dictionaryName: string) => void;
 	setEditableDictionary: (dictionary: DictionaryEntity) => void;
+	isFilterPassed: boolean;
 }
 
 const ElementsListDictionaryItem = ({
 	dictionary,
 	deleteDictionary,
 	setEditableDictionary,
-}: ElementsListDictionaryItemProps) => (
-	<div className='modal__elements-item'>
-		<div className='modal__elements-item-info'>
-			<span className='modal__elements-item-info-name'>{dictionary.name}</span>
+	isFilterPassed,
+}: ElementsListDictionaryItemProps) => {
+	const elementClass = createBemElement(
+		'modal',
+		'elements-item',
+		!isFilterPassed ? 'hidden' : null,
+	);
+
+	return (
+		<div className={elementClass}>
+			<div className='modal__elements-item-info'>
+				<span className='modal__elements-item-info-name'>{dictionary.name}</span>
+			</div>
+			<div className='modal__elements-item-buttons-wrapper'>
+				<button
+					onClick={() => setEditableDictionary(dictionary)}
+					className='modal__elements-item-button edit'>
+					<i className='modal__elements-item-button-icon' />
+				</button>
+				<button
+					onClick={() => downloadFile(dictionary.spec.data, dictionary.name, 'text/xml')}
+					className='modal__elements-item-button download'>
+					<i className='modal__elements-item-button-icon' />
+				</button>
+				<button
+					onClick={async () => {
+						if (
+							await openConfirmModal(
+								`Are you sure you want to delete dictionary "${dictionary.name}"`,
+							)
+						) {
+							deleteDictionary(dictionary.name);
+						}
+					}}
+					className='modal__elements-item-button delete'>
+					<i className='modal__elements-item-button-icon' />
+				</button>
+			</div>
 		</div>
-		<div className='modal__elements-item-buttons-wrapper'>
-			<button
-				onClick={() => setEditableDictionary(dictionary)}
-				className='modal__elements-item-button edit'>
-				<i className='modal__elements-item-button-icon' />
-			</button>
-			<button
-				onClick={() => downloadFile(dictionary.spec.data, dictionary.name, 'text/xml')}
-				className='modal__elements-item-button download'>
-				<i className='modal__elements-item-button-icon' />
-			</button>
-			<button
-				onClick={async () => {
-					if (
-						await openConfirmModal(
-							`Are you sure you want to delete dictionary "${dictionary.name}"`,
-						)
-					) {
-						deleteDictionary(dictionary.name);
-					}
-				}}
-				className='modal__elements-item-button delete'>
-				<i className='modal__elements-item-button-icon' />
-			</button>
-		</div>
-	</div>
-);
+	);
+};
 
 export default ElementsListDictionaryItem;

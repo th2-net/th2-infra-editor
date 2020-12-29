@@ -38,6 +38,11 @@
 		border: 2px solid #ff7733;
 	}
 
+	&.hidden {
+		opacity: 0.6;
+		filter: blur(0.5px);
+	}
+
 	&.empty &__header {
 		border-radius: 6px;
 	}

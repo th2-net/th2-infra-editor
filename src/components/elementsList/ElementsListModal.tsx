@@ -15,7 +15,7 @@ import { observer } from 'mobx-react-lite';
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { createBemElement } from '../../helpers/styleCreators';
 import useConnectionsStore from '../../hooks/useConnectionsStore';
 import useOutsideClickListener from '../../hooks/useOutsideClickListener';
@@ -31,12 +31,21 @@ import ElementsListLinkItem from './ElementsListLinkItem';
 import PinConfigurator from '../pin-configurator/PinConfigurator';
 import DictionaryModal from '../dictionary/DictionaryModal';
 import { DictionaryEntity } from '../../models/Dictionary';
+import { useInput } from '../../hooks/useInput';
+import Input from '../util/Input';
+import { Link } from '../../models/LinksDefinition';
+import { isFilterPassed } from '../../helpers/filter';
 
 interface ElementsListModalProps {
 	top?: number;
 	left?: number;
 	width?: number;
 	onClose: () => void;
+}
+
+interface ElementsListModalItem {
+	item: BoxEntity | Link | DictionaryEntity;
+	isFilterPassed: boolean;
 }
 
 const ElementsListModal = ({ top, left, width, onClose }: ElementsListModalProps) => {
@@ -66,6 +75,15 @@ const ElementsListModal = ({ top, left, width, onClose }: ElementsListModalProps
 		}
 	}, [schemasStore.dictionaryList]);
 
+	React.useEffect(() => {
+		filterInput.reset();
+	}, [currentSection]);
+
+	const filterInput = useInput({
+		initialValue: '',
+		id: 'outliner-filter',
+	});
+
 	const boxButtonClass = createBemElement(
 		'modal',
 		'content-switcher-button',
@@ -88,6 +106,80 @@ const ElementsListModal = ({ top, left, width, onClose }: ElementsListModalProps
 	);
 
 	const sortButtonClass = createBemElement('modal', 'button', 'sort', sortDirection);
+
+	const elements = useMemo(() => {
+		let tempElements: ElementsListModalItem[];
+		switch (currentSection) {
+			case 'boxes': {
+				tempElements = schemasStore.boxes
+					.sort((a, b) =>
+						a.spec.type > b.spec.type
+							? sortDirection === 'asc'
+								? -1
+								: 1
+							: a.spec.type < b.spec.type
+							? sortDirection === 'asc'
+								? 1
+								: -1
+							: 0,
+					)
+					.map(box => {
+						return {
+							item: box,
+							isFilterPassed: isFilterPassed(box, filterInput.value),
+						};
+					});
+				break;
+			}
+			case 'links': {
+				tempElements = connectionsStore.links
+					.sort((a, b) =>
+						a.name > b.name
+							? sortDirection === 'asc'
+								? -1
+								: 1
+							: a.name < b.name
+							? sortDirection === 'asc'
+								? 1
+								: -1
+							: 0,
+					)
+					.map(link => {
+						return {
+							item: link,
+							isFilterPassed: isFilterPassed(link, filterInput.value),
+						};
+					});
+				break;
+			}
+			case 'dictionaries': {
+				tempElements = schemasStore.dictionaryList
+					.sort((a, b) =>
+						a.name > b.name
+							? sortDirection === 'asc'
+								? -1
+								: 1
+							: a.name < b.name
+							? sortDirection === 'asc'
+								? 1
+								: -1
+							: 0,
+					)
+					.map(dictionary => {
+						return {
+							item: dictionary,
+							isFilterPassed: isFilterPassed(dictionary, filterInput.value),
+						};
+					});
+				break;
+			}
+			default:
+				tempElements = [];
+		}
+		return tempElements.sort((a, b) =>
+			a.isFilterPassed === b.isFilterPassed ? 0 : a.isFilterPassed ? -1 : 1,
+		);
+	}, [currentSection, filterInput]);
 
 	useOutsideClickListener(modalRef, (e: MouseEvent) => {
 		if (
@@ -149,84 +241,52 @@ const ElementsListModal = ({ top, left, width, onClose }: ElementsListModalProps
 				<div className='modal__elements-list'>
 					{currentSection === 'boxes' &&
 						(schemasStore.boxes.length > 0 ? (
-							schemasStore.boxes
-								.sort((a, b) =>
-									a.spec.type > b.spec.type
-										? sortDirection === 'asc'
-											? -1
-											: 1
-										: a.spec.type < b.spec.type
-										? sortDirection === 'asc'
-											? 1
-											: -1
-										: 0,
-								)
-								.map(box => (
-									<ElementsListBoxItem
-										key={box.name}
-										box={box}
-										editBox={() => setEditableBox(box)}
-										deleteBox={deletableBox =>
-											schemasStore.deleteBox(deletableBox)
-										}
-										activeBox={schemasStore.activeBox}
-										setActiveBox={schemasStore.setActiveBox}
-										color={schemasStore.getBoxBorderColor(box.name)}
-									/>
-								))
+							elements.map(box => (
+								<ElementsListBoxItem
+									key={box.item.name}
+									box={box.item as BoxEntity}
+									editBox={() => setEditableBox(box.item as BoxEntity)}
+									deleteBox={deletableBox => schemasStore.deleteBox(deletableBox)}
+									activeBox={schemasStore.activeBox}
+									setActiveBox={schemasStore.setActiveBox}
+									color={schemasStore.getBoxBorderColor(box.item.name)}
+									isFilterPassed={box.isFilterPassed}
+								/>
+							))
 						) : (
 							<div className='modal__empty'>Box list is empty</div>
 						))}
 					{currentSection === 'links' &&
 						(connectionsStore.links.length > 0 ? (
-							connectionsStore.links
-								.sort((a, b) =>
-									a.name > b.name
-										? sortDirection === 'asc'
-											? -1
-											: 1
-										: a.name < b.name
-										? sortDirection === 'asc'
-											? 1
-											: -1
-										: 0,
-								)
-								.map(link => (
-									<ElementsListLinkItem
-										key={link.name}
-										link={link}
-										deleteConnection={connectionsStore.deleteLink}
-										getBoxBorderColor={schemasStore.getBoxBorderColor}
-									/>
-								))
+							elements.map(link => (
+								<ElementsListLinkItem
+									key={link.item.name}
+									link={link.item as Link}
+									deleteConnection={connectionsStore.deleteLink}
+									getBoxBorderColor={schemasStore.getBoxBorderColor}
+									isFilterPassed={link.isFilterPassed}
+								/>
+							))
 						) : (
 							<div className='modal__empty'>Links list is empty</div>
 						))}
 					{currentSection === 'dictionaries' &&
 						(schemasStore.dictionaryList.length > 0 ? (
-							schemasStore.dictionaryList
-								.sort((a, b) =>
-									a.name > b.name
-										? sortDirection === 'asc'
-											? -1
-											: 1
-										: a.name < b.name
-										? sortDirection === 'asc'
-											? 1
-											: -1
-										: 0,
-								)
-								.map(dictionary => (
-									<ElementsListDictionaryItem
-										key={dictionary.name}
-										dictionary={dictionary}
-										deleteDictionary={schemasStore.deleteDictionary}
-										setEditableDictionary={setEditableDictionary}
-									/>
-								))
+							elements.map(dictionary => (
+								<ElementsListDictionaryItem
+									key={dictionary.item.name}
+									dictionary={dictionary.item as DictionaryEntity}
+									deleteDictionary={schemasStore.deleteDictionary}
+									setEditableDictionary={setEditableDictionary}
+									isFilterPassed={dictionary.isFilterPassed}
+								/>
+							))
 						) : (
 							<div className='modal__empty'>Dictionary list is empty</div>
 						))}
+				</div>
+				<div className='modal__content'>
+					<Input inputConfig={filterInput} />
 				</div>
 			</div>
 			{editableBox && (

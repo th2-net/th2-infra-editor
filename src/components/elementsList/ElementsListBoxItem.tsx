@@ -26,6 +26,7 @@ interface ElementsListBoxItemProps {
 	activeBox: BoxEntity | null;
 	setActiveBox: (box: BoxEntity | null) => void;
 	color: string;
+	isFilterPassed: boolean;
 }
 
 const ElementsListBoxItem = ({
@@ -35,10 +36,12 @@ const ElementsListBoxItem = ({
 	activeBox,
 	setActiveBox,
 	color,
+	isFilterPassed,
 }: ElementsListBoxItemProps) => {
 	const elementClass = createBemBlock(
 		'element',
 		activeBox && activeBox.name === box.name ? 'active' : null,
+		!isFilterPassed ? 'hidden' : null,
 	);
 
 	return (

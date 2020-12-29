@@ -16,6 +16,7 @@
 
 import React from 'react';
 import { openConfirmModal } from '../../helpers/modal';
+import { createBemBlock } from '../../helpers/styleCreators';
 import useConnectionsStore from '../../hooks/useConnectionsStore';
 import { Link } from '../../models/LinksDefinition';
 
@@ -23,18 +24,22 @@ interface ElementsListLinkItemProps {
 	link: Link;
 	deleteConnection: (link: Link) => void;
 	getBoxBorderColor: (boxName: string) => string;
+	isFilterPassed: boolean;
 }
 
 const ElementsListLinkItem = ({
 	link,
 	deleteConnection,
 	getBoxBorderColor,
+	isFilterPassed,
 }: ElementsListLinkItemProps) => {
 	const connectionsStore = useConnectionsStore();
 
+	const elementClass = createBemBlock('element', !isFilterPassed ? 'hidden' : null);
+
 	return (
 		<div
-			className='element'
+			className={elementClass}
 			onMouseEnter={() => connectionsStore.setOutlinerSelectedLink(link)}
 			onMouseLeave={() => connectionsStore.setOutlinerSelectedLink(null)}>
 			<div className='element__header'>
