@@ -27,7 +27,7 @@ interface ConfigEditor {
 	configInput: InputConfig;
 }
 
-const ConfigEditor = ({ configInput }: ConfigEditor) => {
+const JSONEditor = ({ configInput }: ConfigEditor) => {
 	const textAreaClass = createBemBlock('textarea', !configInput.isValid ? 'invalid' : null);
 
 	return (
@@ -56,4 +56,4 @@ const ConfigEditor = ({ configInput }: ConfigEditor) => {
 	);
 };
 
-export default ConfigEditor;
+export default JSONEditor;

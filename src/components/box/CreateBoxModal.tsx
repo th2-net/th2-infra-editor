@@ -92,7 +92,7 @@ const CreateBoxModal = ({ createBox, typeVariants, onClose }: CreateBoxModalProp
 				type,
 				'extended-settings': {
 					service: {
-						enabled: true,
+						enabled: false,
 					},
 				},
 			};

@@ -106,7 +106,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		initialValue: editableBox.spec['custom-config']
 			? JSON.stringify(editableBox.spec['custom-config'], null, 4)
 			: '',
-		label: 'Config',
+		label: 'custom-config',
 		validate: value => {
 			if (value.length === 0) return true;
 			try {
@@ -118,6 +118,24 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		},
 		name: 'config',
 		id: 'config',
+	});
+
+	const extendedSettingsInput = useInput({
+		initialValue: box.spec['extended-settings']
+			? JSON.stringify(box.spec['extended-settings'], null, 4)
+			: '',
+		label: 'extended-settings',
+		validate: value => {
+			if (value.length === 0) return true;
+			try {
+				const config = JSON.parse(value);
+				return typeof config === 'object';
+			} catch {
+				return false;
+			}
+		},
+		name: 'extended-settings',
+		id: 'extended-settings',
 	});
 
 	const pinNameConfigInput = useInput({
@@ -238,9 +256,13 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 
 	const submit = async () => {
 		if (
-			[boxNameInput, imageNameInput, imageVersionInput, nodePortInput, boxConfigInput].every(
-				config => config.isValid,
-			)
+			[
+				imageNameInput,
+				imageVersionInput,
+				nodePortInput,
+				boxConfigInput,
+				extendedSettingsInput,
+			].every(config => config.isValid)
 		) {
 			if (!isUpdated) {
 				saveChanges();
@@ -271,12 +293,12 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		copyBox.spec['image-version'] = imageVersionInput.value;
 		copyBox.spec.pins = pinsList;
 		copyBox.spec.type = editableBox.spec.type;
+		copyBox.spec['extended-settings'] = JSON.parse(extendedSettingsInput.value);
+		copyBox.spec['custom-config'] = JSON.parse(boxConfigInput.value);
 
 		const port = nodePortInput.value ? parseInt(nodePortInput.value) : undefined;
 
 		if (port) copyBox.spec['node-port'] = port;
-		if (boxConfigInput.isValid && boxConfigInput.value)
-			copyBox.spec['custom-config'] = JSON.parse(boxConfigInput.value);
 
 		schemasStore.configurateBox(editableBox, copyBox, {
 			dictionaryRelations: relatedDictionaryList,
@@ -292,9 +314,13 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 	const submitButtonClassname = createStyleSelector(
 		'modal__button',
 		'submit',
-		[boxNameInput, imageNameInput, imageVersionInput, nodePortInput, boxConfigInput].some(
-			config => !config.isValid,
-		)
+		[
+			imageNameInput,
+			imageVersionInput,
+			nodePortInput,
+			boxConfigInput,
+			extendedSettingsInput,
+		].some(config => !config.isValid)
 			? 'disable'
 			: null,
 	);
@@ -309,7 +335,12 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 						<i className='modal__header-close-button-icon' />
 					</button>
 				</div>
-				<div className='modal__content'>
+				<div
+					className='modal__content'
+					style={{
+						maxHeight: 500,
+						overflow: 'auto',
+					}}>
 					{isUpdated && (
 						<div className='modal__update'>
 							<button onClick={updateChanges} className='modal__update-button'>
@@ -336,16 +367,17 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 							}`}
 						</div>
 					</div>
-					{currentSection === 'config' && (
-						<BoxConfig
-							boxNameInputConfig={boxNameInput}
-							imageNameInputConfig={imageNameInput}
-							imageVersionInputConfig={imageVersionInput}
-							nodePortInputConfig={nodePortInput}
-							boxConfigInput={boxConfigInput}
-						/>
-					)}
 				</div>
+				{currentSection === 'config' && (
+					<BoxConfig
+						boxNameInputConfig={boxNameInput}
+						imageNameInputConfig={imageNameInput}
+						imageVersionInputConfig={imageVersionInput}
+						nodePortInputConfig={nodePortInput}
+						boxConfigInput={boxConfigInput}
+						extendedSettingsInput={extendedSettingsInput}
+					/>
+				)}
 				{currentSection === 'pins' && (
 					<PinsList
 						pins={pinsList}
