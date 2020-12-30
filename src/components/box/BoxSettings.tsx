@@ -30,6 +30,7 @@ import { copyObject, isEqual } from '../../helpers/object';
 import { BoxEntity, Pin } from '../../models/Box';
 import { DictionaryEntity, DictionaryRelation } from '../../models/Dictionary';
 import '../../styles/modal.scss';
+import { isJSONValid } from '../../helpers/files';
 
 interface BoxSettingsProps {
 	box: BoxEntity;
@@ -107,15 +108,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 			? JSON.stringify(editableBox.spec['custom-config'], null, 4)
 			: '',
 		label: 'Config',
-		validate: value => {
-			if (value.length === 0) return true;
-			try {
-				const config = JSON.parse(value);
-				return typeof config === 'object';
-			} catch {
-				return false;
-			}
-		},
+		validate: isJSONValid,
 		name: 'config',
 		id: 'config',
 	});

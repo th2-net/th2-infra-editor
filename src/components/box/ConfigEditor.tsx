@@ -15,42 +15,42 @@
  ***************************************************************************** */
 
 import React from 'react';
-import AceEditor from 'react-ace';
+import { ControlledEditor } from '@monaco-editor/react';
 import { createBemBlock } from '../../helpers/styleCreators';
 import { InputConfig } from '../../hooks/useInput';
-
-import 'ace-builds/src-noconflict/mode-json';
-import 'ace-builds/src-noconflict/theme-textmate';
-import 'ace-builds/src-noconflict/ext-language_tools';
 
 interface ConfigEditor {
 	configInput: InputConfig;
 }
 
 const ConfigEditor = ({ configInput }: ConfigEditor) => {
-	const textAreaClass = createBemBlock('textarea', !configInput.isValid ? 'invalid' : null);
+	const editorClass = createBemBlock('textarea', !configInput.isValid ? 'invalid' : null);
 
 	return (
 		<div className='textarea-wrapper'>
 			<label htmlFor={configInput.bind.name} className='textarea-label'>
 				{configInput.label}
 			</label>
-			<AceEditor
-				className={textAreaClass}
-				mode='json'
-				theme='textmate'
-				name='config-editor'
-				onChange={value => configInput.setValue(value)}
-				fontSize={12}
-				width={'auto'}
-				height={'300px'}
-				showGutter={false}
-				highlightActiveLine={true}
+			<ControlledEditor
+				height='300px'
+				width='auto'
+				language='json'
 				value={configInput.value}
-				tabSize={4}
-				setOptions={{
-					enableBasicAutocompletion: true,
+				options={{
+					fontSize: 12,
+					codeLens: false,
+					contextMenu: false,
+					lineNumbers: 'off',
+					minimap: {
+						enabled: false,
+					},
+					padding: {
+						bottom: 0,
+						top: 0,
+					},
 				}}
+				className={editorClass}
+				onChange={(_, value) => value && configInput.setValue(value)}
 			/>
 		</div>
 	);
