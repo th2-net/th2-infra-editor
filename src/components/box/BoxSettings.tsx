@@ -29,6 +29,7 @@ import { createBemElement, createStyleSelector } from '../../helpers/styleCreato
 import { copyObject, isEqual } from '../../helpers/object';
 import { BoxEntity, Pin } from '../../models/Box';
 import { DictionaryEntity, DictionaryRelation } from '../../models/Dictionary';
+import { isValidJSONObject } from '../../helpers/forms';
 import '../../styles/modal.scss';
 
 interface BoxSettingsProps {
@@ -107,15 +108,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 			? JSON.stringify(editableBox.spec['custom-config'], null, 4)
 			: '',
 		label: 'custom-config',
-		validate: value => {
-			if (value.length === 0) return true;
-			try {
-				const config = JSON.parse(value);
-				return typeof config === 'object';
-			} catch {
-				return false;
-			}
-		},
+		validate: isValidJSONObject,
 		name: 'config',
 		id: 'config',
 	});
@@ -125,15 +118,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 			? JSON.stringify(box.spec['extended-settings'], null, 4)
 			: '',
 		label: 'extended-settings',
-		validate: value => {
-			if (value.length === 0) return true;
-			try {
-				const config = JSON.parse(value);
-				return typeof config === 'object';
-			} catch {
-				return false;
-			}
-		},
+		validate: isValidJSONObject,
 		name: 'extended-settings',
 		id: 'extended-settings',
 	});
@@ -374,8 +359,8 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 						imageNameInputConfig={imageNameInput}
 						imageVersionInputConfig={imageVersionInput}
 						nodePortInputConfig={nodePortInput}
-						boxConfigInput={boxConfigInput}
-						extendedSettingsInput={extendedSettingsInput}
+						boxConfigInputConfig={boxConfigInput}
+						extendedSettingsInputConfig={extendedSettingsInput}
 					/>
 				)}
 				{currentSection === 'pins' && (
@@ -426,7 +411,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 			</div>
 			<ModalPortal isOpen={isAddPinFormOpen}>
 				<FormModal
-					title={'Add pin'}
+					title='Add pin'
 					inputConfigList={[pinNameConfigInput, pinTypeConfigInput]}
 					onSubmit={addPinToList}
 					onClose={() => setIsAddPinFormOpen(false)}
@@ -434,7 +419,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 			</ModalPortal>
 			<ModalPortal isOpen={isAddDictionaryFormOpen}>
 				<FormModal
-					title={'Add dictionary'}
+					title='Add dictionary'
 					inputConfigList={[relationNameInput, dictionaryNameInput, dictionaryTypeInput]}
 					onSubmit={addDictionaryToList}
 					onClose={() => setIsAddDictionaryFormOpen(false)}

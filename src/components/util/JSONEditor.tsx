@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import React from 'react';
-import AceEditor from 'react-ace';
+import AceEditor, { IAceEditorProps } from 'react-ace';
 import { createBemBlock } from '../../helpers/styleCreators';
 import { InputConfig } from '../../hooks/useInput';
 
@@ -23,34 +23,38 @@ import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-textmate';
 import 'ace-builds/src-noconflict/ext-language_tools';
 
+const defaultJSONEditorProps: IAceEditorProps = {
+	mode: 'json',
+	theme: 'textmate',
+	name: 'config-editor',
+	fontSize: 12,
+	width: 'auto',
+	height: '300px',
+	showGutter: false,
+	highlightActiveLine: true,
+	tabSize: 4,
+	setOptions: {
+		enableBasicAutocompletion: true,
+	},
+} as const;
+
 interface ConfigEditor {
-	configInput: InputConfig;
+	inputConfig: InputConfig;
 }
 
-const JSONEditor = ({ configInput }: ConfigEditor) => {
-	const textAreaClass = createBemBlock('textarea', !configInput.isValid ? 'invalid' : null);
+const JSONEditor = ({ inputConfig }: ConfigEditor) => {
+	const textAreaClass = createBemBlock('textarea', !inputConfig.isValid ? 'invalid' : null);
 
 	return (
 		<div className='textarea-wrapper'>
-			<label htmlFor={configInput.bind.name} className='textarea-label'>
-				{configInput.label}
+			<label htmlFor={inputConfig.bind.name} className='textarea-label'>
+				{inputConfig.label}
 			</label>
 			<AceEditor
+				{...defaultJSONEditorProps}
 				className={textAreaClass}
-				mode='json'
-				theme='textmate'
-				name='config-editor'
-				onChange={value => configInput.setValue(value)}
-				fontSize={12}
-				width={'auto'}
-				height={'300px'}
-				showGutter={false}
-				highlightActiveLine={true}
-				value={configInput.value}
-				tabSize={4}
-				setOptions={{
-					enableBasicAutocompletion: true,
-				}}
+				onChange={value => inputConfig.setValue(value)}
+				value={inputConfig.value}
 			/>
 		</div>
 	);

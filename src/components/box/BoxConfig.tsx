@@ -24,33 +24,25 @@ interface BoxConfigProps {
 	imageNameInputConfig: InputConfig;
 	imageVersionInputConfig: InputConfig;
 	nodePortInputConfig: InputConfig;
-	boxConfigInput: InputConfig;
-	extendedSettingsInput: InputConfig;
+	boxConfigInputConfig: InputConfig;
+	extendedSettingsInputConfig: InputConfig;
 }
 
 const BoxConfig = ({
-	boxNameInputConfig,
-	imageNameInputConfig,
-	imageVersionInputConfig,
-	nodePortInputConfig,
-	boxConfigInput,
-	extendedSettingsInput,
+	boxConfigInputConfig,
+	extendedSettingsInputConfig,
+	...inputConfigs
 }: BoxConfigProps) => (
 	<div
 		className='modal__elements-list'
 		style={{
 			maxHeight: 600,
 		}}>
-		{[
-			boxNameInputConfig,
-			imageNameInputConfig,
-			imageVersionInputConfig,
-			nodePortInputConfig,
-		].map(config => (
-			<Input key={config.bind.id} inputConfig={config} />
+		{Object.entries(inputConfigs).map(([key, config]) => (
+			<Input key={key} inputConfig={config} />
 		))}
-		<JSONEditor configInput={boxConfigInput} />
-		<JSONEditor configInput={extendedSettingsInput} />
+		<JSONEditor inputConfig={boxConfigInputConfig} />
+		<JSONEditor inputConfig={extendedSettingsInputConfig} />
 	</div>
 );
 
