@@ -26,6 +26,7 @@ interface ElementsListBoxItemProps {
 	activeBox: BoxEntity | null;
 	setActiveBox: (box: BoxEntity | null) => void;
 	color: string;
+	isFilterPassed: boolean;
 }
 
 const ElementsListBoxItem = ({
@@ -35,44 +36,38 @@ const ElementsListBoxItem = ({
 	activeBox,
 	setActiveBox,
 	color,
+	isFilterPassed,
 }: ElementsListBoxItemProps) => {
-	const elementClass = createBemBlock(
+	const elementClassName = createBemBlock(
 		'element',
 		activeBox && activeBox.name === box.name ? 'active' : null,
+		!isFilterPassed ? 'unmatched' : null,
 	);
+
+	const onRemove = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+		e.stopPropagation();
+		if (await openConfirmModal(`Are you sure you want to delete resource "${box.name}"?`)) {
+			deleteBox(box.name);
+		}
+	};
+
+	const onEdit = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+		e.stopPropagation();
+		editBox();
+	};
 
 	return (
 		<div
 			onMouseOver={() => setActiveBox(box)}
 			onMouseLeave={() => setActiveBox(null)}
-			className={elementClass}>
-			<div
-				style={{
-					backgroundColor: color,
-				}}
-				className='element__header'>
+			className={elementClassName}>
+			<div className='element__header' style={{ backgroundColor: color }}>
 				<span className='element__title'>{box.name}</span>
 				<div className='element__buttons-wrapper'>
-					<button
-						onClick={async e => {
-							e.stopPropagation();
-							if (
-								await openConfirmModal(
-									`Are you sure you want to delete resource "${box.name}"?`,
-								)
-							) {
-								deleteBox(box.name);
-							}
-						}}
-						className='element__button remove'>
+					<button className='element__button remove' onClick={onRemove}>
 						<i className='element__button-icon' />
 					</button>
-					<button
-						className='element__button settings'
-						onClick={e => {
-							e.stopPropagation();
-							editBox();
-						}}>
+					<button className='element__button settings' onClick={onEdit}>
 						<i className='element__button-icon' />
 					</button>
 				</div>
