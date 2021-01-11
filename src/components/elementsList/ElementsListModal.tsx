@@ -1,4 +1,3 @@
-import { observer } from 'mobx-react-lite';
 /** *****************************************************************************
  * Copyright 2009-2020 Exactpro (Exactpro Systems Limited)
  *
@@ -16,13 +15,12 @@ import { observer } from 'mobx-react-lite';
  ***************************************************************************** */
 
 import React, { useMemo } from 'react';
+import { observer } from 'mobx-react-lite';
 import { createBemElement } from '../../helpers/styleCreators';
 import useConnectionsStore from '../../hooks/useConnectionsStore';
 import useOutsideClickListener from '../../hooks/useOutsideClickListener';
 import useSchemasStore from '../../hooks/useSchemasStore';
 import { BoxEntity, Pin } from '../../models/Box';
-import '../../styles/modal.scss';
-import '../../styles/elements.scss';
 import BoxSettings from '../box/BoxSettings';
 import { ModalPortal } from '../util/Portal';
 import ElementsListBoxItem from './ElementsListBoxItem';
@@ -35,6 +33,9 @@ import { useInput } from '../../hooks/useInput';
 import Input from '../util/Input';
 import { Link } from '../../models/LinksDefinition';
 import { isFilterPassed } from '../../helpers/filter';
+import { sortBy } from '../../helpers/array';
+import '../../styles/modal.scss';
+import '../../styles/elements.scss';
 
 interface ElementsListModalProps {
 	top?: number;
@@ -79,10 +80,7 @@ const ElementsListModal = ({ top, left, width, onClose }: ElementsListModalProps
 		filterInput.reset();
 	}, [currentSection]);
 
-	const filterInput = useInput({
-		initialValue: '',
-		id: 'outliner-filter',
-	});
+	const filterInput = useInput({ id: 'outliner-filter' });
 
 	const boxButtonClass = createBemElement(
 		'modal',
@@ -111,71 +109,44 @@ const ElementsListModal = ({ top, left, width, onClose }: ElementsListModalProps
 		let tempElements: ElementsListModalItem[];
 		switch (currentSection) {
 			case 'boxes': {
-				tempElements = schemasStore.boxes
-					.sort((a, b) =>
-						a.spec.type > b.spec.type
-							? sortDirection === 'asc'
-								? -1
-								: 1
-							: a.spec.type < b.spec.type
-							? sortDirection === 'asc'
-								? 1
-								: -1
-							: 0,
-					)
-					.map(box => {
+				tempElements = sortBy(schemasStore.boxes, box => box.spec.type, sortDirection).map(
+					box => {
 						return {
 							item: box,
 							isFilterPassed: isFilterPassed(box, filterInput.value),
 						};
-					});
+					},
+				);
 				break;
 			}
 			case 'links': {
-				tempElements = connectionsStore.links
-					.sort((a, b) =>
-						a.name > b.name
-							? sortDirection === 'asc'
-								? -1
-								: 1
-							: a.name < b.name
-							? sortDirection === 'asc'
-								? 1
-								: -1
-							: 0,
-					)
-					.map(link => {
+				tempElements = sortBy(connectionsStore.links, link => link.name, sortDirection).map(
+					link => {
 						return {
 							item: link,
 							isFilterPassed: isFilterPassed(link, filterInput.value),
 						};
-					});
+					},
+				);
 				break;
 			}
 			case 'dictionaries': {
-				tempElements = schemasStore.dictionaryList
-					.sort((a, b) =>
-						a.name > b.name
-							? sortDirection === 'asc'
-								? -1
-								: 1
-							: a.name < b.name
-							? sortDirection === 'asc'
-								? 1
-								: -1
-							: 0,
-					)
-					.map(dictionary => {
-						return {
-							item: dictionary,
-							isFilterPassed: isFilterPassed(dictionary, filterInput.value),
-						};
-					});
+				tempElements = sortBy(
+					schemasStore.dictionaryList,
+					dictLink => dictLink.name,
+					sortDirection,
+				).map(dictionary => {
+					return {
+						item: dictionary,
+						isFilterPassed: isFilterPassed(dictionary, filterInput.value),
+					};
+				});
 				break;
 			}
 			default:
 				tempElements = [];
 		}
+
 		return tempElements.sort((a, b) =>
 			a.isFilterPassed === b.isFilterPassed ? 0 : a.isFilterPassed ? -1 : 1,
 		);
@@ -243,7 +214,7 @@ const ElementsListModal = ({ top, left, width, onClose }: ElementsListModalProps
 						(schemasStore.boxes.length > 0 ? (
 							elements.map(box => (
 								<ElementsListBoxItem
-									key={box.item.name}
+									key={`box-${box.item.name}`}
 									box={box.item as BoxEntity}
 									editBox={() => setEditableBox(box.item as BoxEntity)}
 									deleteBox={deletableBox => schemasStore.deleteBox(deletableBox)}
@@ -260,7 +231,7 @@ const ElementsListModal = ({ top, left, width, onClose }: ElementsListModalProps
 						(connectionsStore.links.length > 0 ? (
 							elements.map(link => (
 								<ElementsListLinkItem
-									key={link.item.name}
+									key={`link-${link.item.name}`}
 									link={link.item as Link}
 									deleteConnection={connectionsStore.deleteLink}
 									getBoxBorderColor={schemasStore.getBoxBorderColor}
@@ -274,7 +245,7 @@ const ElementsListModal = ({ top, left, width, onClose }: ElementsListModalProps
 						(schemasStore.dictionaryList.length > 0 ? (
 							elements.map(dictionary => (
 								<ElementsListDictionaryItem
-									key={dictionary.item.name}
+									key={`dict-${dictionary.item.name}`}
 									dictionary={dictionary.item as DictionaryEntity}
 									deleteDictionary={schemasStore.deleteDictionary}
 									setEditableDictionary={setEditableDictionary}

@@ -33,14 +33,24 @@ const ElementsListDictionaryItem = ({
 	setEditableDictionary,
 	isFilterPassed,
 }: ElementsListDictionaryItemProps) => {
-	const elementClass = createBemElement(
+	const elementClassName = createBemElement(
 		'modal',
 		'elements-item',
-		!isFilterPassed ? 'hidden' : null,
+		!isFilterPassed ? 'unmatched' : null,
 	);
 
+	const onRemove = async () => {
+		if (
+			await openConfirmModal(
+				`Are you sure you want to delete dictionary "${dictionary.name}"`,
+			)
+		) {
+			deleteDictionary(dictionary.name);
+		}
+	};
+
 	return (
-		<div className={elementClass}>
+		<div className={elementClassName}>
 			<div className='modal__elements-item-info'>
 				<span className='modal__elements-item-info-name'>{dictionary.name}</span>
 			</div>
@@ -55,17 +65,7 @@ const ElementsListDictionaryItem = ({
 					className='modal__elements-item-button download'>
 					<i className='modal__elements-item-button-icon' />
 				</button>
-				<button
-					onClick={async () => {
-						if (
-							await openConfirmModal(
-								`Are you sure you want to delete dictionary "${dictionary.name}"`,
-							)
-						) {
-							deleteDictionary(dictionary.name);
-						}
-					}}
-					className='modal__elements-item-button delete'>
+				<button onClick={onRemove} className='modal__elements-item-button delete'>
 					<i className='modal__elements-item-button-icon' />
 				</button>
 			</div>

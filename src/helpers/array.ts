@@ -33,3 +33,24 @@ export function sortByKey<T, K extends keyof T>(arr: T[], key: K): T[] {
 	copy.sort((a, b) => (a[key] > b[key] ? 1 : -1));
 	return copy;
 }
+
+export function sortBy<T>(
+	arr: T[],
+	sortValueGetter: (item: T) => string | number,
+	sortDirection: 'asc' | 'desc' = 'asc',
+) {
+	const arrCopy = arr.slice();
+	arrCopy.sort((a, b) =>
+		sortValueGetter(a) > sortValueGetter(b)
+			? sortDirection === 'asc'
+				? -1
+				: 1
+			: sortValueGetter(a) < sortValueGetter(b)
+			? sortDirection === 'asc'
+				? 1
+				: -1
+			: 0,
+	);
+
+	return arrCopy;
+}

@@ -35,11 +35,11 @@ const ElementsListLinkItem = ({
 }: ElementsListLinkItemProps) => {
 	const connectionsStore = useConnectionsStore();
 
-	const elementClass = createBemBlock('element', !isFilterPassed ? 'hidden' : null);
+	const elementClassName = createBemBlock('element', !isFilterPassed ? 'unmatched' : null);
 
 	return (
 		<div
-			className={elementClass}
+			className={elementClassName}
 			onMouseEnter={() => connectionsStore.setOutlinerSelectedLink(link)}
 			onMouseLeave={() => connectionsStore.setOutlinerSelectedLink(null)}>
 			<div className='element__header'>

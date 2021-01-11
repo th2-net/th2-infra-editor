@@ -19,22 +19,22 @@ import { DictionaryEntity } from '../models/Dictionary';
 import { isLink, Link } from '../models/LinksDefinition';
 
 export function isFilterPassed(element: BoxEntity | Link | DictionaryEntity, filterString: string) {
+	let data: Array<string>;
+
 	if (isBoxEntity(element)) {
-		return [
+		data = [
 			element.name,
 			element.spec['image-name'],
 			element.spec['image-version'],
 			element.spec.type,
-		].some(value => value.includes(filterString));
+		];
+	} else if (isLink(element)) {
+		data = [element.name, element.from.box, element.from.pin, element.to.box, element.to.pin];
+	} else {
+		data = [element.name];
 	}
-	if (isLink(element)) {
-		return [
-			element.name,
-			element.from.box,
-			element.from.pin,
-			element.to.box,
-			element.to.pin,
-		].some(value => value.includes(filterString));
-	}
-	return element.name.includes(filterString);
+
+	return data
+		.map(value => value.toLowerCase())
+		.some(value => value.includes(filterString.toLowerCase()));
 }
