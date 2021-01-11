@@ -17,34 +17,33 @@
 import React from 'react';
 import { InputConfig } from '../../hooks/useInput';
 import Input from '../util/Input';
-import ConfigEditor from './ConfigEditor';
+import JSONEditor from '../util/JSONEditor';
 
 interface BoxConfigProps {
 	boxNameInputConfig: InputConfig;
 	imageNameInputConfig: InputConfig;
 	imageVersionInputConfig: InputConfig;
 	nodePortInputConfig: InputConfig;
-	boxConfigInput: InputConfig;
+	boxConfigInputConfig: InputConfig;
+	extendedSettingsInputConfig: InputConfig;
 }
 
 const BoxConfig = ({
-	boxNameInputConfig,
-	imageNameInputConfig,
-	imageVersionInputConfig,
-	nodePortInputConfig,
-	boxConfigInput,
+	boxConfigInputConfig,
+	extendedSettingsInputConfig,
+	...inputConfigs
 }: BoxConfigProps) => (
-	<>
-		{[
-			boxNameInputConfig,
-			imageNameInputConfig,
-			imageVersionInputConfig,
-			nodePortInputConfig,
-		].map(config => (
-			<Input key={config.bind.id} inputConfig={config} />
+	<div
+		className='modal__elements-list'
+		style={{
+			maxHeight: 600,
+		}}>
+		{Object.entries(inputConfigs).map(([key, config]) => (
+			<Input key={key} inputConfig={config} />
 		))}
-		<ConfigEditor configInput={boxConfigInput} />
-	</>
+		<JSONEditor inputConfig={boxConfigInputConfig} />
+		<JSONEditor inputConfig={extendedSettingsInputConfig} />
+	</div>
 );
 
 export default BoxConfig;
