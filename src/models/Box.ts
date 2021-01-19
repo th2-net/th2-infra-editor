@@ -69,7 +69,6 @@ export interface Filter {
 
 export interface Connection {
 	name: string;
-	connectionOwner: ConnectionOwner;
 	coords: ConnectionPoints;
 }
 
@@ -86,14 +85,12 @@ export interface ConnectionCoord {
 export interface ConnectionOwner {
 	box: string;
 	pin: string;
-	connectionType: 'mq' | 'grpc';
+	strategy?: string;
+	['service-class']?: string;
 }
 
-export interface LinkArrow {
-	name: string;
-	start: ConnectionCoord;
-	end: ConnectionCoord;
-	isHighlighted: boolean;
+export interface ExtendedConnectionOwner extends ConnectionOwner {
+	connectionType: 'mq' | 'grpc';
 }
 
 export function isBoxEntity(object: unknown): object is BoxEntity {

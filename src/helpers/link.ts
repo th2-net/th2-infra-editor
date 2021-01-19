@@ -14,40 +14,84 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { Router, MqConnection, GrpcConnection, Link } from '../models/LinksDefinition';
+import { ConnectionOwner, ExtendedConnectionOwner } from '../models/Box';
+import { Link } from '../models/LinksDefinition';
 
-export function convertLinks(
-	connections: Router<MqConnection | GrpcConnection>[],
+export function convertToExtendedLink(
+	link: Link<ConnectionOwner>,
 	connectionType: 'mq' | 'grpc',
-): Link[] {
-	return connections.map(mqLink => ({
-		name: mqLink.name,
+): Link<ExtendedConnectionOwner> {
+	let convertedLink = {
+		name: link.name,
 		from: {
-			box: mqLink.from.box,
-			pin: mqLink.from.pin,
+			box: link.from.box,
+			pin: link.from.pin,
 			connectionType,
 		},
 		to: {
-			box: mqLink.to.box,
-			pin: mqLink.to.pin,
+			box: link.to.box,
+			pin: link.to.pin,
 			connectionType,
 		},
-	}));
+	} as Link<ExtendedConnectionOwner>;
+
+	convertedLink = addAdditionalDetailsToLink(convertedLink, {
+		fromStrategy: link.from.strategy,
+		toStrategy: link.to.strategy,
+		serviceClass: link.to['service-class'],
+	}) as Link<ExtendedConnectionOwner>;
+
+	return convertedLink;
+}
+
+export function convertToOriginLink(link: Link<ExtendedConnectionOwner>): Link<ConnectionOwner> {
+	let convertedLink = {
+		name: link.name,
+		from: {
+			box: link.from.box,
+			pin: link.from.pin,
+		},
+		to: {
+			box: link.to.box,
+			pin: link.to.pin,
+		},
+	} as Link<ExtendedConnectionOwner>;
+
+	convertedLink = addAdditionalDetailsToLink(convertedLink, {
+		fromStrategy: link.from.strategy,
+		toStrategy: link.to.strategy,
+		serviceClass: link.to['service-class'],
+	}) as Link<ExtendedConnectionOwner>;
+
+	return convertedLink;
+}
+
+function addAdditionalDetailsToLink(
+	link: Link<ConnectionOwner | ExtendedConnectionOwner>,
+	details: {
+		fromStrategy?: string;
+		toStrategy?: string;
+		serviceClass?: string;
+	},
+) {
+	const tempLink = link;
+
+	if (details.fromStrategy) {
+		tempLink.from.strategy = details.fromStrategy;
+	}
+	if (details.toStrategy && details.serviceClass) {
+		tempLink.to.strategy = details.toStrategy;
+		tempLink.to['service-class'] = details.serviceClass;
+	}
+
+	return tempLink;
 }
 
 export function createLink(
 	name: string,
-	from: {
-		box: string;
-		pin: string;
-		connectionType: 'mq' | 'grpc';
-	},
-	to: {
-		box: string;
-		pin: string;
-		connectionType: 'mq' | 'grpc';
-	},
-): Link {
+	from: ExtendedConnectionOwner,
+	to: ExtendedConnectionOwner,
+): Link<ExtendedConnectionOwner> {
 	return {
 		name,
 		from,

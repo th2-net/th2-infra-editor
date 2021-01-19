@@ -16,12 +16,16 @@
 
 import { observer } from 'mobx-react-lite';
 import React from 'react';
-import { createLink } from '../../helpers/link';
-import { openConfirmModal, openDecisionModal, openPromptModal } from '../../helpers/modal';
+import {
+	openConfirmModal,
+	openDecisionModal,
+	openLinkCreateModal,
+	openPromptModal,
+} from '../../helpers/modal';
 import { createBemElement } from '../../helpers/styleCreators';
 import useConnectionsStore from '../../hooks/useConnectionsStore';
 import useSchemasStore from '../../hooks/useSchemasStore';
-import { Pin } from '../../models/Box';
+import { ExtendedConnectionOwner, Pin } from '../../models/Box';
 import { Link } from '../../models/LinksDefinition';
 import { ModalPortal } from '../util/Portal';
 
@@ -37,13 +41,14 @@ interface BoxPinProps {
 		pin: Pin,
 		direction: 'left' | 'right' | 'both',
 	) => {
-		in: Link[];
-		out: Link[];
+		in: Link<ExtendedConnectionOwner>[];
+		out: Link<ExtendedConnectionOwner>[];
 	};
 	isPinExpanded: boolean;
 	togglePin: (isOpen: boolean) => void;
 	isConnectable: boolean;
 	boxName: string;
+	boxType: string;
 	initBoxConnections: () => void;
 	groupsTopOffset?: number;
 	titleHeight?: number;
@@ -58,6 +63,7 @@ const BoxPin = (
 		togglePin,
 		isConnectable,
 		boxName,
+		boxType,
 		initBoxConnections,
 		groupsTopOffset,
 		titleHeight,
@@ -132,35 +138,29 @@ const BoxPin = (
 				boxName,
 			);
 
-			const linkName = await openPromptModal('Connection name', defaultName);
-			if (linkName === null) return;
-			if (connectionsStore.links.find(link => link.name === linkName)) {
-				alert(`Link ${linkName} already exists`);
-				schemasStore.setActiveBox(null);
-				schemasStore.setActivePin(null);
-				return;
-			}
+			const from = {
+				box: schemasStore.activeBox.name,
+				pin: schemasStore.activePin.name,
+				connectionType: pin['connection-type'],
+			} as ExtendedConnectionOwner;
 
-			const link = createLink(
-				linkName,
-				{
-					box: schemasStore.activeBox.name,
-					pin: schemasStore.activePin.name,
-					connectionType: pin['connection-type'],
-				},
-				{
-					box: boxName,
-					pin: pin.name,
-					connectionType: pin['connection-type'],
-				},
+			const to = {
+				box: boxName,
+				pin: pin.name,
+				connectionType: pin['connection-type'],
+			} as ExtendedConnectionOwner;
+
+			await openLinkCreateModal(
+				defaultName,
+				from,
+				to,
+				schemasStore.activeBox.spec.type === 'th2-check2-recon' ||
+					boxType === 'th2-check2-recon',
 			);
-			connectionsStore.addLink(link);
-			schemasStore.setActiveBox(null);
-			schemasStore.setActivePin(null);
 		}
 	};
 
-	const dragLink = (link: Link, targetPin: Pin) => {
+	const dragLink = (link: Link<ExtendedConnectionOwner>, targetPin: Pin) => {
 		const body = document.querySelector('body');
 		if (body) body.style.userSelect = 'none';
 
@@ -179,24 +179,23 @@ const BoxPin = (
 
 		document.onmousemove = (e: MouseEvent) => {
 			connectionsStore.addConnections([
-				{
-					name: link.name,
-					connectionOwner: {
-						box: boxName,
-						pin: targetPin.name,
-						connectionType: targetPin['connection-type'],
-					},
-					coords: {
-						leftPoint: {
-							left: e.pageX,
-							top: e.pageY - (groupsTopOffset ?? 0) - (titleHeight ?? 0),
+				[
+					boxName,
+					targetPin.name,
+					{
+						name: link.name,
+						coords: {
+							leftPoint: {
+								left: e.pageX,
+								top: e.pageY - (groupsTopOffset ?? 0) - (titleHeight ?? 0),
+							},
+							rightPoint: {
+								left: e.pageX,
+								top: e.pageY - (groupsTopOffset ?? 0) - (titleHeight ?? 0),
+							},
 						},
-						rightPoint: {
-							left: e.pageX,
-							top: e.pageY - (groupsTopOffset ?? 0) - (titleHeight ?? 0),
-						},
 					},
-				},
+				],
 			]);
 		};
 		document.onmouseup = () => {
@@ -231,7 +230,10 @@ const BoxPin = (
 			changedSide === 'to' ? boxName : draggableLink.to.box,
 		);
 
-		const changeLink = (linkName: string, oldLink: Link): Link => {
+		const changeLink = (
+			linkName: string,
+			oldLink: Link<ExtendedConnectionOwner>,
+		): Link<ExtendedConnectionOwner> => {
 			const link = {
 				name: linkName,
 				from: {
@@ -242,9 +244,14 @@ const BoxPin = (
 				to: {
 					box: changedSide === 'to' ? boxName : draggableLink.to.box,
 					pin: changedSide === 'to' ? pin.name : draggableLink.to.pin,
-					connectionType: draggableLink.from.connectionType,
+					connectionType: draggableLink.to.connectionType,
 				},
-			};
+			} as Link<ExtendedConnectionOwner>;
+
+			if (draggableLink.from.strategy && draggableLink.to.strategy) {
+				link.from.strategy = draggableLink.from.strategy;
+				link.to.strategy = draggableLink.to.strategy;
+			}
 			connectionsStore.changeLink(link, oldLink);
 			return link;
 		};
@@ -280,13 +287,17 @@ const BoxPin = (
 		}
 	};
 
-	const deleteLink = async (link: Link) => {
+	const deleteLink = async (link: Link<ExtendedConnectionOwner>) => {
 		if (await openConfirmModal(`Are you sure you want to delete link "${link.name}"`)) {
 			connectionsStore.deleteLink(link);
 		}
 	};
 
-	const onMouseOverHandler = (link: Link, linkSide: 'left' | 'right', index: number) => {
+	const onMouseOverHandler = (
+		link: Link<ExtendedConnectionOwner>,
+		linkSide: 'left' | 'right',
+		index: number,
+	) => {
 		const connClientRect = connectionsRefs[index]?.getBoundingClientRect();
 		setNameModal({
 			name: link.name,

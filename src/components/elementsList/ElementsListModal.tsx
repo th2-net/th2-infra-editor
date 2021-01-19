@@ -20,7 +20,7 @@ import { createBemElement } from '../../helpers/styleCreators';
 import useConnectionsStore from '../../hooks/useConnectionsStore';
 import useOutsideClickListener from '../../hooks/useOutsideClickListener';
 import useSchemasStore from '../../hooks/useSchemasStore';
-import { BoxEntity, Pin } from '../../models/Box';
+import { BoxEntity, ExtendedConnectionOwner, Pin } from '../../models/Box';
 import BoxSettings from '../box/BoxSettings';
 import { ModalPortal } from '../util/Portal';
 import ElementsListBoxItem from './ElementsListBoxItem';
@@ -45,7 +45,7 @@ interface ElementsListModalProps {
 }
 
 interface ElementsListModalItem {
-	item: BoxEntity | Link | DictionaryEntity;
+	item: BoxEntity | Link<ExtendedConnectionOwner> | DictionaryEntity;
 	isFilterPassed: boolean;
 }
 
@@ -231,10 +231,10 @@ const ElementsListModal = ({ top, left, width, onClose }: ElementsListModalProps
 						(connectionsStore.links.length > 0 ? (
 							elements.map(link => (
 								<ElementsListLinkItem
-									key={`${(link.item as Link).name}-${
-										(link.item as Link).from.box
-									}-${(link.item as Link).to.box}`}
-									link={link.item as Link}
+									key={`${(link.item as Link<ExtendedConnectionOwner>).name}-${
+										(link.item as Link<ExtendedConnectionOwner>).from.box
+									}-${(link.item as Link<ExtendedConnectionOwner>).to.box}`}
+									link={link.item as Link<ExtendedConnectionOwner>}
 									deleteConnection={connectionsStore.deleteLink}
 									getBoxBorderColor={schemasStore.getBoxBorderColor}
 									isFilterPassed={link.isFilterPassed}

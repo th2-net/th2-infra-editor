@@ -18,11 +18,12 @@ import React from 'react';
 import { openConfirmModal } from '../../helpers/modal';
 import { createBemBlock } from '../../helpers/styleCreators';
 import useConnectionsStore from '../../hooks/useConnectionsStore';
+import { ExtendedConnectionOwner } from '../../models/Box';
 import { Link } from '../../models/LinksDefinition';
 
 interface ElementsListLinkItemProps {
-	link: Link;
-	deleteConnection: (link: Link) => void;
+	link: Link<ExtendedConnectionOwner>;
+	deleteConnection: (link: Link<ExtendedConnectionOwner>) => void;
 	getBoxBorderColor: (boxName: string) => string;
 	isFilterPassed: boolean;
 }

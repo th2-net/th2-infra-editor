@@ -168,6 +168,7 @@ const Box = (
 							pins={box.spec.pins}
 							isBoxActive={schemasStore.activeBox ? isBoxActive : false}
 							boxName={box.name}
+							boxType={box.spec.type}
 							setEditablePin={setEditablePin}
 							groupsTopOffset={groupsTopOffset}
 							titleHeight={titleHeight}

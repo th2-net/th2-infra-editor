@@ -627,7 +627,7 @@ export default class SchemasStore {
 	private onSchemaChange = (selectedSchema: string | null) => {
 		this.historyStore.clearHistory();
 		this.preparedRequests = [];
-		this.connectionsStore.connections = [];
+		this.connectionsStore.connections.clear();
 		this.activeBox = null;
 		this.activePin = null;
 

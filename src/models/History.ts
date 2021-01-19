@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { BoxEntity } from './Box';
+import { BoxEntity, ExtendedConnectionOwner } from './Box';
 import { DictionaryEntity } from './Dictionary';
 import { Link } from './LinksDefinition';
 
@@ -27,8 +27,8 @@ export interface Snapshot {
 
 export interface Change {
 	object: string;
-	from: BoxEntity | Link | DictionaryEntity | null;
-	to: BoxEntity | Link | DictionaryEntity | null;
+	from: BoxEntity | Link<ExtendedConnectionOwner> | DictionaryEntity | null;
+	to: BoxEntity | Link<ExtendedConnectionOwner> | DictionaryEntity | null;
 }
 
 export interface DetailedDiff {
