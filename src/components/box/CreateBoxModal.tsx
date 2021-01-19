@@ -35,7 +35,9 @@ const CreateBoxModal = ({ createBox, typeVariants, onClose }: CreateBoxModalProp
 		label: 'Name',
 		id: 'name',
 		name: 'name',
-		validate: name => !name.includes('_') && name.trim().length > 0,
+		validate: name =>
+			name.trim().length > 0 &&
+			/^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/gm.test(name),
 	});
 
 	const typeInput = useInput({
