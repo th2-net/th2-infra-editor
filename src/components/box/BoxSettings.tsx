@@ -76,7 +76,9 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		label: 'name',
 		name: 'box-name',
 		id: 'box-name',
-		validate: name => name.trim().length > 0,
+		validate: name =>
+			name.trim().length > 0 &&
+			/^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/gm.test(name),
 	});
 
 	const imageNameInput = useInput({
