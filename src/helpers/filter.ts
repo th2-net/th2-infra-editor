@@ -14,11 +14,14 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { BoxEntity, isBoxEntity } from '../models/Box';
+import { BoxEntity, ExtendedConnectionOwner, isBoxEntity } from '../models/Box';
 import { DictionaryEntity } from '../models/Dictionary';
 import { isLink, Link } from '../models/LinksDefinition';
 
-export function isFilterPassed(element: BoxEntity | Link | DictionaryEntity, filterString: string) {
+export function isFilterPassed(
+	element: BoxEntity | Link<ExtendedConnectionOwner> | DictionaryEntity,
+	filterString: string,
+) {
 	let data: Array<string>;
 
 	if (isBoxEntity(element)) {

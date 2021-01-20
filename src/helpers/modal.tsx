@@ -16,9 +16,11 @@
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
+import LinkCreateModal from '../components/box/LinkCreateModal';
 import ConfirmModal from '../components/util/ConfirmModal';
 import DecisionModal from '../components/util/DecisionModal';
 import PromptModal from '../components/util/PromptModal';
+import { ExtendedConnectionOwner } from '../models/Box';
 
 export function openConfirmModal(text: string, confirmButtonText?: string) {
 	return new Promise<boolean>((res, rej) => {
@@ -101,6 +103,40 @@ export function openDecisionModal(
 						modalRoot.removeChild(el);
 						res();
 					}}
+				/>,
+				el,
+			);
+		}
+	});
+}
+
+export function openLinkCreateModal(
+	defaultName: string,
+	from: ExtendedConnectionOwner,
+	to: ExtendedConnectionOwner,
+	extended: boolean,
+) {
+	return new Promise<void>((res, rej) => {
+		const modalRoot = document.getElementById('modal-root');
+		if (!modalRoot) rej();
+		if (modalRoot) {
+			const el = document.createElement('div');
+
+			modalRoot.appendChild(el);
+
+			const closeModal = () => {
+				ReactDOM.unmountComponentAtNode(el);
+				modalRoot.removeChild(el);
+				res();
+			};
+
+			ReactDOM.render(
+				<LinkCreateModal
+					defaultName={defaultName}
+					from={from}
+					to={to}
+					extended={extended}
+					close={closeModal}
 				/>,
 				el,
 			);

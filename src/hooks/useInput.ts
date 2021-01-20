@@ -90,10 +90,8 @@ export const useInput = ({
 		autocomplete,
 		bind: {
 			value,
-			onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-				setIsDirty(true);
-				setValue(event.target.value);
-			},
+			onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+				onValueChange(event.target.value),
 			id,
 			name,
 			autoFocus,
