@@ -280,12 +280,17 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		copyBox.spec['image-version'] = imageVersionInput.value;
 		copyBox.spec.pins = pinsList;
 		copyBox.spec.type = editableBox.spec.type;
-		copyBox.spec['extended-settings'] = JSON.parse(extendedSettingsInput.value);
-		copyBox.spec['custom-config'] = JSON.parse(boxConfigInput.value);
 
 		const port = nodePortInput.value ? parseInt(nodePortInput.value) : undefined;
-
 		if (port) copyBox.spec['node-port'] = port;
+
+		const extendedSettings = extendedSettingsInput.value
+			? JSON.parse(extendedSettingsInput.value)
+			: undefined;
+		if (extendedSettings) copyBox.spec['extended-settings'] = extendedSettings;
+
+		const customConfig = boxConfigInput.value ? JSON.parse(boxConfigInput.value) : undefined;
+		if (customConfig) copyBox.spec['custom-config'] = customConfig;
 
 		schemasStore.configurateBox(editableBox, copyBox, {
 			dictionaryRelations: relatedDictionaryList,

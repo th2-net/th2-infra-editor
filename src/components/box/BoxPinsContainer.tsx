@@ -25,6 +25,7 @@ import BoxPin from './BoxPin';
 interface BoxPinsContainerProps {
 	pins: Pin[];
 	boxName: string;
+	boxType: string;
 	isBoxActive: boolean;
 	setEditablePin: (pin: Pin) => void;
 	groupsTopOffset?: number;
@@ -41,6 +42,7 @@ const BoxPinsContainer = (
 	{
 		pins,
 		boxName,
+		boxType,
 		isBoxActive,
 		setEditablePin,
 		groupsTopOffset,
@@ -114,7 +116,7 @@ const BoxPinsContainer = (
 			connectionsStore.addConnections(
 				pinsRefs.flatMap((pinRef, index) =>
 					getPinConnections(filteredPins[index].name).map((connection, connectionIndex) =>
-						getConnection(
+						getWrappedConnection(
 							pinRef,
 							filteredPins[index],
 							connection.name,
@@ -127,19 +129,19 @@ const BoxPinsContainer = (
 			connectionsStore.addConnections(
 				pins.flatMap(pin =>
 					getPinConnections(pin.name).map(connection =>
-						getConnection(closedPinRef, pin, connection.name),
+						getWrappedConnection(closedPinRef, pin, connection.name),
 					),
 				),
 			);
 		}
 	};
 
-	const getConnection = (
+	const getWrappedConnection = (
 		pinRef: React.RefObject<HTMLDivElement>,
 		pin: Pin,
 		connectionName: string,
 		position?: number,
-	): Connection => {
+	): [string, string, Connection] => {
 		const pinClientRect = pinRef.current?.getBoundingClientRect();
 
 		const leftPinLinks = getPinLinksBySide(pin, 'left');
@@ -167,26 +169,25 @@ const BoxPinsContainer = (
 			  (titleHeight ?? 0)
 			: 0;
 
-		return {
-			name: connectionName,
-			connectionOwner: {
-				box: boxName,
-				pin: pin.name,
-				connectionType: pin['connection-type'],
-			},
-			coords: {
-				leftPoint: {
-					left: pinClientRect ? pinClientRect.left - PIN_PADDING : 0,
-					top: leftTop,
+		return [
+			boxName,
+			pin.name,
+			{
+				name: connectionName,
+				coords: {
+					leftPoint: {
+						left: pinClientRect ? pinClientRect.left - PIN_PADDING : 0,
+						top: leftTop,
+					},
+					rightPoint: {
+						left: pinClientRect
+							? pinClientRect.left + pinClientRect.width + PIN_PADDING
+							: 0,
+						top: rightTop,
+					},
 				},
-				rightPoint: {
-					left: pinClientRect
-						? pinClientRect.left + pinClientRect.width + PIN_PADDING
-						: 0,
-					top: rightTop,
-				},
 			},
-		};
+		];
 	};
 
 	const getBoxConnectionsAmount = (direction: 'left' | 'right' | 'both') =>
@@ -230,12 +231,10 @@ const BoxPinsContainer = (
 
 		if (direction !== 'both') {
 			inConnections = inConnections.filter(link => {
-				const targetConnection = connectionsStore.connections.find(
-					connection =>
-						connection.name === link.name &&
-						connection.connectionOwner.box === link.from.box &&
-						connection.connectionOwner.pin === link.from.pin,
-				);
+				const targetConnection = connectionsStore.connections
+					.get(link.from.box)
+					?.get(link.from.pin)
+					?.get(link.name);
 
 				if (!targetConnection) return false;
 
@@ -245,12 +244,10 @@ const BoxPinsContainer = (
 			});
 
 			outConnections = outConnections.filter(link => {
-				const targetConnection = connectionsStore.connections.find(
-					connection =>
-						connection.name === link.name &&
-						connection.connectionOwner.box === link.to.box &&
-						connection.connectionOwner.pin === link.to.pin,
-				);
+				const targetConnection = connectionsStore.connections
+					.get(link.to.box)
+					?.get(link.to.pin)
+					?.get(link.name);
 
 				if (!targetConnection) return false;
 
@@ -340,6 +337,7 @@ const BoxPinsContainer = (
 						}
 						initBoxConnections={initBoxConnections}
 						boxName={boxName}
+						boxType={boxType}
 						groupsTopOffset={groupsTopOffset}
 						titleHeight={titleHeight}
 					/>

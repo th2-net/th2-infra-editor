@@ -17,7 +17,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { createBemElement } from '../helpers/styleCreators';
-import { LinkArrow } from '../models/Box';
+import { LinkArrow } from '../models/LinksDefinition';
 import '../styles/svg-layout.scss';
 
 interface ArrowProps {

@@ -15,13 +15,13 @@
  ***************************************************************************** */
 
 import FileBase from './FileBase';
-import { ConnectionOwner } from './Box';
+import { ConnectionCoord, ConnectionOwner, ExtendedConnectionOwner } from './Box';
 
 export default interface LinksDefinition extends FileBase {
 	spec: {
 		['boxes-relation']?: {
-			['router-mq']: Router<MqConnection>[];
-			['router-grpc']: Router<GrpcConnection>[];
+			['router-mq']: Link<ConnectionOwner>[];
+			['router-grpc']: Link<ConnectionOwner>[];
 		};
 		['dictionaries-relation']?: {
 			box: string;
@@ -31,28 +31,17 @@ export default interface LinksDefinition extends FileBase {
 	};
 }
 
-export interface Router<T extends MqConnection | GrpcConnection> {
+export interface Link<T extends ConnectionOwner | ExtendedConnectionOwner> {
 	name: string;
 	from: T;
 	to: T;
 }
 
-export interface MqConnection {
-	box: string;
-	pin: string;
-}
-
-export interface GrpcConnection {
-	box: string;
-	pin: string;
-	strategy?: string;
-	['service-class']?: string;
-}
-
-export interface Link {
+export interface LinkArrow {
 	name: string;
-	from: ConnectionOwner;
-	to: ConnectionOwner;
+	start: ConnectionCoord;
+	end: ConnectionCoord;
+	isHighlighted: boolean;
 }
 
 export function isLinksDefinition(file: FileBase): file is LinksDefinition {
@@ -61,11 +50,11 @@ export function isLinksDefinition(file: FileBase): file is LinksDefinition {
 	);
 }
 
-export function isLink(object: unknown): object is Link {
+export function isLink(object: unknown): object is Link<ConnectionOwner | ExtendedConnectionOwner> {
 	return (
 		typeof object === 'object' &&
 		object !== null &&
-		(object as Link).to !== undefined &&
-		(object as Link).from !== undefined
+		(object as Link<ConnectionOwner | ExtendedConnectionOwner>).to !== undefined &&
+		(object as Link<ConnectionOwner | ExtendedConnectionOwner>).from !== undefined
 	);
 }
