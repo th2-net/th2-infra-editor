@@ -65,7 +65,7 @@ export default class HistoryStore {
 	private rollbackChange = (change: Change) => {
 		if (!change.from && change.to) {
 			if (isBoxEntity(change.to)) {
-				this.rootStore.schemasStore.deleteBox(change.to.name, false);
+				this.rootStore.schemasStore.deleteBox(change.to.name, true, false);
 			}
 			if (isLink(change.to)) {
 				this.rootStore.schemasStore.connectionsStore.deleteLink(change.to, false);
@@ -117,7 +117,7 @@ export default class HistoryStore {
 		}
 		if (!change.to) {
 			if (isBoxEntity(change.from)) {
-				this.rootStore.schemasStore.deleteBox(change.from.name, false);
+				this.rootStore.schemasStore.deleteBox(change.from.name, true, false);
 			}
 			if (isLink(change.from)) {
 				this.rootStore.schemasStore.connectionsStore.deleteLink(change.from, false);

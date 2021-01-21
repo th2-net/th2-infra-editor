@@ -326,7 +326,11 @@ export default class SchemasStore {
 	};
 
 	@action
-	public deleteBox = async (boxName: string, createSnapshot = true) => {
+	public deleteBox = async (
+		boxName: string,
+		deleteRelatedLinks: boolean,
+		createSnapshot = true,
+	) => {
 		if (!this.selectedSchema) return;
 
 		const removableBox = this.boxes.find(box => box.name === boxName);
@@ -335,14 +339,10 @@ export default class SchemasStore {
 
 		const changes: Array<Change> = [];
 
-		if (removableBox.spec.pins) {
+		if (removableBox.spec.pins && deleteRelatedLinks) {
 			removableBox.spec.pins.forEach(pin =>
 				changes.push(
-					...this.connectionsStore.removeConnectionsFromLinkBox(
-						pin,
-						boxName,
-						createSnapshot,
-					),
+					...this.connectionsStore.removeRelatedToBoxLinks(pin, boxName, createSnapshot),
 				),
 			);
 		}
@@ -410,7 +410,7 @@ export default class SchemasStore {
 			if (oldBox.name === updatedBox.name) {
 				this.boxes = [...this.boxes.filter(box => box.name !== oldBox.name), updatedBox];
 			} else {
-				this.deleteBox(oldBox.name, false);
+				this.deleteBox(oldBox.name, false, false);
 				this.createBox(updatedBox, false);
 			}
 		}
@@ -420,6 +420,13 @@ export default class SchemasStore {
 		if (options?.dictionaryRelations) {
 			changeList = this.configurateBoxDictionaryRelations(
 				options.dictionaryRelations,
+				updatedBox.name,
+			);
+		}
+
+		if (oldBox.name !== updatedBox.name) {
+			this.connectionsStore.replaceDestinationBoxForAllRelatedToBoxLinks(
+				oldBox.name,
 				updatedBox.name,
 			);
 		}
@@ -606,7 +613,7 @@ export default class SchemasStore {
 					this.saveEntityChanges(linkBox, 'update');
 				}
 			});
-			const changes = this.connectionsStore.removeConnectionsFromLinkBox(pin, boxName);
+			const changes = this.connectionsStore.removeRelatedToBoxLinks(pin, boxName);
 			this.historyStore.addSnapshot({
 				object: pin.name,
 				type: 'box',

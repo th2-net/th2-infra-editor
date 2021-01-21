@@ -66,7 +66,7 @@ export function convertToOriginLink(link: Link<ExtendedConnectionOwner>): Link<C
 	return convertedLink;
 }
 
-function addAdditionalDetailsToLink(
+export function addAdditionalDetailsToLink(
 	link: Link<ConnectionOwner | ExtendedConnectionOwner>,
 	details: {
 		fromStrategy?: string;
