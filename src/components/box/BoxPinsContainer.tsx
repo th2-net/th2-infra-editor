@@ -115,7 +115,7 @@ const BoxPinsContainer = (
 		if (isContainerExpanded) {
 			connectionsStore.addConnections(
 				pinsRefs.flatMap((pinRef, index) =>
-					getPinConnections(filteredPins[index].name).map((connection, connectionIndex) =>
+					getPinLinks(filteredPins[index].name).map((connection, connectionIndex) =>
 						getWrappedConnection(
 							pinRef,
 							filteredPins[index],
@@ -128,7 +128,7 @@ const BoxPinsContainer = (
 		} else {
 			connectionsStore.addConnections(
 				pins.flatMap(pin =>
-					getPinConnections(pin.name).map(connection =>
+					getPinLinks(pin.name).map(connection =>
 						getWrappedConnection(closedPinRef, pin, connection.name),
 					),
 				),
@@ -190,13 +190,13 @@ const BoxPinsContainer = (
 		];
 	};
 
-	const getBoxConnectionsAmount = (direction: 'left' | 'right' | 'both') =>
+	const getBoxLinksAmount = (direction: 'left' | 'right' | 'both') =>
 		pins.reduce(
 			(acc, pin) => {
-				const pinConnections = getPinLinksBySide(pin, direction);
+				const pinLinks = getPinLinksBySide(pin, direction);
 
-				acc.in += pinConnections.in.length;
-				acc.out += pinConnections.out.length;
+				acc.in += pinLinks.in.length;
+				acc.out += pinLinks.out.length;
 				return acc;
 			},
 			{
@@ -205,7 +205,7 @@ const BoxPinsContainer = (
 			},
 		);
 
-	const getPinConnections = (pin: string) =>
+	const getPinLinks = (pin: string) =>
 		connectionsStore.links.filter(
 			link =>
 				(link.from.box === boxName && link.from.pin === pin) ||
@@ -221,16 +221,16 @@ const BoxPinsContainer = (
 			};
 		}
 
-		let inConnections = connectionsStore.links.filter(
+		let inLinks = connectionsStore.links.filter(
 			link => link.to.box === boxName && link.to.pin === pin.name,
 		);
 
-		let outConnections = connectionsStore.links.filter(
+		let outLinks = connectionsStore.links.filter(
 			link => link.from.box === boxName && link.from.pin === pin.name,
 		);
 
 		if (direction !== 'both') {
-			inConnections = inConnections.filter(link => {
+			inLinks = inLinks.filter(link => {
 				const targetConnection = connectionsStore.connections
 					.get(link.from.box)
 					?.get(link.from.pin)
@@ -243,7 +243,7 @@ const BoxPinsContainer = (
 					: targetConnection.coords.leftPoint.left >= areaClientRect.right;
 			});
 
-			outConnections = outConnections.filter(link => {
+			outLinks = outLinks.filter(link => {
 				const targetConnection = connectionsStore.connections
 					.get(link.to.box)
 					?.get(link.to.pin)
@@ -258,20 +258,22 @@ const BoxPinsContainer = (
 		}
 
 		return {
-			in: inConnections,
-			out: outConnections,
+			in: inLinks,
+			out: outLinks,
 		};
 	};
 
-	const leftBoxConnectionsAmount = React.useMemo(() => getBoxConnectionsAmount('left'), [
+	const leftBoxLinksAmount = React.useMemo(() => getBoxLinksAmount('left'), [
 		groupsTopOffset,
 		isContainerExpanded,
 		connectionsStore.links,
+		pinsRefs,
 	]);
-	const rightBoxConnectionsAmount = React.useMemo(() => getBoxConnectionsAmount('right'), [
+	const rightBoxConnectionsAmount = React.useMemo(() => getBoxLinksAmount('right'), [
 		groupsTopOffset,
 		isContainerExpanded,
 		connectionsStore.links,
+		pinsRefs,
 	]);
 
 	React.useEffect(() => {
@@ -306,7 +308,7 @@ const BoxPinsContainer = (
 				<div ref={closedPinRef} className='box__pin'>
 					<div className='box__pin-dot left' />
 					<span className='box__pin-counter left'>
-						{leftBoxConnectionsAmount.in + leftBoxConnectionsAmount.out}
+						{leftBoxLinksAmount.in + leftBoxLinksAmount.out}
 					</span>
 					<div className='box__pin-info'>
 						<span className='box__pin-name'>

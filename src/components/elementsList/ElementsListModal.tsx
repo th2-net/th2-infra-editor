@@ -217,7 +217,9 @@ const ElementsListModal = ({ top, left, width, onClose }: ElementsListModalProps
 									key={`box-${box.item.name}`}
 									box={box.item as BoxEntity}
 									editBox={() => setEditableBox(box.item as BoxEntity)}
-									deleteBox={deletableBox => schemasStore.deleteBox(deletableBox)}
+									deleteBox={deletableBox =>
+										schemasStore.deleteBox(deletableBox, true)
+									}
 									activeBox={schemasStore.activeBox}
 									setActiveBox={schemasStore.setActiveBox}
 									color={schemasStore.getBoxBorderColor(box.item.name)}

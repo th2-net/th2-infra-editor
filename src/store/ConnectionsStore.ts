@@ -19,7 +19,11 @@ import ApiSchema from '../api/ApiSchema';
 import LinksDefinition, { Link, LinkArrow } from '../models/LinksDefinition';
 import { BoxEntity, Connection, ExtendedConnectionOwner, Pin } from '../models/Box';
 import { intersection } from '../helpers/array';
-import { convertToExtendedLink, convertToOriginLink } from '../helpers/link';
+import {
+	addAdditionalDetailsToLink,
+	convertToExtendedLink,
+	convertToOriginLink,
+} from '../helpers/link';
 import SchemasStore from './SchemasStore';
 import RootStore from './RootStore';
 import HistoryStore from './HistoryStore';
@@ -238,7 +242,7 @@ export default class ConnectionsStore {
 	}
 
 	@action
-	public removeConnectionsFromLinkBox = (
+	public removeRelatedToBoxLinks = (
 		pin: Pin,
 		boxName: string,
 		createSnapshot = true,
@@ -357,6 +361,48 @@ export default class ConnectionsStore {
 				],
 			});
 		}
+	};
+
+	@action
+	public replaceDestinationBoxForAllRelatedToBoxLinks = (oldBox: string, newBox: string) => {
+		if (!this.linkBoxes) return;
+
+		const filteredLinks = this.links.filter(
+			link => link.from.box === oldBox || link.to.box === oldBox,
+		);
+
+		filteredLinks.forEach(link => {
+			const renamedLinks = this.replaceDestinationForLink(link, oldBox, newBox);
+			this.changeLink(renamedLinks, link, false);
+		});
+	};
+
+	private replaceDestinationForLink = (
+		link: Link<ExtendedConnectionOwner>,
+		oldBox: string,
+		newBox: string,
+	): Link<ExtendedConnectionOwner> => {
+		let changedLink = {
+			name: link.name,
+			from: {
+				box: link.from.box === oldBox ? newBox : link.from.box,
+				pin: link.from.pin,
+				connectionType: link.from.connectionType,
+			},
+			to: {
+				box: link.to.box === oldBox ? newBox : link.to.box,
+				pin: link.to.pin,
+				connectionType: link.to.connectionType,
+			},
+		} as Link<ExtendedConnectionOwner>;
+
+		changedLink = addAdditionalDetailsToLink(changedLink, {
+			fromStrategy: link.from.strategy,
+			toStrategy: link.to.strategy,
+			serviceClass: link.to['service-class'],
+		}) as Link<ExtendedConnectionOwner>;
+
+		return changedLink;
 	};
 
 	public generateLinkName = (fromBoxName: string, toBoxName: string) => {
