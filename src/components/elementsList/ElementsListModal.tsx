@@ -221,7 +221,7 @@ const ElementsListModal = ({ top, left, width, onClose }: ElementsListModalProps
 										schemasStore.deleteBox(deletableBox, true)
 									}
 									activeBox={schemasStore.activeBox}
-									setActiveBox={schemasStore.setActiveBox}
+									setOutlinerSelectedBox={schemasStore.setOutlinerSelectedBox}
 									color={schemasStore.getBoxBorderColor(box.item.name)}
 									isFilterPassed={box.isFilterPassed}
 								/>
