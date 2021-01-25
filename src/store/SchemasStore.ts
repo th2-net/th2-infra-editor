@@ -403,7 +403,7 @@ export default class SchemasStore {
 			createSnapshot?: boolean;
 		},
 	) => {
-		if (this.checkBoxExisting(updatedBox)) return;
+		if (oldBox.name !== updatedBox.name && this.checkBoxExisting(updatedBox)) return;
 
 		const isChanged = Boolean(Object.values(diff(oldBox, updatedBox)).length);
 
