@@ -14,9 +14,11 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
 import { observer } from 'mobx-react-lite';
+import React from 'react';
+import { isEqual } from '../helpers/object';
 import { createBemElement } from '../helpers/styleCreators';
+import useConnectionsStore from '../hooks/useConnectionsStore';
 import { LinkArrow } from '../models/LinksDefinition';
 import '../styles/svg-layout.scss';
 
@@ -24,64 +26,70 @@ interface ArrowProps {
 	arrow: LinkArrow;
 }
 
-const Arrow = observer(({ arrow }: ArrowProps) => {
-	const arrowLineClass = createBemElement(
-		'arrow',
-		'line',
-		arrow.isHighlighted ? 'highlighted' : null,
-	);
+const Arrow = React.memo(
+	({ arrow }: ArrowProps) => {
+		const arrowLineClass = createBemElement(
+			'arrow',
+			'line',
+			arrow.isHighlighted ? 'highlighted' : null,
+		);
 
-	const arrowPointerClass = createBemElement(
-		'arrow',
-		'pointer',
-		arrow.isHighlighted ? 'highlighted' : null,
-	);
+		const arrowPointerClass = createBemElement(
+			'arrow',
+			'pointer',
+			arrow.isHighlighted ? 'highlighted' : null,
+		);
 
-	const getBezierPoints = () =>
-		arrow.start.left === arrow.end.left
-			? `${arrow.start.left - (arrow.end.top - arrow.start.top) / 3},
+		const getBezierPoints = () =>
+			arrow.start.left === arrow.end.left
+				? `${arrow.start.left - (arrow.end.top - arrow.start.top) / 3},
 				${arrow.start.top + (arrow.end.top - arrow.start.top) / 6} 
 				${arrow.start.left - (arrow.end.top - arrow.start.top) / 3},
 				${arrow.end.top - (arrow.end.top - arrow.start.top) / 6} `
-			: `${arrow.end.left - (arrow.end.left - arrow.start.left) / 5},
+				: `${arrow.end.left - (arrow.end.left - arrow.start.left) / 5},
 				${arrow.start.top} 
 				${arrow.start.left + (arrow.end.left - arrow.start.left) / 5},
 				${arrow.end.top}`;
 
-	return (
-		<g className='arrow' pointerEvents='all'>
-			<path
-				d={`M ${arrow.start.left},${arrow.start.top} 
+		return (
+			<g className='arrow' pointerEvents='all'>
+				<path
+					d={`M ${arrow.start.left},${arrow.start.top} 
 					C ${getBezierPoints()}
 					${arrow.end.left}, ${arrow.end.top}`}
-				className={arrowLineClass}
-			/>
-			<polygon
-				points={`${arrow.end.left},${arrow.end.top}
+					className={arrowLineClass}
+				/>
+				<polygon
+					points={`${arrow.end.left},${arrow.end.top}
 					${arrow.end.left - (arrow.end.left >= arrow.start.left ? 7 : -7)},
 					${arrow.end.top - 5}
 					${arrow.end.left - (arrow.end.left >= arrow.start.left ? 7 : -7)},
 					${arrow.end.top + 5}`}
-				className={arrowPointerClass}
-			/>
-		</g>
-	);
-});
-
-interface SvgLayoutProps {
-	arrows: LinkArrow[];
-}
-
-const SvgLayout = ({ arrows }: SvgLayoutProps) => (
-	<svg preserveAspectRatio='none' xmlns='http://www.w3.org/2000/svg' id='svg-layout'>
-		{arrows.map(arrow => (
-			<Arrow
-				key={`${arrow.name}${arrow.start.left}${arrow.start.top}
-					${arrow.end.left}${arrow.end.top}`}
-				arrow={arrow}
-			/>
-		))}
-	</svg>
+					className={arrowPointerClass}
+				/>
+			</g>
+		);
+	},
+	(prevProps: Readonly<ArrowProps>, nextProps: Readonly<ArrowProps>) =>
+		isEqual(prevProps, nextProps),
 );
 
-export default SvgLayout;
+Arrow.displayName = 'Arrow';
+
+const SvgLayout = () => {
+	const connectionsStore = useConnectionsStore();
+
+	return (
+		<svg preserveAspectRatio='none' xmlns='http://www.w3.org/2000/svg' id='svg-layout'>
+			{connectionsStore.connectionsArrows.map(arrow => (
+				<Arrow
+					key={`${arrow.name}${arrow.start.left}${arrow.start.top}
+						${arrow.end.left}${arrow.end.top}`}
+					arrow={arrow}
+				/>
+			))}
+		</svg>
+	);
+};
+
+export default observer(SvgLayout);

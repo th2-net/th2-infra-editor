@@ -52,10 +52,9 @@ const Box = (
 	const [editableDictionary, setEditableDictionary] = React.useState<DictionaryEntity | null>(
 		null,
 	);
+	const [isBoxActive, setIsBoxActive] = React.useState(false);
 
 	const boxRef = React.useRef<HTMLDivElement>(null);
-
-	const isBoxActive = schemasStore.activeBox?.name === box.name;
 
 	const boxClass = createStyleSelector('box', isBoxActive ? 'active' : null);
 
@@ -67,6 +66,14 @@ const Box = (
 			}
 		}
 	}, [box.spec.pins]);
+
+	React.useEffect(() => {
+		setIsBoxActive(
+			schemasStore.outlinerSelectedBox
+				? schemasStore.outlinerSelectedBox.name === box.name
+				: false,
+		);
+	}, [schemasStore.outlinerSelectedBox]);
 
 	const boxStatusClass = createBemElement(
 		'box',
@@ -98,6 +105,7 @@ const Box = (
 				)
 		) {
 			schemasStore.setActiveBox(null);
+			setIsBoxActive(false);
 			if (document.onmousemove) {
 				document.onmousemove = null;
 				const body = document.querySelector('body');
@@ -116,13 +124,15 @@ const Box = (
 				ref={boxRef}
 				className={boxClass}
 				onMouseOver={() => {
-					if (!schemasStore.activeBox && !connectionsStore.draggableLink) {
+					if (!connectionsStore.draggableLink) {
 						schemasStore.setActiveBox(box);
+						setIsBoxActive(true);
 					}
 				}}
 				onMouseLeave={() => {
 					if (!editablePin && isBoxActive && !schemasStore.activePin) {
 						schemasStore.setActiveBox(null);
+						setIsBoxActive(false);
 					}
 				}}>
 				<div
@@ -166,7 +176,7 @@ const Box = (
 						<BoxPinsContainer
 							ref={ref}
 							pins={box.spec.pins}
-							isBoxActive={schemasStore.activeBox ? isBoxActive : false}
+							isBoxActive={isBoxActive}
 							boxName={box.name}
 							boxType={box.spec.type}
 							setEditablePin={setEditablePin}

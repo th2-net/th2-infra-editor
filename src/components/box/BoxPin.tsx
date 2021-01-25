@@ -45,7 +45,7 @@ interface BoxPinProps {
 		out: Link<ExtendedConnectionOwner>[];
 	};
 	isPinExpanded: boolean;
-	togglePin: (isOpen: boolean) => void;
+	togglePin: (pin: Pin | null) => void;
 	isConnectable: boolean;
 	boxName: string;
 	boxType: string;
@@ -121,7 +121,7 @@ const BoxPin = (
 	}, [leftPinLinks, rightPinLinks]);
 
 	const expandPin = () => {
-		togglePin(!isPinExpanded);
+		togglePin(!isPinExpanded ? pin : null);
 		if (isPinExpanded) setIsMenuOpen(false);
 	};
 
@@ -282,7 +282,7 @@ const BoxPin = (
 				)
 			) {
 				schemasStore.deletePinConnections(pin, boxName);
-				togglePin(false);
+				togglePin(null);
 			}
 		}
 	};

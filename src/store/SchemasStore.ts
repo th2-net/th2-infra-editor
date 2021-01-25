@@ -122,6 +122,9 @@ export default class SchemasStore {
 	@observable
 	public schemaSettings: SchemaSettings | null = null;
 
+	@observable
+	public outlinerSelectedBox: BoxEntity | null = null;
+
 	@computed
 	public get groups() {
 		return this.groupsConfig.map(group => {
@@ -192,6 +195,11 @@ export default class SchemasStore {
 	@action
 	public setExpandedBox = (box: BoxEntity | null) => {
 		this.expandedBox = box;
+	};
+
+	@action
+	public setOutlinerSelectedBox = (box: BoxEntity | null) => {
+		this.outlinerSelectedBox = box;
 	};
 
 	@action

@@ -28,7 +28,7 @@ interface Props {
 	color: string;
 }
 
-const Group = React.memo(({ title, boxes, groupsTopOffset, color }: Props) => {
+const Group = ({ title, boxes, groupsTopOffset, color }: Props) => {
 	const boxRefsObject = React.useRef<{
 		[key: string]: React.RefObject<PinsContainerMethods>;
 	}>({});
@@ -82,7 +82,7 @@ const Group = React.memo(({ title, boxes, groupsTopOffset, color }: Props) => {
 			</div>
 		</div>
 	);
-});
+};
 
 Group.displayName = 'Group';
 

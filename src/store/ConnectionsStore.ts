@@ -187,6 +187,8 @@ export default class ConnectionsStore {
 								? this.schemasStore.activeBox?.name === startBox.name
 								: this.outlinerSelectedLink
 								? this.outlinerSelectedLink.name === link.name
+								: this.schemasStore.outlinerSelectedBox
+								? this.schemasStore.outlinerSelectedBox.name === startBox.name
 								: false,
 						};
 					}
