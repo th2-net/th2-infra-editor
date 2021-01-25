@@ -3,6 +3,7 @@ import { createLink } from '../../helpers/link';
 import useConnectionsStore from '../../hooks/useConnectionsStore';
 import { useInput } from '../../hooks/useInput';
 import useSchemasStore from '../../hooks/useSchemasStore';
+import { useSelect } from '../../hooks/useSelect';
 import { ExtendedConnectionOwner } from '../../models/Box';
 import FormModal from '../util/FormModal';
 
@@ -25,22 +26,28 @@ const LinkCreateModal = ({ defaultName, from, to, extended, close }: LinkCreateM
 		validate: linkName => !connectionsStore.links.find(link => link.name === linkName),
 	});
 
-	const linkFromStrategyInput = useInput({
-		initialValue: '',
+	const linkFromStrategySelect = useSelect({
+		variants: ['robin', 'filter'],
 		id: 'from-link-strategy',
 		label: 'from-strategy',
 	});
 
-	const linkToStrategyInput = useInput({
-		initialValue: '',
+	const linkToStrategySelect = useSelect({
+		variants: ['robin', 'filter'],
 		id: 'to-link-strategy',
-		label: 'to-strategy',
+		label: 'from-strategy',
 	});
 
-	const linkToServiceClassInput = useInput({
-		initialValue: '',
-		id: 'link-service-class',
-		label: 'service-class',
+	const linkFromServiceClassSelect = useSelect({
+		variants: ['com.exactpro.th2.util.grpc.MessageComparatorServiceService'],
+		id: 'from-link-service-class',
+		label: 'from-service-class',
+	});
+
+	const linkToServiceClassSelect = useSelect({
+		variants: ['com.exactpro.th2.util.grpc.MessageComparatorServiceService'],
+		id: 'to-link-service-class',
+		label: 'to-service-class',
 	});
 
 	const onSubmit = () => {
@@ -50,27 +57,34 @@ const LinkCreateModal = ({ defaultName, from, to, extended, close }: LinkCreateM
 		const toPosition = to;
 
 		if (extended) {
-			fromPosition.strategy = linkFromStrategyInput.value;
-			toPosition.strategy = linkToStrategyInput.value;
-			toPosition['service-class'] = linkToServiceClassInput.value;
+			fromPosition.strategy = linkFromStrategySelect.value;
+			toPosition.strategy = linkToStrategySelect.value;
+			fromPosition['service-class'] = linkFromServiceClassSelect.value;
+			toPosition['service-class'] = linkToServiceClassSelect.value;
 		}
 
 		const link = createLink(linkNameInput.value, fromPosition, toPosition);
 		connectionsStore.addLink(link);
 		schemasStore.setActiveBox(null);
 		schemasStore.setActivePin(null);
-		inputs.forEach(input => input.reset());
 	};
 
 	const inputs = [
 		linkNameInput,
-		...(extended ? [linkFromStrategyInput, linkToStrategyInput, linkToServiceClassInput] : []),
+		...(extended
+			? [
+					linkFromStrategySelect,
+					linkToStrategySelect,
+					linkFromServiceClassSelect,
+					linkToServiceClassSelect,
+			  ]
+			: []),
 	];
 
 	return (
 		<FormModal
 			title={'Create link'}
-			inputConfigList={inputs}
+			configList={inputs}
 			onSubmit={() => {
 				onSubmit();
 				close();

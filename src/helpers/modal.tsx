@@ -126,7 +126,6 @@ export function openLinkCreateModal(
 
 			const closeModal = () => {
 				ReactDOM.unmountComponentAtNode(el);
-				modalRoot.removeChild(el);
 				res();
 			};
 

@@ -419,7 +419,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 			<ModalPortal isOpen={isAddPinFormOpen}>
 				<FormModal
 					title='Add pin'
-					inputConfigList={[pinNameConfigInput, pinTypeConfigInput]}
+					configList={[pinNameConfigInput, pinTypeConfigInput]}
 					onSubmit={addPinToList}
 					onClose={() => setIsAddPinFormOpen(false)}
 				/>
@@ -427,7 +427,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 			<ModalPortal isOpen={isAddDictionaryFormOpen}>
 				<FormModal
 					title='Add dictionary'
-					inputConfigList={[relationNameInput, dictionaryNameInput, dictionaryTypeInput]}
+					configList={[relationNameInput, dictionaryNameInput, dictionaryTypeInput]}
 					onSubmit={addDictionaryToList}
 					onClose={() => setIsAddDictionaryFormOpen(false)}
 				/>

@@ -131,7 +131,7 @@ const Header = () => {
 			<ModalPortal isOpen={isCreateSchemaModalOpen}>
 				<FormModal
 					title='Create schema'
-					inputConfigList={[schemasNameInput]}
+					configList={[schemasNameInput]}
 					onSubmit={() => schemasStore.createSchema(schemasNameInput.value)}
 					onClose={() => setIsCreateSchemaModalOpen(false)}
 				/>

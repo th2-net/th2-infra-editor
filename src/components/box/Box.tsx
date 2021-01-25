@@ -124,7 +124,7 @@ const Box = (
 				ref={boxRef}
 				className={boxClass}
 				onMouseOver={() => {
-					if (!connectionsStore.draggableLink) {
+					if (!schemasStore.activeBox && !connectionsStore.draggableLink) {
 						schemasStore.setActiveBox(box);
 						setIsBoxActive(true);
 					}
@@ -178,7 +178,6 @@ const Box = (
 							pins={box.spec.pins}
 							isBoxActive={isBoxActive}
 							boxName={box.name}
-							boxType={box.spec.type}
 							setEditablePin={setEditablePin}
 							groupsTopOffset={groupsTopOffset}
 							titleHeight={titleHeight}
