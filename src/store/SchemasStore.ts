@@ -425,16 +425,21 @@ export default class SchemasStore {
 
 		let changeList: Change[] = [];
 
-		if (options?.dictionaryRelations) {
-			changeList = this.configurateBoxDictionaryRelations(
-				options.dictionaryRelations,
-				updatedBox.name,
-			);
-		}
-
 		if (oldBox.name !== updatedBox.name) {
 			this.connectionsStore.replaceDestinationBoxForAllRelatedToBoxLinks(
 				oldBox.name,
+				updatedBox.name,
+			);
+			const dictionariesChangeList = this.replaceNameForAllRelatedToBoxDictionaries(
+				oldBox.name,
+				updatedBox.name,
+			);
+			changeList.unshift(...dictionariesChangeList);
+		}
+
+		if (options?.dictionaryRelations) {
+			changeList = this.configurateBoxDictionaryRelations(
+				options.dictionaryRelations,
 				updatedBox.name,
 			);
 		}
@@ -460,6 +465,41 @@ export default class SchemasStore {
 				changeList,
 			});
 		}
+	};
+
+	@action
+	private replaceNameForAllRelatedToBoxDictionaries = (
+		oldBoxName: string,
+		newBoxName: string,
+	): Change[] => {
+		if (!this.dictionaryLinksEntity) return [];
+
+		const oldValue = JSON.parse(JSON.stringify(this.dictionaryLinksEntity));
+		this.dictionaryLinksEntity = {
+			...this.dictionaryLinksEntity,
+			spec: {
+				'dictionaries-relation': this.dictionaryLinksEntity.spec[
+					'dictionaries-relation'
+				].map(dictionaryLink => {
+					const tempDictionary = dictionaryLink;
+					if (tempDictionary.box === oldBoxName) {
+						tempDictionary.box = newBoxName;
+					}
+					return tempDictionary;
+				}),
+			},
+		};
+
+		const newValue = JSON.parse(JSON.stringify(this.dictionaryLinksEntity));
+
+		this.saveEntityChanges(this.dictionaryLinksEntity, 'update');
+		return [
+			{
+				object: this.dictionaryLinksEntity.name,
+				from: oldValue,
+				to: newValue,
+			},
+		];
 	};
 
 	@action
