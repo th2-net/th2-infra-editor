@@ -345,7 +345,7 @@ export default class SchemasStore {
 		if (removableBox.spec.pins && deleteRelatedLinks) {
 			removableBox.spec.pins.forEach(pin =>
 				changes.push(
-					...this.connectionsStore.removeRelatedToBoxLinks(pin, boxName, createSnapshot),
+					...this.connectionsStore.removeRelatedToPinLinks(pin, boxName, createSnapshot),
 				),
 			);
 		}
@@ -658,7 +658,7 @@ export default class SchemasStore {
 					this.saveEntityChanges(linkBox, 'update');
 				}
 			});
-			const changes = this.connectionsStore.removeRelatedToBoxLinks(pin, boxName);
+			const changes = this.connectionsStore.removeRelatedToPinLinks(pin, boxName);
 			this.historyStore.addSnapshot({
 				object: pin.name,
 				type: 'box',

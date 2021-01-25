@@ -84,7 +84,7 @@ const Box = (
 	const deleteBoxHandler = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 		e.stopPropagation();
 		if (await openConfirmModal(`Are you sure you want to delete resource "${box.name}"?`)) {
-			schemasStore.deleteBox(box.name, true, false);
+			schemasStore.deleteBox(box.name, true, true);
 		}
 	};
 
