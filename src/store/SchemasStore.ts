@@ -155,27 +155,22 @@ export default class SchemasStore {
 	};
 
 	@action
-	public createBox = (newBox: BoxEntity, createSnapshot = true) => {
-		if (!this.selectedSchema) return;
+	public createBox = (box: BoxEntity, createSnapshot = true) => {
+		if (!this.selectedSchema || this.checkBoxExisting(box)) return;
 
-		if (this.boxes.find(box => box.name === newBox.name)) {
-			alert(`Box "${newBox.name}" already exists`);
-			return;
-		}
-
-		this.addBox(newBox);
+		this.addBox(box);
 
 		if (createSnapshot) {
-			this.saveEntityChanges(newBox, 'add');
+			this.saveEntityChanges(box, 'add');
 			this.historyStore.addSnapshot({
-				object: newBox.name,
+				object: box.name,
 				type: 'box',
 				operation: 'add',
 				changeList: [
 					{
-						object: newBox.name,
+						object: box.name,
 						from: null,
-						to: newBox,
+						to: box,
 					},
 				],
 			});
@@ -408,6 +403,8 @@ export default class SchemasStore {
 			createSnapshot?: boolean;
 		},
 	) => {
+		if (this.checkBoxExisting(updatedBox)) return;
+
 		const isChanged = Boolean(Object.values(diff(oldBox, updatedBox)).length);
 
 		let oldValue;
@@ -676,6 +673,14 @@ export default class SchemasStore {
 		if (!boxType) return 'red';
 		const targetGroup = this.groups.find(group => group.types.includes(boxType));
 		return targetGroup ? targetGroup.color : '#C066CC';
+	};
+
+	private checkBoxExisting = (box: BoxEntity) => {
+		if (this.boxes.find(_box => _box.name === box.name)) {
+			alert(`Box "${box.name}" already exists`);
+			return true;
+		}
+		return false;
 	};
 
 	@action
