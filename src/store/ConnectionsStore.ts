@@ -244,7 +244,7 @@ export default class ConnectionsStore {
 	}
 
 	@action
-	public removeRelatedToBoxLinks = (
+	public removeRelatedToPinLinks = (
 		pin: Pin,
 		boxName: string,
 		createSnapshot = true,
@@ -257,8 +257,8 @@ export default class ConnectionsStore {
 			this.links
 				.filter(
 					link =>
-						(link.from.box === boxName || link.from.pin === pin.name) &&
-						(link.to.box === boxName || link.to.pin === pin.name),
+						(link.from.box === boxName && link.from.pin === pin.name) ||
+						(link.to.box === boxName && link.to.pin === pin.name),
 				)
 				.forEach(link => {
 					changes.push({
@@ -270,26 +270,56 @@ export default class ConnectionsStore {
 		}
 
 		if (this.linkBoxes) {
-			this.linkBoxes = this.linkBoxes.map(_linkBox => {
-				const linkBox = _linkBox;
+			this.linkBoxes = this.linkBoxes.map(linkBox => {
+				const copyLinkBox = {
+					name: linkBox.name,
+					kind: linkBox.kind,
+					sourceHash: linkBox.sourceHash,
+					spec: {
+						'boxes-relation': {},
+					},
+				} as LinksDefinition;
+
+				const mqLinks =
+					linkBox.spec['boxes-relation'] && linkBox.spec['boxes-relation']['router-mq']
+						? linkBox.spec['boxes-relation']['router-mq'].filter(
+								link =>
+									!(link.from.box === boxName && link.from.pin === pin.name) &&
+									!(link.to.box === boxName && link.to.pin === pin.name),
+						  )
+						: undefined;
+				const grpcLinks =
+					linkBox.spec['boxes-relation'] && linkBox.spec['boxes-relation']['router-grpc']
+						? linkBox.spec['boxes-relation']['router-grpc'].filter(
+								link =>
+									!(link.from.box === boxName && link.from.pin === pin.name) &&
+									!(link.to.box === boxName && link.to.pin === pin.name),
+						  )
+						: undefined;
 				if (
+					mqLinks &&
+					mqLinks.length &&
 					linkBox.spec['boxes-relation'] &&
-					linkBox.spec['boxes-relation'][
-						`router-${pin['connection-type']}` as 'router-mq' | 'router-grpc'
-					]
+					linkBox.spec['boxes-relation']['router-mq'] &&
+					copyLinkBox.spec['boxes-relation']
 				) {
-					linkBox.spec['boxes-relation'][
-						`router-${pin['connection-type']}` as 'router-mq' | 'router-grpc'
-					] = linkBox.spec['boxes-relation'][
-						`router-${pin['connection-type']}` as 'router-mq' | 'router-grpc'
-					].filter(link => {
-						return (
-							(link.from.pin !== pin.name || link.from.box !== boxName) &&
-							(link.to.pin !== pin.name || link.to.box !== boxName)
-						);
-					});
+					copyLinkBox.spec['boxes-relation']['router-mq'] = mqLinks;
 				}
-				return linkBox;
+				if (
+					grpcLinks &&
+					grpcLinks.length &&
+					linkBox.spec['boxes-relation'] &&
+					linkBox.spec['boxes-relation']['router-grpc'] &&
+					copyLinkBox.spec['boxes-relation']
+				) {
+					copyLinkBox.spec['boxes-relation']['router-grpc'] = grpcLinks;
+				}
+				return copyLinkBox;
+			});
+		}
+		if (changes.length) {
+			this.linkBoxes.forEach(linkBox => {
+				this.schemasStore.saveEntityChanges(linkBox, 'update');
 			});
 		}
 		return changes;
