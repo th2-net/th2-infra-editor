@@ -24,7 +24,7 @@ interface ElementsListBoxItemProps {
 	editBox: () => void;
 	deleteBox: (boxName: string) => void;
 	activeBox: BoxEntity | null;
-	setActiveBox: (box: BoxEntity | null) => void;
+	setOutlinerSelectedBox: (box: BoxEntity | null) => void;
 	color: string;
 	isFilterPassed: boolean;
 }
@@ -34,7 +34,7 @@ const ElementsListBoxItem = ({
 	editBox,
 	deleteBox,
 	activeBox,
-	setActiveBox,
+	setOutlinerSelectedBox,
 	color,
 	isFilterPassed,
 }: ElementsListBoxItemProps) => {
@@ -58,8 +58,8 @@ const ElementsListBoxItem = ({
 
 	return (
 		<div
-			onMouseOver={() => setActiveBox(box)}
-			onMouseLeave={() => setActiveBox(null)}
+			onMouseOver={() => setOutlinerSelectedBox(box)}
+			onMouseLeave={() => setOutlinerSelectedBox(null)}
 			className={elementClassName}>
 			<div className='element__header' style={{ backgroundColor: color }}>
 				<span className='element__title'>{box.name}</span>

@@ -111,7 +111,7 @@ const BoxPinsContainer = (
 		[isContainerExpanded, pinsRefs],
 	);
 
-	const initBoxConnections = () => {
+	const initBoxConnections = React.useCallback(() => {
 		if (isContainerExpanded) {
 			connectionsStore.addConnections(
 				pinsRefs.flatMap((pinRef, index) =>
@@ -134,7 +134,7 @@ const BoxPinsContainer = (
 				),
 			);
 		}
-	};
+	}, [isContainerExpanded, pinsRefs, filteredPins, expandedPin, closedPinRef]);
 
 	const getWrappedConnection = (
 		pinRef: React.RefObject<HTMLDivElement>,
@@ -212,56 +212,59 @@ const BoxPinsContainer = (
 				(link.to.box === boxName && link.to.pin === pin),
 		);
 
-	const getPinLinksBySide = (pin: Pin, direction: 'left' | 'right' | 'both') => {
-		const areaClientRect = pinsAreaRef.current?.getBoundingClientRect();
-		if (!areaClientRect) {
+	const getPinLinksBySide = React.useCallback(
+		(pin: Pin, direction: 'left' | 'right' | 'both') => {
+			const areaClientRect = pinsAreaRef.current?.getBoundingClientRect();
+			if (!areaClientRect) {
+				return {
+					in: [],
+					out: [],
+				};
+			}
+
+			let inLinks = connectionsStore.links.filter(
+				link => link.to.box === boxName && link.to.pin === pin.name,
+			);
+
+			let outLinks = connectionsStore.links.filter(
+				link => link.from.box === boxName && link.from.pin === pin.name,
+			);
+
+			if (direction !== 'both') {
+				inLinks = inLinks.filter(link => {
+					const targetConnection = connectionsStore.connections
+						.get(link.from.box)
+						?.get(link.from.pin)
+						?.get(link.name);
+
+					if (!targetConnection) return false;
+
+					return direction === 'left'
+						? targetConnection.coords.leftPoint.left <= areaClientRect.left
+						: targetConnection.coords.leftPoint.left >= areaClientRect.right;
+				});
+
+				outLinks = outLinks.filter(link => {
+					const targetConnection = connectionsStore.connections
+						.get(link.to.box)
+						?.get(link.to.pin)
+						?.get(link.name);
+
+					if (!targetConnection) return false;
+
+					return direction === 'left'
+						? targetConnection.coords.leftPoint.left <= areaClientRect.left
+						: targetConnection.coords.leftPoint.left >= areaClientRect.right;
+				});
+			}
+
 			return {
-				in: [],
-				out: [],
+				in: inLinks,
+				out: outLinks,
 			};
-		}
-
-		let inLinks = connectionsStore.links.filter(
-			link => link.to.box === boxName && link.to.pin === pin.name,
-		);
-
-		let outLinks = connectionsStore.links.filter(
-			link => link.from.box === boxName && link.from.pin === pin.name,
-		);
-
-		if (direction !== 'both') {
-			inLinks = inLinks.filter(link => {
-				const targetConnection = connectionsStore.connections
-					.get(link.from.box)
-					?.get(link.from.pin)
-					?.get(link.name);
-
-				if (!targetConnection) return false;
-
-				return direction === 'left'
-					? targetConnection.coords.leftPoint.left <= areaClientRect.left
-					: targetConnection.coords.leftPoint.left >= areaClientRect.right;
-			});
-
-			outLinks = outLinks.filter(link => {
-				const targetConnection = connectionsStore.connections
-					.get(link.to.box)
-					?.get(link.to.pin)
-					?.get(link.name);
-
-				if (!targetConnection) return false;
-
-				return direction === 'left'
-					? targetConnection.coords.leftPoint.left <= areaClientRect.left
-					: targetConnection.coords.leftPoint.left >= areaClientRect.right;
-			});
-		}
-
-		return {
-			in: inLinks,
-			out: outLinks,
-		};
-	};
+		},
+		[pinsAreaRef, connectionsStore.links, connectionsStore.connections],
+	);
 
 	const leftBoxLinksAmount = React.useMemo(() => getBoxLinksAmount('left'), [
 		groupsTopOffset,
@@ -277,7 +280,7 @@ const BoxPinsContainer = (
 	]);
 
 	React.useEffect(() => {
-		if (schemasStore.activeBox?.name !== boxName) {
+		if (!isBoxActive) {
 			const isConnectable = Boolean(
 				schemasStore.activePin &&
 					connectionsStore.connectionChain.find(box => box.name === boxName),
@@ -330,7 +333,7 @@ const BoxPinsContainer = (
 						setEditablePin={setEditablePin}
 						getPinLinks={getPinLinksBySide}
 						isPinExpanded={expandedPin ? expandedPin.name === pin.name : false}
-						togglePin={isOpen => setExpandedPin(isOpen ? pin : null)}
+						togglePin={setExpandedPin}
 						isConnectable={
 							isBoxConnectable
 								? pin['connection-type'] ===

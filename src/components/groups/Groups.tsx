@@ -15,18 +15,22 @@
  ***************************************************************************** */
 
 import React from 'react';
-import { observer } from 'mobx-react-lite';
+import { observer, useForceUpdate } from 'mobx-react-lite';
 import Group from './Group';
 import SvgLayout from '../SvgLayout';
 import useSchemasStore from '../../hooks/useSchemasStore';
-import useConnectionsStore from '../../hooks/useConnectionsStore';
 import '../../styles/group.scss';
 
 const Groups = () => {
 	const schemasStore = useSchemasStore();
-	const connectionsStore = useConnectionsStore();
 
 	const groupsRef = React.useRef<HTMLDivElement>(null);
+
+	const forceUpdate = useForceUpdate();
+
+	React.useEffect(() => {
+		forceUpdate();
+	}, [groupsRef]);
 
 	return (
 		<div className='groups__wrapper'>
@@ -43,7 +47,7 @@ const Groups = () => {
 					})}
 				</div>
 			</div>
-			<SvgLayout arrows={connectionsStore.connectionsArrows} />
+			<SvgLayout />
 		</div>
 	);
 };
