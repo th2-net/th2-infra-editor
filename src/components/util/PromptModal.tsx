@@ -68,7 +68,7 @@ const PromptModal = ({ text, defaultValue, onAnswer }: PromptModalProps) => {
 
 	return (
 		<FormModal
-			inputConfigList={[promptInput]}
+			configList={[promptInput]}
 			title={text}
 			onClose={() => !isSubmited.current && onAnswer(null)}
 			onSubmit={submitHandler}

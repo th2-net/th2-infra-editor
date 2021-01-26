@@ -14,6 +14,9 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { InputConfig } from '../hooks/useInput';
+import { SelectConfig } from '../hooks/useSelect';
+
 export function isValidJSONObject(value: string) {
 	if (value.length === 0) return true;
 	try {
@@ -22,4 +25,18 @@ export function isValidJSONObject(value: string) {
 	} catch {
 		return false;
 	}
+}
+
+export function isInputConfig(object: unknown): object is InputConfig {
+	return (
+		typeof object === 'object' && object !== null && (object as InputConfig).reset !== undefined
+	);
+}
+
+export function isSelectConfig(object: unknown): object is SelectConfig {
+	return (
+		typeof object === 'object' &&
+		object !== null &&
+		(object as SelectConfig).variants !== undefined
+	);
 }

@@ -431,7 +431,8 @@ export default class ConnectionsStore {
 		changedLink = addAdditionalDetailsToLink(changedLink, {
 			fromStrategy: link.from.strategy,
 			toStrategy: link.to.strategy,
-			serviceClass: link.to['service-class'],
+			fromServiceClass: link.from['service-class'],
+			toServiceClass: link.to['service-class'],
 		}) as Link<ExtendedConnectionOwner>;
 
 		return changedLink;

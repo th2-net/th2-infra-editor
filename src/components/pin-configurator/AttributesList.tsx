@@ -99,7 +99,7 @@ const AttributesList = ({
 				<ModalPortal isOpen={isFormOpen}>
 					<FormModal
 						title={editableAttribute ?? 'Create attribute'}
-						inputConfigList={[attributeInput]}
+						configList={[attributeInput]}
 						onSubmit={submitForm}
 						onClose={() => {
 							toggleAddForm(false);

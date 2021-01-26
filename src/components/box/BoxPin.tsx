@@ -48,7 +48,6 @@ interface BoxPinProps {
 	togglePin: (pin: Pin | null) => void;
 	isConnectable: boolean;
 	boxName: string;
-	boxType: string;
 	initBoxConnections: () => void;
 	groupsTopOffset?: number;
 	titleHeight?: number;
@@ -63,7 +62,6 @@ const BoxPin = (
 		togglePin,
 		isConnectable,
 		boxName,
-		boxType,
 		initBoxConnections,
 		groupsTopOffset,
 		titleHeight,
@@ -150,13 +148,7 @@ const BoxPin = (
 				connectionType: pin['connection-type'],
 			} as ExtendedConnectionOwner;
 
-			await openLinkCreateModal(
-				defaultName,
-				from,
-				to,
-				schemasStore.activeBox.spec.type === 'th2-check2-recon' ||
-					boxType === 'th2-check2-recon',
-			);
+			await openLinkCreateModal(defaultName, from, to, pin['connection-type'] === 'grpc');
 		}
 	};
 

@@ -89,7 +89,8 @@ body {
 }
 
 .input,
-.textarea {
+.textarea,
+.select {
 	width: 100%;
 	background-color: #fff;
 	border: 1px solid #7a99b8;
@@ -119,7 +120,7 @@ body {
 	}
 }
 
-.input {
+.input, .select {
 	height: 30px;
 }
 

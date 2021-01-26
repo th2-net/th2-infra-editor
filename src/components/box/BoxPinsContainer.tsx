@@ -25,7 +25,6 @@ import BoxPin from './BoxPin';
 interface BoxPinsContainerProps {
 	pins: Pin[];
 	boxName: string;
-	boxType: string;
 	isBoxActive: boolean;
 	setEditablePin: (pin: Pin) => void;
 	groupsTopOffset?: number;
@@ -42,7 +41,6 @@ const BoxPinsContainer = (
 	{
 		pins,
 		boxName,
-		boxType,
 		isBoxActive,
 		setEditablePin,
 		groupsTopOffset,
@@ -342,7 +340,6 @@ const BoxPinsContainer = (
 						}
 						initBoxConnections={initBoxConnections}
 						boxName={boxName}
-						boxType={boxType}
 						groupsTopOffset={groupsTopOffset}
 						titleHeight={titleHeight}
 					/>

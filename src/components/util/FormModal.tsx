@@ -15,22 +15,29 @@
  ***************************************************************************** */
 
 import React from 'react';
+import { isInputConfig } from '../../helpers/forms';
 import { InputConfig } from '../../hooks/useInput';
 import useOutsideClickListener from '../../hooks/useOutsideClickListener';
+import { SelectConfig } from '../../hooks/useSelect';
 import Input from './Input';
+import Select from './Select';
 
 interface FormModalProps {
 	title: string;
-	inputConfigList: InputConfig[];
+	configList: (InputConfig | SelectConfig)[];
 	onSubmit: () => void;
 	onClose: () => void;
 }
 
-const FormModal = ({ title, inputConfigList, onSubmit, onClose }: FormModalProps) => {
+const FormModal = ({ title, configList, onSubmit, onClose }: FormModalProps) => {
 	const modalRef = React.useRef<HTMLDivElement>(null);
 
 	const submit = () => {
-		if (inputConfigList.every(inputConfig => inputConfig.isValid && inputConfig.value.trim())) {
+		if (
+			configList
+				.filter(isInputConfig)
+				.every(inputConfig => inputConfig.isValid && inputConfig.value.trim())
+		) {
 			onSubmit();
 			onClose();
 		}
@@ -49,9 +56,13 @@ const FormModal = ({ title, inputConfigList, onSubmit, onClose }: FormModalProps
 				</button>
 			</div>
 			<div className='modal__content'>
-				{inputConfigList.map(inputConfig => (
-					<Input key={inputConfig.bind.id} inputConfig={inputConfig} />
-				))}
+				{configList.map(config =>
+					isInputConfig(config) ? (
+						<Input key={config.bind.id} inputConfig={config} />
+					) : (
+						<Select key={config.bind.id} selectConfig={config} />
+					),
+				)}
 			</div>
 			<div className='modal__buttons'>
 				<button onClick={submit} className='modal__button submit'>
