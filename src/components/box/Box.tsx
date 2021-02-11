@@ -119,7 +119,9 @@ const Box = (
 	});
 
 	const type = box.spec.type.split('-').slice(1).join('-');
-	const imageName = box.spec['image-name'].split('/')[1];
+	const imageName = box.spec['image-name'];
+	const splitedImageName = imageName.split('/');
+	const slicedImageName = splitedImageName.slice(-(splitedImageName.length - 1)).join('/');
 
 	return (
 		<>
@@ -178,7 +180,7 @@ const Box = (
 								}`}
 								title={imageName}
 								style={{ backgroundColor: color }}>
-								{imageName}
+								{slicedImageName}
 							</div>
 						</div>
 					</div>
