@@ -170,16 +170,11 @@ const Box = (
 					<div className='box__info-list'>
 						<div className='box__info'>
 							<div
-								className='box__info-value padded'
+								className='box__info-value type'
 								style={{ backgroundColor: color }}>
 								{type}
 							</div>
-							<div
-								className={`box__info-value image-name${
-									imageName ? ' padded' : ''
-								}`}
-								title={imageName}
-								style={{ backgroundColor: color }}>
+							<div className={`box__info-value image-name`} title={imageName}>
 								{slicedImageName}
 							</div>
 						</div>

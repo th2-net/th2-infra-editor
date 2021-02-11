@@ -80,13 +80,14 @@
 			font-size: 11px;
 			line-height: 15px;
 			font-weight: 600;
-			color: #fff;
 			border-radius: 9px;
-			&.padded {
-				padding: 0 4px 2px;
+			padding: 0 4px 2px;
+			&.type {
+				flex-shrink: 0;
+				color: #fff;
 			}
 			&.image-name {
-				max-width: 40%;
+				color: $primaryTextColor;
 				text-overflow: ellipsis;
 				overflow: hidden;
 				white-space: nowrap;
