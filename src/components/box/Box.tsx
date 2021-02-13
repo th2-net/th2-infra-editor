@@ -118,6 +118,11 @@ const Box = (
 		}
 	});
 
+	const type = box.spec.type.split('-').slice(1).join('-');
+	const imageName = box.spec['image-name'];
+	const splitedImageName = imageName.split('/');
+	const slicedImageName = splitedImageName.slice(-(splitedImageName.length - 1)).join('/');
+
 	return (
 		<>
 			<div
@@ -164,12 +169,14 @@ const Box = (
 				<div className='box__body'>
 					<div className='box__info-list'>
 						<div className='box__info'>
-							<div className='box__info-name'>Type</div>
-							<div className='box__info-value'>{box.spec.type}</div>
-						</div>
-						<div className='box__info'>
-							<div className='box__info-name'>Image name</div>
-							<div className='box__info-value'>{box.spec['image-name']}</div>
+							<div
+								className='box__info-value type'
+								style={{ backgroundColor: color }}>
+								{type}
+							</div>
+							<div className={`box__info-value image-name`} title={imageName}>
+								{slicedImageName}
+							</div>
 						</div>
 					</div>
 					{box.spec.pins && box.spec.pins.length > 0 && (
