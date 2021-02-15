@@ -127,8 +127,9 @@ body {
 .textarea {
 	@include scrollbar;
 
-	height: 230px;
+	height: 300px;
 	resize: none;
+	padding: 0;
 }
 
 .decision__modal {

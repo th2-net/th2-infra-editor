@@ -60,7 +60,7 @@ module.exports = webpackMerge(commonConfig, {
 			//         loader: require.resolve('eslint-loader'),
 			//     }],
 			//     exclude: /node_modules/,
-			// },
+			// },	
 			{
 				test: /\.scss$/,
 				exclude: /node_modules/,
