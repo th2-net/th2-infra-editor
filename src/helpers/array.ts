@@ -54,3 +54,7 @@ export function sortBy<T>(
 
 	return arrCopy;
 }
+
+export function unique<T>(arr: T[]) {
+	return [...new Set(arr)];
+}

@@ -96,6 +96,16 @@
 			background: none;
 		}
 
+		&.filter {
+			@include button(30px, auto, #ffa666, white);
+
+			margin-right: 25px;
+		}
+
+		&.filter &-icon {
+			@include icon(url(../../resources/icons/cross.svg), 15px, 15px);
+		}
+
 		&.schema {
 			@include button(30px, auto, $buttonDefaultColor, white);
 

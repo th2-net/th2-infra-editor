@@ -35,6 +35,11 @@
 		border: 2px solid #ff7733;
 	}
 
+	&.hidden {
+		opacity: 0.5;
+		filter: blur(0.5px);
+	}
+
 	&__header {
 		min-height: 25px;
 		width: 100%;
@@ -149,6 +154,10 @@
 
 		&.copy &-icon {
 			@include icon(url(../../resources/icons/copy.svg), 13px, 13px);
+		}
+
+		&.filter &-icon {
+			@include icon(url(../../resources/icons/schema.svg), 13px, 13px);
 		}
 	}
 
