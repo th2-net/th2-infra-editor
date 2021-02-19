@@ -152,6 +152,7 @@ const Header = () => {
 				closeModal={() => setIsCreateBoxModalOpen(false)}>
 				<CreateBoxModal
 					createBox={schemasStore.createBox}
+					checkBoxExistingByName={schemasStore.checkBoxExistingByName}
 					typeVariants={schemasStore.groups.flatMap(group => group.types)}
 					onClose={() => setIsCreateBoxModalOpen(false)}
 				/>

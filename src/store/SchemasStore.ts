@@ -704,8 +704,15 @@ export default class SchemasStore {
 		return targetGroup ? targetGroup.color : '#C066CC';
 	};
 
+	public checkBoxExistingByName = (boxName: string) => {
+		if (this.boxes.find(_box => _box.name === boxName)) {
+			return true;
+		}
+		return false;
+	};
+
 	private checkBoxExisting = (box: BoxEntity) => {
-		if (this.boxes.find(_box => _box.name === box.name)) {
+		if (this.checkBoxExistingByName(box.name)) {
 			alert(`Box "${box.name}" already exists`);
 			return true;
 		}
