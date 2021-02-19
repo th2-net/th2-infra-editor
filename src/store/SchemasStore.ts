@@ -331,6 +331,10 @@ export default class SchemasStore {
 		}
 	};
 
+	public checkSchemaExistingByName = (schemaName: string) => {
+		return this.schemas.find(_schemaName => _schemaName === schemaName) !== undefined;
+	};
+
 	@action
 	setDictionaryLinks = (dictionaryLinksEntity: DictionaryLinksEntity) => {
 		this.dictionaryLinksEntity = dictionaryLinksEntity;
@@ -705,10 +709,7 @@ export default class SchemasStore {
 	};
 
 	public checkBoxExistingByName = (boxName: string) => {
-		if (this.boxes.find(_box => _box.name === boxName)) {
-			return true;
-		}
-		return false;
+		return this.boxes.find(_box => _box.name === boxName) !== undefined;
 	};
 
 	private checkBoxExisting = (box: BoxEntity) => {
