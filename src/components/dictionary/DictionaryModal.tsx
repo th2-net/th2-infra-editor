@@ -20,7 +20,7 @@ import { useInput } from '../../hooks/useInput';
 import { DictionaryEntity } from '../../models/Dictionary';
 import Input from '../util/Input';
 import useOutsideClickListener from '../../hooks/useOutsideClickListener';
-import DictionaryXMLEditor from './DictionaryXmlEditor';
+import DictionaryXMLEditor from './DictionaryEditor';
 import { downloadFile } from '../../helpers/files';
 import useSchemasStore from '../../hooks/useSchemasStore';
 import { isEqual } from '../../helpers/object';
