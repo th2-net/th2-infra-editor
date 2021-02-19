@@ -17,7 +17,7 @@
 import { action, observable, reaction, computed } from 'mobx';
 import { diff } from 'deep-object-diff';
 import ApiSchema from '../api/ApiSchema';
-import { rightJoin, sortByKey } from '../helpers/array';
+import { rightJoin, sortByKey, unique } from '../helpers/array';
 import { copyObject, isEqual } from '../helpers/object';
 import { BoxEntity, isBoxEntity, Pin } from '../models/Box';
 import {
@@ -65,8 +65,8 @@ export default class SchemasStore {
 		},
 		{
 			title: 'Th2Resources',
+			types: ['th2-rpt-viewer', 'th2-rpt-provider'],
 			color: '#CACC66',
-			types: [],
 		},
 	];
 
@@ -124,6 +124,9 @@ export default class SchemasStore {
 
 	@observable
 	public outlinerSelectedBox: BoxEntity | null = null;
+
+	@observable
+	public filterTargetBox: BoxEntity | null = null;
 
 	@computed
 	public get groups() {
@@ -195,6 +198,11 @@ export default class SchemasStore {
 	@action
 	public setOutlinerSelectedBox = (box: BoxEntity | null) => {
 		this.outlinerSelectedBox = box;
+	};
+
+	@action
+	public setFilterTargetBox = (box: BoxEntity | null) => {
+		this.filterTargetBox = box;
 	};
 
 	@action
@@ -667,6 +675,27 @@ export default class SchemasStore {
 			});
 		}
 	};
+
+	@computed
+	public get connectedToFilterTargetBoxBoxes(): string[] {
+		if (!this.filterTargetBox) return [];
+
+		const filterTargetBoxName = this.filterTargetBox.name;
+		const connectedBoxes = unique(
+			this.connectionsStore.links.reduce((boxes, link) => {
+				if (link.from.box === filterTargetBoxName) {
+					boxes.push(link.to.box);
+				}
+				if (link.to.box === filterTargetBoxName) {
+					boxes.push(link.from.box);
+				}
+				return boxes;
+			}, new Array<string>()),
+		);
+		connectedBoxes.push(this.filterTargetBox.name);
+
+		return connectedBoxes;
+	}
 
 	public getBoxBorderColor = (boxName: string) => {
 		const boxType = this.boxes.find(box => box.name === boxName)?.spec.type;

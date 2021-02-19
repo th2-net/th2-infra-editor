@@ -42,6 +42,7 @@ export interface LinkArrow {
 	start: ConnectionCoord;
 	end: ConnectionCoord;
 	isHighlighted: boolean;
+	isHidden: boolean;
 }
 
 export function isLinksDefinition(file: FileBase): file is LinksDefinition {

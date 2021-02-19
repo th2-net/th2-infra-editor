@@ -82,6 +82,7 @@ export default class ConnectionsStore {
 	@computed
 	public get links(): Link<ExtendedConnectionOwner>[] {
 		if (this.linkBoxes === null) return [];
+
 		return this.linkBoxes.flatMap(linkBox => {
 			if (linkBox.spec['boxes-relation']) {
 				return [
@@ -189,6 +190,10 @@ export default class ConnectionsStore {
 								? this.outlinerSelectedLink.name === link.name
 								: this.schemasStore.outlinerSelectedBox
 								? this.schemasStore.outlinerSelectedBox.name === startBox.name
+								: false,
+							isHidden: this.schemasStore.filterTargetBox
+								? startBox.name !== this.schemasStore.filterTargetBox.name &&
+								  endBox.name !== this.schemasStore.filterTargetBox.name
 								: false,
 						};
 					}

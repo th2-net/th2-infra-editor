@@ -51,6 +51,8 @@ const Arrow = React.memo(
 				${arrow.start.left + (arrow.end.left - arrow.start.left) / 5},
 				${arrow.end.top}`;
 
+		if (arrow.isHidden) return null;
+
 		return (
 			<g className='arrow' pointerEvents='all'>
 				<path

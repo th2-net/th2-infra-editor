@@ -34,13 +34,14 @@ import '../../styles/box.scss';
 
 interface Props {
 	box: BoxEntity;
+	color: string;
+	isHidden: boolean;
 	groupsTopOffset?: number;
 	titleHeight?: number;
-	color: string;
 }
 
 const Box = (
-	{ box, groupsTopOffset, titleHeight, color }: Props,
+	{ box, color, isHidden, groupsTopOffset, titleHeight }: Props,
 	ref: React.Ref<PinsContainerMethods>,
 ) => {
 	const schemasStore = useSchemasStore();
@@ -56,7 +57,11 @@ const Box = (
 
 	const boxRef = React.useRef<HTMLDivElement>(null);
 
-	const boxClass = createStyleSelector('box', isBoxActive ? 'active' : null);
+	const boxClass = createStyleSelector(
+		'box',
+		isBoxActive ? 'active' : null,
+		isHidden ? 'hidden' : null,
+	);
 
 	React.useEffect(() => {
 		if (editablePin && box.spec.pins && !box.spec.pins.some(pin => isEqual(pin, editablePin))) {
@@ -92,6 +97,10 @@ const Box = (
 		const copyBox = copyObject(box);
 		copyBox.name = `${copyBox.name}-copy`;
 		schemasStore.createBox(copyBox);
+	};
+
+	const filterRelatedBoxes = () => {
+		schemasStore.setFilterTargetBox(box);
 	};
 
 	useOutsideClickListener(boxRef, e => {
@@ -150,6 +159,9 @@ const Box = (
 					)}
 					<span className='box__title'>{box.name}</span>
 					<div className='box__buttons-wrapper'>
+						<button className='box__button filter' onClick={filterRelatedBoxes}>
+							<i className='box__button-icon' />
+						</button>
 						<button className='box__button copy' onClick={copyBoxHandler}>
 							<i className='box__button-icon' />
 						</button>

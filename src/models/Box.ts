@@ -94,7 +94,11 @@ export interface ExtendedConnectionOwner extends ConnectionOwner {
 }
 
 export function isBoxEntity(object: unknown): object is BoxEntity {
-	return typeof object === 'object' && object !== null && (object as BoxEntity).kind === 'Th2Box';
+	return (
+		typeof object === 'object' &&
+		object !== null &&
+		((object as BoxEntity).kind === 'Th2Box' || (object as BoxEntity).kind === 'Th2CoreBox')
+	);
 }
 
 export function isPin(object: unknown): object is Pin {
