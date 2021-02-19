@@ -14,15 +14,6 @@
  * limitations under the License.
  ***************************************************************************** */
 
-export function readFileAsText(file: File): Promise<string> {
-	return new Promise((resolve, reject) => {
-		const fileReader = new FileReader();
-		fileReader.onload = () => resolve(fileReader.result as string);
-		fileReader.readAsText(file);
-		fileReader.onerror = error => reject(error);
-	});
-}
-
 export function downloadFile(content: string, filename: string, extension: string) {
 	const file = new Blob([content], { type: extension });
 
@@ -39,3 +30,33 @@ export function downloadFile(content: string, filename: string, extension: strin
 		window.URL.revokeObjectURL(url);
 	}
 }
+
+export function defineFileFormat(content: string): 'xml' | 'json' | 'yaml' {
+	if (content.length === 0) return 'xml';
+	if (/(<.[^(><.)]+>)/gm.test(content)) return 'xml';
+	if (/^{.*}$/gm.test(content)) return 'json';
+	return 'yaml';
+}
+
+export const isXMLValid = (xml: string) => {
+	const parser = new DOMParser();
+	const theDom = parser.parseFromString(xml, 'application/xml');
+	if (theDom.getElementsByTagName('parsererror').length > 0) {
+		return false;
+	}
+	return true;
+};
+
+export const isJSONValid = (json: string) => {
+	if (json.length === 0) return true;
+	try {
+		const config = JSON.parse(json);
+		return typeof config === 'object';
+	} catch {
+		return false;
+	}
+};
+
+export const isYAMLValid = () => {
+	return true;
+};

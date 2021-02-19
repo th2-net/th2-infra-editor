@@ -17,7 +17,7 @@
 import React from 'react';
 import { InputConfig } from '../../hooks/useInput';
 import Input from '../util/Input';
-import JSONEditor from '../util/JSONEditor';
+import ConfigEditor from '../util/ConfigEditor';
 
 interface BoxConfigProps {
 	boxNameInputConfig: InputConfig;
@@ -41,8 +41,8 @@ const BoxConfig = ({
 		{Object.entries(inputConfigs).map(([key, config]) => (
 			<Input key={key} inputConfig={config} />
 		))}
-		<JSONEditor inputConfig={boxConfigInputConfig} />
-		<JSONEditor inputConfig={extendedSettingsInputConfig} />
+		<ConfigEditor configInput={boxConfigInputConfig} />
+		<ConfigEditor configInput={extendedSettingsInputConfig} />
 	</div>
 );
 

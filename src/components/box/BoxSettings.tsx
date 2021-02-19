@@ -31,6 +31,7 @@ import { BoxEntity, Pin } from '../../models/Box';
 import { DictionaryEntity, DictionaryRelation } from '../../models/Dictionary';
 import { isValidJSONObject } from '../../helpers/forms';
 import '../../styles/modal.scss';
+import { isJSONValid } from '../../helpers/files';
 
 interface BoxSettingsProps {
 	box: BoxEntity;
@@ -109,8 +110,8 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		initialValue: editableBox.spec['custom-config']
 			? JSON.stringify(editableBox.spec['custom-config'], null, 4)
 			: '',
-		label: 'custom-config',
-		validate: isValidJSONObject,
+		label: 'Config',
+		validate: isJSONValid,
 		name: 'config',
 		id: 'config',
 	});
