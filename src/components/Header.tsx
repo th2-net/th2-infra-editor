@@ -75,6 +75,9 @@ const Header = () => {
 		isChangeLogOpen ? 'active' : null,
 	);
 
+	const hiddenBoxesNumber =
+		schemasStore.boxes.length - schemasStore.connectedToFilterTargetBoxBoxes.length;
+
 	return (
 		<div ref={headerRef} className='header'>
 			<div className='header__select-wrapper'>
@@ -93,6 +96,14 @@ const Header = () => {
 				<i className='header__button-icon' />
 				Save changes
 			</button>
+			{schemasStore.filterTargetBox && (
+				<button
+					className='header__button filter'
+					onClick={() => schemasStore.setFilterTargetBox(null)}>
+					<i className='header__button-icon' />
+					{`${hiddenBoxesNumber} ${hiddenBoxesNumber === 1 ? 'Box' : 'Boxes'}`} is hidden
+				</button>
+			)}
 			<button
 				className='header__button schema'
 				onClick={() => setIsCreateSchemaModalOpen(true)}>

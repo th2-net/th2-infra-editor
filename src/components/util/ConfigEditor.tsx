@@ -15,49 +15,48 @@
  ***************************************************************************** */
 
 import React from 'react';
-import AceEditor, { IAceEditorProps } from 'react-ace';
+import Editor from '@monaco-editor/react';
 import { createBemBlock } from '../../helpers/styleCreators';
 import { InputConfig } from '../../hooks/useInput';
-
-import 'ace-builds/src-noconflict/mode-json';
-import 'ace-builds/src-noconflict/theme-textmate';
-import 'ace-builds/src-noconflict/ext-language_tools';
-
-const defaultJSONEditorProps: IAceEditorProps = {
-	mode: 'json',
-	theme: 'textmate',
-	name: 'config-editor',
-	fontSize: 12,
-	width: 'auto',
-	height: '300px',
-	showGutter: false,
-	highlightActiveLine: true,
-	tabSize: 4,
-	setOptions: {
-		enableBasicAutocompletion: true,
-	},
-} as const;
+import { defineFileFormat } from '../../helpers/files';
 
 interface ConfigEditor {
-	inputConfig: InputConfig;
+	configInput: InputConfig;
 }
 
-const JSONEditor = ({ inputConfig }: ConfigEditor) => {
-	const textAreaClass = createBemBlock('textarea', !inputConfig.isValid ? 'invalid' : null);
+const ConfigEditor = ({ configInput }: ConfigEditor) => {
+	const editorClass = createBemBlock('textarea', !configInput.isValid ? 'invalid' : null);
 
 	return (
 		<div className='textarea-wrapper'>
-			<label htmlFor={inputConfig.bind.name} className='textarea-label'>
-				{inputConfig.label}
+			<label htmlFor={configInput.bind.name} className='textarea-label'>
+				{configInput.label}
 			</label>
-			<AceEditor
-				{...defaultJSONEditorProps}
-				className={textAreaClass}
-				onChange={value => inputConfig.setValue(value)}
-				value={inputConfig.value}
+			<Editor
+				height={300}
+				width='auto'
+				language={defineFileFormat(configInput.value)}
+				value={configInput.value}
+				options={{
+					fontSize: 12,
+					codeLens: false,
+					lineNumbers: 'off',
+					minimap: {
+						enabled: false,
+					},
+					padding: {
+						bottom: 0,
+						top: 0,
+					},
+					autoClosingBrackets: 'always',
+					autoClosingQuotes: 'always',
+					contextmenu: false,
+				}}
+				className={editorClass}
+				onChange={value => value && configInput.setValue(value)}
 			/>
 		</div>
 	);
 };
 
-export default JSONEditor;
+export default ConfigEditor;

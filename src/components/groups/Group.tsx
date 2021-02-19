@@ -15,10 +15,12 @@
  ***************************************************************************** */
 
 import React from 'react';
+import { observer } from 'mobx-react-lite';
 import Box from '../box/Box';
 import { PinsContainerMethods } from '../box/BoxPinsContainer';
 import { BoxEntity } from '../../models/Box';
 import '../../styles/group.scss';
+import useSchemasStore from '../../hooks/useSchemasStore';
 
 const GROUP_OFFSET = 150;
 interface Props {
@@ -29,6 +31,8 @@ interface Props {
 }
 
 const Group = ({ title, boxes, groupsTopOffset, color }: Props) => {
+	const schemasStore = useSchemasStore();
+
 	const boxRefsObject = React.useRef<{
 		[key: string]: React.RefObject<PinsContainerMethods>;
 	}>({});
@@ -62,8 +66,16 @@ const Group = ({ title, boxes, groupsTopOffset, color }: Props) => {
 						{boxes.map((box, index) => (
 							<Box
 								key={`${box.name}-${index}`}
-								box={box}
 								ref={boxRefsObject.current[box.name]}
+								box={box}
+								color={color}
+								isHidden={
+									schemasStore.filterTargetBox
+										? !schemasStore.connectedToFilterTargetBoxBoxes.includes(
+												box.name,
+										  )
+										: false
+								}
 								groupsTopOffset={groupsTopOffset}
 								titleHeight={
 									titleRef.current
@@ -74,7 +86,6 @@ const Group = ({ title, boxes, groupsTopOffset, color }: Props) => {
 										  )
 										: undefined
 								}
-								color={color}
 							/>
 						))}
 					</div>
@@ -84,6 +95,4 @@ const Group = ({ title, boxes, groupsTopOffset, color }: Props) => {
 	);
 };
 
-Group.displayName = 'Group';
-
-export default Group;
+export default observer(Group);
