@@ -83,6 +83,13 @@ export default class SchemasStore {
 	) {
 		this.connectionsStore = new ConnectionsStore(rootStore, api, this, historyStore);
 
+		this.subscriptionStore = new SubscriptionStore(
+			this.rootStore,
+			this.api,
+			this,
+			this.connectionsStore,
+		);
+
 		reaction(() => this.selectedSchema, this.onSchemaChange);
 	}
 
@@ -722,14 +729,6 @@ export default class SchemasStore {
 
 		if (selectedSchema) {
 			this.fetchSchemaState(selectedSchema);
-			this.subscriptionStore?.closeConnection();
-			this.subscriptionStore = new SubscriptionStore(
-				this.rootStore,
-				this.api,
-				this,
-				this.connectionsStore,
-				selectedSchema,
-			);
 		}
 	};
 }

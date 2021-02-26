@@ -34,14 +34,16 @@ export default class SubscriptionStore {
 		private api: ApiSchema,
 		private schemasStore: SchemasStore,
 		private connectionsStore: ConnectionsStore,
-		schemaName: string,
 	) {
 		reaction(
 			() => schemasStore.schemaSettings,
 			schemaSettings => {
 				const propagation = schemaSettings?.spec['k8s-propagation'];
-				if (propagation && ['sync', 'rule'].includes(propagation)) {
-					this.init(schemaName);
+				if (propagation) {
+					this.subscription?.close();
+					if (['sync', 'rule'].includes(propagation)) {
+						this.init();
+					}
 				}
 			},
 		);
@@ -177,8 +179,9 @@ export default class SubscriptionStore {
 	};
 
 	@action
-	async init(schemaName: string) {
-		this.subscription = this.api.subscribeOnChanges(schemaName);
+	async init() {
+		if (!this.schemasStore.selectedSchema) return;
+		this.subscription = this.api.subscribeOnChanges(this.schemasStore.selectedSchema);
 
 		this.subscription.onopen = () => {
 			this.isSubscriptionSuccessfull = true;
