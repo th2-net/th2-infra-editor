@@ -16,8 +16,8 @@
 
 import React from 'react';
 
-export default useForceUpdate = () => {
+export default function useForceUpdate() {
 	const [forceUpdateState, setForceUpdateState] = React.useState(true);
 
 	return () => setForceUpdateState(!forceUpdateState);
-};
+}
