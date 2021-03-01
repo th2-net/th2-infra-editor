@@ -338,6 +338,10 @@ export default class SchemasStore {
 		}
 	};
 
+	public checkSchemaExistingByName = (schemaName: string) => {
+		return this.schemas.find(_schemaName => _schemaName === schemaName) !== undefined;
+	};
+
 	@action
 	setDictionaryLinks = (dictionaryLinksEntity: DictionaryLinksEntity) => {
 		this.dictionaryLinksEntity = dictionaryLinksEntity;
@@ -711,8 +715,12 @@ export default class SchemasStore {
 		return targetGroup ? targetGroup.color : '#C066CC';
 	};
 
+	public checkBoxExistingByName = (boxName: string) => {
+		return this.boxes.find(_box => _box.name === boxName) !== undefined;
+	};
+
 	private checkBoxExisting = (box: BoxEntity) => {
-		if (this.boxes.find(_box => _box.name === box.name)) {
+		if (this.checkBoxExistingByName(box.name)) {
 			alert(`Box "${box.name}" already exists`);
 			return true;
 		}
