@@ -248,6 +248,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 				imageNameInput,
 				imageVersionInput,
 				nodePortInput,
+				boxNameInput,
 				boxConfigInput,
 				extendedSettingsInput,
 			].every(config => config.isValid)
