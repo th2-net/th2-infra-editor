@@ -15,7 +15,6 @@
  ***************************************************************************** */
 
 import React from 'react';
-import useOutsideClickListener from '../../hooks/useOutsideClickListener';
 import { BoxEntity } from '../../models/Box';
 import { useInput } from '../../hooks/useInput';
 import Input from '../util/Input';
@@ -77,10 +76,6 @@ const CreateBoxModal = ({
 		name: 'node-port',
 		validate: (value: string) =>
 			value.trim().length > 0 ? /^\d+$/.test(value) && parseInt(value) <= 65535 : true,
-	});
-
-	useOutsideClickListener(modalRef, () => {
-		onClose();
 	});
 
 	const inputs = [nameInput, typeInput, imageNameInput, imageVersionInput, nodePortInput];
