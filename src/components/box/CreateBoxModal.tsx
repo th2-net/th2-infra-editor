@@ -15,7 +15,6 @@
  ***************************************************************************** */
 
 import React from 'react';
-import useOutsideClickListener from '../../hooks/useOutsideClickListener';
 import { BoxEntity } from '../../models/Box';
 import { useInput } from '../../hooks/useInput';
 import Input from '../util/Input';
@@ -24,11 +23,17 @@ import '../../styles/modal.scss';
 
 interface CreateBoxModalProps {
 	createBox: (box: BoxEntity) => void;
+	checkBoxExistingByName: (boxName: string) => boolean;
 	typeVariants: string[];
 	onClose: () => void;
 }
 
-const CreateBoxModal = ({ createBox, typeVariants, onClose }: CreateBoxModalProps) => {
+const CreateBoxModal = ({
+	createBox,
+	checkBoxExistingByName,
+	typeVariants,
+	onClose,
+}: CreateBoxModalProps) => {
 	const modalRef = React.useRef<HTMLDivElement>(null);
 
 	const nameInput = useInput({
@@ -37,7 +42,8 @@ const CreateBoxModal = ({ createBox, typeVariants, onClose }: CreateBoxModalProp
 		name: 'name',
 		validate: name =>
 			name.trim().length > 0 &&
-			/^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/gm.test(name),
+			/^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/gm.test(name) &&
+			!checkBoxExistingByName(name),
 	});
 
 	const typeInput = useInput({
@@ -70,10 +76,6 @@ const CreateBoxModal = ({ createBox, typeVariants, onClose }: CreateBoxModalProp
 		name: 'node-port',
 		validate: (value: string) =>
 			value.trim().length > 0 ? /^\d+$/.test(value) && parseInt(value) <= 65535 : true,
-	});
-
-	useOutsideClickListener(modalRef, () => {
-		onClose();
 	});
 
 	const inputs = [nameInput, typeInput, imageNameInput, imageVersionInput, nodePortInput];

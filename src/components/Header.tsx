@@ -48,7 +48,8 @@ const Header = () => {
 				Boolean(trimmedValue) &&
 				!trimmedValue.includes(' ') &&
 				!trimmedValue.includes('_') &&
-				!/[A-Z]/g.test(trimmedValue)
+				!/[A-Z]/g.test(trimmedValue) &&
+				!schemasStore.checkSchemaExistingByName(value)
 			);
 		},
 	});
@@ -152,6 +153,7 @@ const Header = () => {
 				closeModal={() => setIsCreateBoxModalOpen(false)}>
 				<CreateBoxModal
 					createBox={schemasStore.createBox}
+					checkBoxExistingByName={schemasStore.checkBoxExistingByName}
 					typeVariants={schemasStore.groups.flatMap(group => group.types)}
 					onClose={() => setIsCreateBoxModalOpen(false)}
 				/>
