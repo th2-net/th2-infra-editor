@@ -14,21 +14,14 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
-import 'regenerator-runtime/runtime';
-import 'core-js/stable';
-import 'core-js/features/array/flat-map';
-import 'core-js/features/array/flat';
-import App from './components/App';
-import ErrorBoundary from './components/util/ErrorBoundary';
-import { registerFetchInterceptor } from './helpers/fetch-intercept';
+import React from 'react';
 
-registerFetchInterceptor();
+export function usePrevious<T>(value: T) {
+	const valueRef = React.useRef<T>();
 
-ReactDOM.render(
-	<ErrorBoundary>
-		<App />
-	</ErrorBoundary>,
-	document.getElementById('index'),
-);
+	React.useEffect(() => {
+		valueRef.current = value;
+	}, [value]);
+
+	return valueRef.current;
+}

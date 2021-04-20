@@ -118,7 +118,7 @@ const DictionaryModal = ({ dictionary, onClose }: DictionaryModalProps) => {
 		}
 		if (dictionaryNameInput.isValid && dictionaryData.isValid) {
 			schemasStore.createDictionary({
-				kind: 'Th2Dictionary',
+				kind: 'ThDictionary',
 				name: dictionaryNameInput.value,
 				spec: {
 					data: dictionaryData.value,
@@ -133,7 +133,7 @@ const DictionaryModal = ({ dictionary, onClose }: DictionaryModalProps) => {
 			schemasStore.configurateDictionary(
 				{
 					name: dictionaryNameInput.value,
-					kind: 'Th2Dictionary',
+					kind: 'ThDictionary',
 					spec: {
 						data: dictionaryData.value,
 					},

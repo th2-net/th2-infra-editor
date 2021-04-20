@@ -16,6 +16,12 @@
 
 @import './colors';
 
+@mixin ellipsis {
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
 @mixin scrollbar($thumbColor: $scrollbarThumbBackground) {
 	&::-webkit-scrollbar {
 		background-color: rgba(0, 0, 0, 0);
