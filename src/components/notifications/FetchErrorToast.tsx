@@ -14,9 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import React, { useState } from 'react';
-import { copyTextToClipboard } from '../../helpers/copyHandler';
-import { createStyleSelector } from '../../helpers/styleCreators';
+import React from 'react';
 
 interface FetchErrorProps {
 	header: string;
@@ -26,16 +24,7 @@ interface FetchErrorProps {
 }
 
 export default function FetchErrorToast(props: FetchErrorProps) {
-	const { resource, responseBody, responseCode, header } = props;
-	const [copied, setCopied] = useState(false);
-	const copyDetailsText = createStyleSelector('toast-action__text', copied ? 'copied' : null);
-
-	const copy = () => {
-		const value = JSON.stringify({ resource, responseBody, responseCode }, null, ' ');
-		copyTextToClipboard(value);
-		setCopied(true);
-	};
-
+	const { responseBody, responseCode, header } = props;
 	return (
 		<div className='toast-content'>
 			<div className='toast-content__top'>
@@ -45,12 +34,6 @@ export default function FetchErrorToast(props: FetchErrorProps) {
 				<p className='response-code'>{responseCode}</p>
 			</div>
 			<div className='toast-content__middle'>{responseBody}</div>
-			<div className='toast-content__bottom'>
-				<button className='toast-action' disabled={copied} onClick={copy}>
-					{!copied && <span className='toast-action__copy-icon' />}
-					<span className={copyDetailsText}>{copied ? 'Copied' : ' Copy details'}</span>
-				</button>
-			</div>
 		</div>
 	);
 }

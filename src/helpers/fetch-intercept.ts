@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import fetchIntercept from 'fetch-intercept';
-import { nanoid } from 'nanoid';
+import { v1 } from 'uuid';
 import notificationsStore from '../store/NotificationsStore';
 
 export const registerFetchInterceptor = () =>
@@ -29,28 +29,15 @@ export const registerFetchInterceptor = () =>
 		response(response) {
 			if (!response.ok) {
 				const { url, status, statusText } = response;
-				let header: string;
-				switch (status) {
-					case 404:
-						header = "Storage doesn't contain the requested data.";
-						break;
-					case 503:
-					case 502:
-						header = 'rpt-data-provider is unavailable. Try again later.';
-						break;
-					default:
-						header = statusText;
-						break;
-				}
 				response.text().then(text => {
 					notificationsStore.addMessage({
 						type: 'error',
-						header,
+						header: statusText,
 						resource: url,
 						responseCode: status,
 						responseBody: text,
 						errorType: 'responseError',
-						id: nanoid(),
+						id: v1(),
 					});
 				});
 			}

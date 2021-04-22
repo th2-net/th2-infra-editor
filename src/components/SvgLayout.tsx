@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import { observer } from 'mobx-react-lite';
-import { nanoid } from 'nanoid';
+import { v1 } from 'uuid';
 import React from 'react';
 import { isEqual } from '../helpers/object';
 import { createBemElement } from '../helpers/styleCreators';
@@ -85,7 +85,7 @@ const SvgLayout = () => {
 	return (
 		<svg preserveAspectRatio='none' xmlns='http://www.w3.org/2000/svg' id='svg-layout'>
 			{connectionsStore.connectionsArrows.map(arrow => (
-				<Arrow key={nanoid()} arrow={arrow} />
+				<Arrow key={v1()} arrow={arrow} />
 			))}
 		</svg>
 	);
