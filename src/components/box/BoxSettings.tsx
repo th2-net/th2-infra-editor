@@ -14,7 +14,7 @@
  *  limitations under the License.
  ***************************************************************************** */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import DictionaryList from './DictionaryList';
 import PinsList from './PinsList';
@@ -167,6 +167,14 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 
 	const [pinsList, setPinList] = React.useState(editableBox.spec.pins ?? []);
 
+	useEffect(() => {
+		savePins(pinsList);
+	}, [pinsList]);
+
+	useEffect(() => {
+		saveConfig(boxConfigInput.value);
+	}, [boxConfigInput.value]);
+
 	useOutsideClickListener(modalRef, (e: MouseEvent) => {
 		if (
 			!e
@@ -275,12 +283,24 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		}
 	};
 
+	const savePins = (newPinsList: Pin[]) => {
+		const copyBox = copyObject(box);
+		copyBox.spec.pins = newPinsList;
+		schemasStore.configurateBox(editableBox, copyBox, { createSnapshot: true });
+	};
+
+	const saveConfig = (value: string) => {
+		const copyBox = copyObject(box);
+		const customConfig = value ? JSON.parse(value) : undefined;
+		if (customConfig) copyBox.spec['custom-config'] = customConfig;
+		schemasStore.configurateBox(editableBox, copyBox, { createSnapshot: true });
+	};
+
 	const saveChanges = () => {
 		const copyBox = copyObject(box);
 		copyBox.name = boxNameInput.value;
 		copyBox.spec['image-name'] = imageNameInput.value;
 		copyBox.spec['image-version'] = imageVersionInput.value;
-		copyBox.spec.pins = pinsList;
 		copyBox.spec.type = editableBox.spec.type;
 
 		const port = nodePortInput.value ? parseInt(nodePortInput.value) : undefined;
@@ -290,9 +310,6 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 			? JSON.parse(extendedSettingsInput.value)
 			: undefined;
 		if (extendedSettings) copyBox.spec['extended-settings'] = extendedSettings;
-
-		const customConfig = boxConfigInput.value ? JSON.parse(boxConfigInput.value) : undefined;
-		if (customConfig) copyBox.spec['custom-config'] = customConfig;
 
 		schemasStore.configurateBox(editableBox, copyBox, {
 			dictionaryRelations: relatedDictionaryList,
