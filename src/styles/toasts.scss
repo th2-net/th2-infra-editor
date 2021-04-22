@@ -120,23 +120,3 @@
 		font-size: 14px;
 	}
 }
-
-.toast-action {
-	margin: 4px 0 0;
-	display: flex;
-	background-color: transparent;
-	color: #fff;
-	cursor: pointer;
-	border: none;
-
-	&__copy-icon {
-		margin: 0 4px 0 0;
-		@include icon(url(../../resources/icons/toast-copy.svg), 16px, 17px);
-	}
-
-	&__text {
-		&.copied {
-			color: gray;
-		}
-	}
-}
