@@ -39,12 +39,6 @@ const FiltersList = ({
 }: FiltersListProps) => {
 	const [editableFilter, setEditableFilter] = React.useState<Filter | null>(null);
 
-	React.useEffect(() => {
-		if (isFormOpen) {
-			setEditableFilter(null);
-		}
-	}, [isFormOpen]);
-
 	const fieldNameInput = useInput({
 		initialValue: editableFilter?.metadata[0]['field-name'],
 		label: 'Field name',
