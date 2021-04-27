@@ -15,14 +15,17 @@
  ***************************************************************************** */
 
 import { hot } from 'react-hot-loader/root';
-import React from 'react';
 import { observer } from 'mobx-react-lite';
+import React from 'react';
+import { ToastProvider } from 'react-toast-notifications';
+import Toast from './notifications/Toast';
 import Header from './Header';
 import Groups from './groups/Groups';
 import SplashScreen from './SplashScreen';
 import History from './util/History';
 import useRootStore from '../hooks/useRootStore';
 import '../styles/root.scss';
+import Notifier from './notifications/Notifier';
 
 function App() {
 	const { rootStore } = useRootStore();
@@ -33,13 +36,16 @@ function App() {
 
 	return (
 		<div className='root'>
-			<History />
-			<Header />
-			{rootStore.schemasStore.isLoading ? (
-				<SplashScreen />
-			) : (
-				rootStore.schemasStore.boxes.length > 0 && <Groups />
-			)}
+			<ToastProvider placement='top-right' components={{ Toast }} transitionDuration={400}>
+				<History />
+				<Header />
+				{rootStore.schemasStore.isLoading ? (
+					<SplashScreen />
+				) : (
+					rootStore.schemasStore.boxes.length > 0 && <Groups />
+				)}
+				<Notifier />
+			</ToastProvider>
 		</div>
 	);
 }

@@ -16,9 +16,12 @@
 
 import ApiSchema from '../api/ApiSchema';
 import HistoryStore from './HistoryStore';
+import notificationsStoreInstance from './NotificationsStore';
 import SchemasStore from './SchemasStore';
 
 export default class RootStore {
+	notificationsStore = notificationsStoreInstance;
+
 	public schemasStore: SchemasStore;
 
 	public historyStore: HistoryStore;
