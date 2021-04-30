@@ -97,7 +97,10 @@ export function isBoxEntity(object: unknown): object is BoxEntity {
 	return (
 		typeof object === 'object' &&
 		object !== null &&
-		((object as BoxEntity).kind === 'Th2Box' || (object as BoxEntity).kind === 'Th2CoreBox')
+		((object as BoxEntity).kind === 'Th2Box' ||
+			(object as BoxEntity).kind === 'Th2CoreBox' ||
+			(object as BoxEntity).kind === 'Th2Estore' ||
+			(object as BoxEntity).kind === 'Th2Mstore')
 	);
 }
 

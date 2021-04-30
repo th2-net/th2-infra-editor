@@ -127,7 +127,7 @@ const Box = (
 		}
 	});
 
-	const type = box.spec.type.split('-').slice(1).join('-');
+	const type = box.spec.type ? box.spec.type.split('-').slice(1).join('-') : box.name;
 	const imageName = box.spec['image-name'];
 	const splitedImageName = imageName.split('/');
 	const slicedImageName = splitedImageName.slice(-(splitedImageName.length - 1)).join('/');
