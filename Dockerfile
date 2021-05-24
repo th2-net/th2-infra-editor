@@ -10,4 +10,5 @@ FROM nginx:1.17.10-alpine
 EXPOSE 8080
 RUN sed -i 's/listen\(.*\)80;/listen 8080;/' /etc/nginx/conf.d/default.conf && \
     sed -i 's/^user/#user/' /etc/nginx/nginx.conf
+    chgrp -R root /var/cache/nginx /var/run /var/log/nginx && chmod -R g=u /var/
 COPY --from=build /home/node/build/out /usr/share/nginx/html
