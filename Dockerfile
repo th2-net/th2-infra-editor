@@ -7,5 +7,7 @@ COPY ./ .
 RUN npm install && npm run build
 
 FROM nginx:1.17.10-alpine
-ENV NGINX_PORT=8080
+EXPOSE 8080
+RUN sed -i 's/listen\(.*\)80;/listen 8080;/' /etc/nginx/conf.d/default.conf && \
+    sed -i 's/^user/#user/' /etc/nginx/nginx.conf
 COPY --from=build /home/node/build/out /usr/share/nginx/html
