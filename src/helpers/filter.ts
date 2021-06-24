@@ -38,6 +38,7 @@ export function isFilterPassed(
 	}
 
 	return data
+		.filter(value => typeof value === 'string')
 		.map(value => value.toLowerCase())
 		.some(value => value.includes(filterString.toLowerCase()));
 }
