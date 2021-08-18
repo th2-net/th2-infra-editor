@@ -66,16 +66,16 @@ const ElementsListLinkItem = ({
 				<div className='element__link'>
 					<div
 						style={{
-							borderColor: getBoxBorderColor(link.from.box),
+							borderColor: link.from && getBoxBorderColor(link.from.box),
 						}}
 						className='element__link-state'>
 						<div className='element__info'>
 							<i className='element__info-icon boxes' />
-							<div className='element__info-value short'>{link.from.box}</div>
+							<div className='element__info-value short'>{link.from?.box}</div>
 						</div>
 						<div className='element__info'>
 							<i className='element__info-icon pin' />
-							<div className='element__info-value short'>{link.from.pin}</div>
+							<div className='element__info-value short'>{link.from?.pin}</div>
 						</div>
 					</div>
 					<div className='element__link-arrow'>
@@ -87,31 +87,37 @@ const ElementsListLinkItem = ({
 								y2='3'
 								style={{
 									stroke:
-										link.from.connectionType === 'grpc' ? '#FF5500' : '#7A99B8',
+										link.from?.connectionType === 'grpc'
+											? '#FF5500'
+											: '#7A99B8',
 								}}
 							/>
 							<polygon
 								points='40,3 35,6 35,0'
 								style={{
 									fill:
-										link.from.connectionType === 'grpc' ? '#FF5500' : '#7A99B8',
+										link.from?.connectionType === 'grpc'
+											? '#FF5500'
+											: '#7A99B8',
 								}}
 							/>
 						</svg>
-						<span className='element__link-arrow-name'>{link.from.connectionType}</span>
+						<span className='element__link-arrow-name'>
+							{link.from?.connectionType}
+						</span>
 					</div>
 					<div
 						style={{
-							borderColor: getBoxBorderColor(link.to.box),
+							borderColor: link.to && getBoxBorderColor(link.to.box),
 						}}
 						className='element__link-state'>
 						<div className='element__info'>
 							<i className='element__info-icon boxes' />
-							<div className='element__info-value short'>{link.to.box}</div>
+							<div className='element__info-value short'>{link.to?.box}</div>
 						</div>
 						<div className='element__info'>
 							<i className='element__info-icon pin' />
-							<div className='element__info-value short'>{link.to.pin}</div>
+							<div className='element__info-value short'>{link.to?.pin}</div>
 						</div>
 					</div>
 				</div>

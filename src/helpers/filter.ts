@@ -31,7 +31,7 @@ export function isFilterPassed(
 			element.spec['image-version'],
 			element.spec.type,
 		];
-	} else if (isLink(element)) {
+	} else if (isLink(element) && element.from && element.to) {
 		data = [element.name, element.from.box, element.from.pin, element.to.box, element.to.pin];
 	} else {
 		data = [element.name];
