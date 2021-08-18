@@ -668,8 +668,8 @@ export default class SchemasStore {
 								connectionType as 'router-grpc' | 'router-mq'
 							].some(
 								link =>
-									(link.from.box === boxName && link.from.pin === pin.name) ||
-									(link.to.box === boxName && link.to.pin === pin.name),
+									(link.from?.box === boxName && link.from?.pin === pin.name) ||
+									(link.to?.box === boxName && link.to?.pin === pin.name),
 							)
 						);
 					})
@@ -694,10 +694,10 @@ export default class SchemasStore {
 		const filterTargetBoxName = this.filterTargetBox.name;
 		const connectedBoxes = unique(
 			this.connectionsStore.links.reduce((boxes, link) => {
-				if (link.from.box === filterTargetBoxName) {
+				if (link.from?.box === filterTargetBoxName && link.to) {
 					boxes.push(link.to.box);
 				}
-				if (link.to.box === filterTargetBoxName) {
+				if (link.to?.box === filterTargetBoxName && link.from) {
 					boxes.push(link.from.box);
 				}
 				return boxes;

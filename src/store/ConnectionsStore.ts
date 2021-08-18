@@ -160,9 +160,9 @@ export default class ConnectionsStore {
 	public get connectionsArrows(): LinkArrow[] {
 		return this.links
 			.map(link => {
-				const startBox = this.schemasStore.boxes.find(box => box.name === link.from.box);
-				const endBox = this.schemasStore.boxes.find(box => box.name === link.to.box);
-				if (startBox && endBox) {
+				const startBox = this.schemasStore.boxes.find(box => box.name === link.from?.box);
+				const endBox = this.schemasStore.boxes.find(box => box.name === link.to?.box);
+				if (startBox && endBox && link.from && link.to) {
 					const startConnection = this.connections
 						.get(startBox.name)
 						?.get(link.from.pin)
@@ -214,7 +214,7 @@ export default class ConnectionsStore {
 		);
 		if (editorGeneratedLinksBox && editorGeneratedLinksBox.spec['boxes-relation']) {
 			editorGeneratedLinksBox.spec['boxes-relation'][
-				`router-${link.from.connectionType}` as 'router-mq' | 'router-grpc'
+				`router-${link.from?.connectionType}` as 'router-mq' | 'router-grpc'
 			].push(convertedLink);
 			this.schemasStore.saveEntityChanges(editorGeneratedLinksBox, 'update');
 		} else {
@@ -223,8 +223,8 @@ export default class ConnectionsStore {
 				name: 'editor-generated-links',
 				spec: {
 					'boxes-relation': {
-						'router-grpc': link.from.connectionType === 'grpc' ? [convertedLink] : [],
-						'router-mq': link.from.connectionType === 'mq' ? [convertedLink] : [],
+						'router-grpc': link.from?.connectionType === 'grpc' ? [convertedLink] : [],
+						'router-mq': link.from?.connectionType === 'mq' ? [convertedLink] : [],
 					},
 				},
 			} as LinksDefinition;
@@ -262,8 +262,8 @@ export default class ConnectionsStore {
 			this.links
 				.filter(
 					link =>
-						(link.from.box === boxName && link.from.pin === pin.name) ||
-						(link.to.box === boxName && link.to.pin === pin.name),
+						(link.from?.box === boxName && link.from.pin === pin.name) ||
+						(link.to?.box === boxName && link.to.pin === pin.name),
 				)
 				.forEach(link => {
 					changes.push({
@@ -289,16 +289,16 @@ export default class ConnectionsStore {
 					linkBox.spec['boxes-relation'] && linkBox.spec['boxes-relation']['router-mq']
 						? linkBox.spec['boxes-relation']['router-mq'].filter(
 								link =>
-									!(link.from.box === boxName && link.from.pin === pin.name) &&
-									!(link.to.box === boxName && link.to.pin === pin.name),
+									!(link.from?.box === boxName && link.from.pin === pin.name) &&
+									!(link.to?.box === boxName && link.to.pin === pin.name),
 						  )
 						: undefined;
 				const grpcLinks =
 					linkBox.spec['boxes-relation'] && linkBox.spec['boxes-relation']['router-grpc']
 						? linkBox.spec['boxes-relation']['router-grpc'].filter(
 								link =>
-									!(link.from.box === boxName && link.from.pin === pin.name) &&
-									!(link.to.box === boxName && link.to.pin === pin.name),
+									!(link.from?.box === boxName && link.from.pin === pin.name) &&
+									!(link.to?.box === boxName && link.to.pin === pin.name),
 						  )
 						: undefined;
 				if (
@@ -342,10 +342,10 @@ export default class ConnectionsStore {
 
 			if (changedLinkBox.spec['boxes-relation']) {
 				const linkIndex = changedLinkBox.spec['boxes-relation'][
-					`router-${removableLink.from.connectionType}` as 'router-mq' | 'router-grpc'
+					`router-${removableLink.from?.connectionType}` as 'router-mq' | 'router-grpc'
 				].findIndex(link => link.name === removableLink.name);
 				changedLinkBox.spec['boxes-relation'][
-					`router-${removableLink.from.connectionType}` as 'router-mq' | 'router-grpc'
+					`router-${removableLink.from?.connectionType}` as 'router-mq' | 'router-grpc'
 				].splice(linkIndex, 1);
 			}
 
@@ -405,7 +405,7 @@ export default class ConnectionsStore {
 		if (!this.linkBoxes) return;
 
 		const filteredLinks = this.links.filter(
-			link => link.from.box === oldBox || link.to.box === oldBox,
+			link => link.from?.box === oldBox || link.to?.box === oldBox,
 		);
 
 		filteredLinks.forEach(link => {
@@ -422,22 +422,22 @@ export default class ConnectionsStore {
 		let changedLink = {
 			name: link.name,
 			from: {
-				box: link.from.box === oldBox ? newBox : link.from.box,
-				pin: link.from.pin,
-				connectionType: link.from.connectionType,
+				box: link.from?.box === oldBox ? newBox : link.from?.box,
+				pin: link.from?.pin,
+				connectionType: link.from?.connectionType,
 			},
 			to: {
-				box: link.to.box === oldBox ? newBox : link.to.box,
-				pin: link.to.pin,
-				connectionType: link.to.connectionType,
+				box: link.to?.box === oldBox ? newBox : link.to?.box,
+				pin: link.to?.pin,
+				connectionType: link.to?.connectionType,
 			},
 		} as Link<ExtendedConnectionOwner>;
 
 		changedLink = addAdditionalDetailsToLink(changedLink, {
-			fromStrategy: link.from.strategy,
-			toStrategy: link.to.strategy,
-			fromServiceClass: link.from['service-class'],
-			toServiceClass: link.to['service-class'],
+			fromStrategy: link.from?.strategy,
+			toStrategy: link.to?.strategy,
+			fromServiceClass: link.from?.['service-class'],
+			toServiceClass: link.to?.['service-class'],
 		}) as Link<ExtendedConnectionOwner>;
 
 		return changedLink;
@@ -463,7 +463,7 @@ export default class ConnectionsStore {
 		return this.linkBoxes?.find(linkBox => {
 			const links =
 				linkBox.spec['boxes-relation']?.[
-					`router-${targetLink.from.connectionType}` as 'router-mq' | 'router-grpc'
+					`router-${targetLink.from?.connectionType}` as 'router-mq' | 'router-grpc'
 				];
 			return links?.some(link => link.name === targetLink.name);
 		});

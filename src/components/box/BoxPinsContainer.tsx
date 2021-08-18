@@ -206,8 +206,8 @@ const BoxPinsContainer = (
 	const getPinLinks = (pin: string) =>
 		connectionsStore.links.filter(
 			link =>
-				(link.from.box === boxName && link.from.pin === pin) ||
-				(link.to.box === boxName && link.to.pin === pin),
+				(link.from?.box === boxName && link.from.pin === pin) ||
+				(link.to?.box === boxName && link.to.pin === pin),
 		);
 
 	const getPinLinksBySide = React.useCallback(
@@ -221,15 +221,19 @@ const BoxPinsContainer = (
 			}
 
 			let inLinks = connectionsStore.links.filter(
-				link => link.to.box === boxName && link.to.pin === pin.name,
+				link => link.to?.box === boxName && link.to.pin === pin.name,
 			);
 
 			let outLinks = connectionsStore.links.filter(
-				link => link.from.box === boxName && link.from.pin === pin.name,
+				link => link.from?.box === boxName && link.from.pin === pin.name,
 			);
 
 			if (direction !== 'both') {
 				inLinks = inLinks.filter(link => {
+					if (!link.from) {
+						return false;
+					}
+
 					const targetConnection = connectionsStore.connections
 						.get(link.from.box)
 						?.get(link.from.pin)
@@ -243,6 +247,10 @@ const BoxPinsContainer = (
 				});
 
 				outLinks = outLinks.filter(link => {
+					if (!link.to) {
+						return false;
+					}
+
 					const targetConnection = connectionsStore.connections
 						.get(link.to.box)
 						?.get(link.to.pin)

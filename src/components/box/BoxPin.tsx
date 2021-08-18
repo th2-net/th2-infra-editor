@@ -156,12 +156,12 @@ const BoxPin = (
 		const body = document.querySelector('body');
 		if (body) body.style.userSelect = 'none';
 
-		const connectableBox = schemasStore.boxes.find(box => box.name === link.from.box);
+		const connectableBox = schemasStore.boxes.find(box => box.name === link.from?.box);
 
 		if (!connectableBox || !connectableBox.spec.pins) return;
 
 		const connectablePin = connectableBox.spec.pins.find(
-			boxPin => boxPin.name === link.from.pin,
+			boxPin => boxPin.name === link.from?.pin,
 		);
 
 		if (!connectablePin) return;
@@ -212,14 +212,14 @@ const BoxPin = (
 		const draggableLink = connectionsStore.draggableLink;
 
 		const changedSide: 'from' | 'to' =
-			schemasStore.activeBox?.name === draggableLink.from.box &&
-			schemasStore.activePin?.name === draggableLink.from.pin
+			schemasStore.activeBox?.name === draggableLink.from?.box &&
+			schemasStore.activePin?.name === draggableLink.from?.pin
 				? 'from'
 				: 'to';
 
 		const newName = connectionsStore.generateLinkName(
-			changedSide === 'from' ? boxName : draggableLink.from.box,
-			changedSide === 'to' ? boxName : draggableLink.to.box,
+			changedSide === 'from' || !draggableLink.from ? boxName : draggableLink.from.box,
+			changedSide === 'to' || !draggableLink.to ? boxName : draggableLink.to.box,
 		);
 
 		const changeLink = (
@@ -229,18 +229,23 @@ const BoxPin = (
 			const link = {
 				name: linkName,
 				from: {
-					box: changedSide === 'from' ? boxName : draggableLink.from.box,
-					pin: changedSide === 'from' ? pin.name : draggableLink.from.pin,
-					connectionType: draggableLink.from.connectionType,
+					box: changedSide === 'from' ? boxName : draggableLink.from?.box,
+					pin: changedSide === 'from' ? pin.name : draggableLink.from?.pin,
+					connectionType: draggableLink.from?.connectionType,
 				},
 				to: {
-					box: changedSide === 'to' ? boxName : draggableLink.to.box,
-					pin: changedSide === 'to' ? pin.name : draggableLink.to.pin,
-					connectionType: draggableLink.to.connectionType,
+					box: changedSide === 'to' ? boxName : draggableLink.to?.box,
+					pin: changedSide === 'to' ? pin.name : draggableLink.to?.pin,
+					connectionType: draggableLink.to?.connectionType,
 				},
 			} as Link<ExtendedConnectionOwner>;
 
-			if (draggableLink.from.strategy && draggableLink.to.strategy) {
+			if (
+				link.from &&
+				link.to &&
+				draggableLink.from?.strategy &&
+				draggableLink.to?.strategy
+			) {
 				link.from.strategy = draggableLink.from.strategy;
 				link.to.strategy = draggableLink.to.strategy;
 			}

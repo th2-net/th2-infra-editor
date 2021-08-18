@@ -234,8 +234,8 @@ const ElementsListModal = ({ top, left, width, onClose }: ElementsListModalProps
 							elements.map(link => (
 								<ElementsListLinkItem
 									key={`${(link.item as Link<ExtendedConnectionOwner>).name}-${
-										(link.item as Link<ExtendedConnectionOwner>).from.box
-									}-${(link.item as Link<ExtendedConnectionOwner>).to.box}`}
+										(link.item as Link<ExtendedConnectionOwner>).from?.box
+									}-${(link.item as Link<ExtendedConnectionOwner>).to?.box}`}
 									link={link.item as Link<ExtendedConnectionOwner>}
 									deleteConnection={connectionsStore.deleteLink}
 									getBoxBorderColor={schemasStore.getBoxBorderColor}
