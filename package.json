@@ -11,7 +11,8 @@
 		"test": "jest",
 		"test:ci": "jest --no-cache",
 		"lint": "tsc --noEmit && eslint . --ext .js,.js,.ts,.tsx",
-		"lint:fix": "eslint --fix './src/**/*.{ts,tsx}' && prettier --write ."
+		"lint:fix": "eslint --fix './src/**/*.{ts,tsx}' && prettier --write .",
+		"licenses": "license-checker --production --csv --out licenses.csv"
 	},
 	"dependencies": {
 		"@monaco-editor/react": "^4.0.9",
@@ -80,6 +81,7 @@
 		"jest": "^24.9.0",
 		"jest-enzyme": "^7.1.2",
 		"jest-watch-typeahead": "^0.6.0",
+		"license-checker": "^25.0.1",
 		"node-sass": "^4.13.1",
 		"postcss-loader": "^3.0.0",
 		"prettier": "^2.1.2",
