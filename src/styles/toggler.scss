@@ -28,7 +28,7 @@
          width: 20px;
          height: 10px;
          margin: 0 2px;
-         border: solid white 1px;
+         border: solid transparent 1px;
          border-radius: 6px;
          &:before {
              position: absolute;
@@ -36,21 +36,22 @@
              width: 8px;
              height: 8px;
              border-radius: 50%;
-             background-color: white;
+             background-color: #7a99b8;
              top: 50%;
              transform: translateY(-50%);
              transition: left ease-in-out 240ms;
          }
      }
      .on {
-        background-color: #7a99b8;
+        background-color: white;
          &:before {
              left: calc(100% - 9px);
          }
      }
      .off {
-        background-color: transparent;
+        background-color: #7a99b8;
          &:before {
+            background-color: white;
              left: 1px;
          }
      }
