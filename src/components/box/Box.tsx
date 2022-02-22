@@ -141,7 +141,13 @@ const Box = (
 		} else {
 			copyBox.spec.disabled = true;
 		}
-		schemasStore.configurateBox(box, copyBox);
+		const temp = schemasStore.boxes
+			.map((value, index) => {
+				return { value, index };
+			})
+			.find(b => b.value.name === copyBox.name);
+		if (temp) schemasStore.boxes[temp.index].spec.disabled = copyBox.spec.disabled;
+		schemasStore.saveEntityChanges(copyBox, 'update');
 	};
 
 	return (
