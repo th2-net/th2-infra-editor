@@ -62,6 +62,7 @@ const Box = (
 		'box',
 		isBoxActive ? 'active' : null,
 		isHidden ? 'hidden' : null,
+		box.spec.disabled ? 'disabled' : null,
 	);
 
 	React.useEffect(() => {

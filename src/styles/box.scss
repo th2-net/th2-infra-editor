@@ -40,6 +40,10 @@
 		filter: blur(0.5px);
 	}
 
+	&.disabled {
+		opacity: 0.5;
+	}
+
 	&__header {
 		width: 100%;
 		display: flex;

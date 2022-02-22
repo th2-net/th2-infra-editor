@@ -49,10 +49,12 @@
          }
      }
      .off {
-        background-color: #7a99b8;
+        background-color: #617a93;
+        opacity: 0.9;
          &:before {
             background-color: white;
-             left: 1px;
+            opacity: 0.5;
+            left: 1px;
          }
      }
  }
