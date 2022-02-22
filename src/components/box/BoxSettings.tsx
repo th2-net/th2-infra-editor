@@ -247,7 +247,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 	};
 
 	const submit = async () => {
-		// saveConfig(boxConfigInput.value);
+		saveConfig(boxConfigInput.value);
 		if (
 			[
 				imageNameInput,
