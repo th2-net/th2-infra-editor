@@ -16,6 +16,7 @@
 
 import { action, observable, reaction, computed } from 'mobx';
 import { diff } from 'deep-object-diff';
+import { v1 } from 'uuid';
 import ApiSchema from '../api/ApiSchema';
 import { rightJoin, sortByKey, unique } from '../helpers/array';
 import { copyObject, isEqual } from '../helpers/object';
@@ -315,7 +316,45 @@ export default class SchemasStore {
 		if (!this.selectedSchema || this.preparedRequests.length === 0) return;
 		try {
 			this.isSaving = true;
-			await this.api.sendSchemaRequest(this.selectedSchema, this.preparedRequests);
+			const response = await this.api.sendSchemaRequest(
+				this.selectedSchema,
+				this.preparedRequests,
+			);
+			if (!response.commitRef && response.validationErrors) {
+				response.validationErrors.linkErrorMessages.links.forEach(linkError => {
+					this.rootStore.notificationsStore.addMessage({
+						type: 'error',
+						errorType: 'responseError',
+						id: v1(),
+						resource: linkError.linkName,
+						header: linkError.linkName,
+						responseBody: linkError.message,
+						responseCode: null,
+					});
+				});
+				response.validationErrors.boxResourceErrorMessages.forEach(boxResourceError => {
+					this.rootStore.notificationsStore.addMessage({
+						type: 'error',
+						errorType: 'responseError',
+						id: v1(),
+						resource: boxResourceError.box,
+						header: boxResourceError.box,
+						responseBody: boxResourceError.message,
+						responseCode: null,
+					});
+				});
+				response.validationErrors.exceptionMessages.forEach(exceptionMessage => {
+					this.rootStore.notificationsStore.addMessage({
+						type: 'error',
+						errorType: 'responseError',
+						id: v1(),
+						resource: 'Exception message',
+						header: 'Exception message',
+						responseBody: exceptionMessage,
+						responseCode: null,
+					});
+				});
+			}
 			this.preparedRequests = [];
 		} catch (error) {
 			alert("Couldn't save changes");
