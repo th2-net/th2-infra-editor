@@ -1,19 +1,22 @@
 {
 	"name": "th2-schema-editor",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"description": "",
 	"main": "index.tsx",
 	"private": true,
 	"scripts": {
-		"build": "npm run lint && webpack --config=webpack/webpack.production.js",
+		"build": "npm run lint && npm run initEditor && webpack --config=webpack/webpack.production.js",
 		"build:dev": "webpack --config=webpack/webpack.dev.js --watch",
 		"start": "webpack-dev-server --config=webpack/webpack.dev.js",
+		"postinstall": "npm run initEditor",
+		"initEditor": "node initEditor.js",
 		"test": "jest",
 		"test:ci": "jest --no-cache",
 		"lint": "tsc --noEmit && eslint . --ext .js,.js,.ts,.tsx",
 		"lint:fix": "eslint --fix './src/**/*.{ts,tsx}' && prettier --write ."
 	},
 	"dependencies": {
+		"@monaco-editor/loader": "^1.3.2",
 		"@monaco-editor/react": "^4.0.9",
 		"@types/enzyme": "^3.10.3",
 		"@types/enzyme-adapter-react-16": "^1.0.5",

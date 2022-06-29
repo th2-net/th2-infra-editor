@@ -17,6 +17,7 @@
 import { hot } from 'react-hot-loader/root';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
+import loader from '@monaco-editor/loader';
 import { ToastProvider } from 'react-toast-notifications';
 import Toast from './notifications/Toast';
 import Header from './Header';
@@ -32,6 +33,7 @@ function App() {
 
 	React.useEffect(() => {
 		rootStore.init();
+		loader.config({ paths: { vs: 'vs' } });
 	}, []);
 
 	return (
