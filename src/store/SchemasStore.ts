@@ -71,7 +71,7 @@ export default class SchemasStore {
 		},
 	];
 
-	public readonly connectionTypes = ['grpc', 'mq'];
+	public readonly connectionTypes = ['grpc', 'grpc-client', 'grpc-server', 'mq'];
 
 	public connectionsStore: ConnectionsStore;
 
