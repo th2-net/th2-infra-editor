@@ -16,7 +16,6 @@
 
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { toJS } from 'mobx';
 import { BoxEntity, Pin } from '../../models/Box';
 import BoxSettings from './BoxSettings';
 import DictionaryModal from '../dictionary/DictionaryModal';
@@ -132,7 +131,6 @@ const Box = (
 	const imageName = box.spec['image-name'];
 	const splitedImageName = imageName.split('/');
 	const slicedImageName = splitedImageName.slice(-(splitedImageName.length - 1)).join('/');
-	console.log(toJS(box));
 
 	return (
 		<>
