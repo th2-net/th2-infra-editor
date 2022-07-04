@@ -64,12 +64,12 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 						link => link.box === editableBox.name,
 				  ) || {
 						box: editableBox.name,
-						name: `${editableBox.name}-dictionaries-relation`,
+						name: `${editableBox.name}-dictionary`,
 						dictionaries: [],
 				  }
 				: {
 						box: editableBox.name,
-						name: `${editableBox.name}-dictionaries-relation`,
+						name: `${editableBox.name}-dictionary`,
 						dictionaries: [],
 				  },
 		[schemasStore.dictionaryLinksEntity],
