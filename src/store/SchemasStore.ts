@@ -19,7 +19,7 @@ import { diff } from 'deep-object-diff';
 import { v1 } from 'uuid';
 import ApiSchema from '../api/ApiSchema';
 import { rightJoin, sortByKey, unique } from '../helpers/array';
-import { copyObject, isEqual } from '../helpers/object';
+import { copyObject, getObjectKeys, isEqual } from '../helpers/object';
 import { BoxEntity, isBoxEntity, Pin } from '../models/Box';
 import {
 	DictionaryEntity,
@@ -71,7 +71,7 @@ export default class SchemasStore {
 		},
 	];
 
-	public readonly connectionTypes = ['grpc', 'mq'];
+	public readonly connectionTypes = ['grpc', 'grpc-client', 'grpc-server', 'mq'];
 
 	public connectionsStore: ConnectionsStore;
 
@@ -320,19 +320,22 @@ export default class SchemasStore {
 				this.selectedSchema,
 				this.preparedRequests,
 			);
-			if (!response.commitRef && response.validationErrors) {
-				response.validationErrors.linkErrorMessages.links.forEach(linkError => {
-					this.rootStore.notificationsStore.addMessage({
-						type: 'error',
-						errorType: 'responseError',
-						id: v1(),
-						resource: linkError.linkName,
-						header: linkError.linkName,
-						responseBody: linkError.message,
-						responseCode: null,
-					});
-				});
-				response.validationErrors.boxResourceErrorMessages.forEach(boxResourceError => {
+			const validationErrors = response.validationErrors;
+			if (!response.commitRef && validationErrors) {
+				getObjectKeys(validationErrors.linkErrorMessages).forEach(links =>
+					validationErrors.linkErrorMessages[links].forEach(linkError => {
+						this.rootStore.notificationsStore.addMessage({
+							type: 'error',
+							errorType: 'responseError',
+							id: v1(),
+							resource: linkError.linkName,
+							header: linkError.linkName,
+							responseBody: linkError.message,
+							responseCode: null,
+						});
+					}),
+				);
+				validationErrors.boxResourceErrorMessages.forEach(boxResourceError => {
 					this.rootStore.notificationsStore.addMessage({
 						type: 'error',
 						errorType: 'responseError',
@@ -343,7 +346,7 @@ export default class SchemasStore {
 						responseCode: null,
 					});
 				});
-				response.validationErrors.exceptionMessages.forEach(exceptionMessage => {
+				validationErrors.exceptionMessages.forEach(exceptionMessage => {
 					this.rootStore.notificationsStore.addMessage({
 						type: 'error',
 						errorType: 'responseError',

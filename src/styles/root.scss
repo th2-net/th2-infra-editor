@@ -120,7 +120,8 @@ body {
 	}
 }
 
-.input, .select {
+.input,
+.select {
 	height: 30px;
 }
 
@@ -142,10 +143,10 @@ body {
 	}
 }
 
-
 .ace_editor {
 	& * {
-		font: 12px/normal 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+		font: 12px / normal 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro',
+			monospace;
 	}
 
 	.ace_scrollbar {

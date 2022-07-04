@@ -30,3 +30,11 @@ export function isEqual(obj1: Record<string, any>, obj2: Record<string, any>): b
 export function copyObject<T>(obj: T): T {
 	return JSON.parse(JSON.stringify(obj));
 }
+
+/**
+ * Returns typed object keys
+ * @param obj
+ */
+export function getObjectKeys<O extends object>(obj: O) {
+	return Object.keys(obj) as Array<keyof O>;
+}

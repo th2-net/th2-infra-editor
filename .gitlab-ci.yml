@@ -1,9 +1,8 @@
 variables:
-  APP_NAME: "th2-schema-editor"
-  INSPECTION_ENABLED: 'false'
-  
+    APP_NAME: 'th2-schema-editor'
+    INSPECTION_ENABLED: 'false'
+
 include:
-  - project: 'vivarium/th2/pipelines'
-    ref: master
-    file: '/.gitlab-ci-java.yml'
-  
+    - project: 'vivarium/th2/pipelines'
+      ref: master
+      file: '/.gitlab-ci-java.yml'
