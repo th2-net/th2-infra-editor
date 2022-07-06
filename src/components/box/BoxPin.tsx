@@ -318,8 +318,7 @@ const BoxPin = (
 				height: isPinExpanded ? pinHeight : STANDART_PIN_HEIGHT,
 			}}
 			onMouseUp={dropLink}
-			className={pinClass}
-		>
+			className={pinClass}>
 			{isPinExpanded ? (
 				leftPinLinks &&
 				[
@@ -359,8 +358,7 @@ const BoxPin = (
 								e.stopPropagation();
 								dragLink(link, pin);
 							}}
-							className={pinDotClass}
-						>
+							className={pinDotClass}>
 							<button
 								onClick={() => deleteLink(link)}
 								className='box__pin-dot-delete-btn'
@@ -387,8 +385,7 @@ const BoxPin = (
 						setIsMenuOpen(!isMenuOpen);
 					}
 				}}
-				className={infoClass}
-			>
+				className={infoClass}>
 				<span className='box__pin-name'>{`${pin.name} / ${pin['connection-type']}`}</span>
 			</div>
 			{isMenuOpen && (
@@ -401,8 +398,7 @@ const BoxPin = (
 							setEditablePin(pin);
 						}
 					}}
-					className='box__pin-button settings'
-				>
+					className='box__pin-button settings'>
 					<i className='box__pin-button-icon' />
 				</button>
 			)}
@@ -419,8 +415,7 @@ const BoxPin = (
 								nameModal.side === 'left' ? '-100' : '0'
 							}%, -50%)`,
 						}}
-						className='box__pin-connection-name'
-					>
+						className='box__pin-connection-name'>
 						{nameModal.name}
 					</div>
 				</ModalPortal>

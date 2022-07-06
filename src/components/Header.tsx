@@ -85,8 +85,7 @@ const Header = () => {
 				<select
 					className='header__select'
 					onChange={e => schemasStore.setSelectedSchema(e.target.value)}
-					value={schemasStore.selectedSchema || undefined}
-				>
+					value={schemasStore.selectedSchema || undefined}>
 					{schemasStore.schemas.map(schema => (
 						<option key={schema} value={schema}>
 							{schema}
@@ -101,16 +100,14 @@ const Header = () => {
 			{schemasStore.filterTargetBox && (
 				<button
 					className='header__button filter'
-					onClick={() => schemasStore.setFilterTargetBox(null)}
-				>
+					onClick={() => schemasStore.setFilterTargetBox(null)}>
 					<i className='header__button-icon' />
 					{`${hiddenBoxesNumber} ${hiddenBoxesNumber === 1 ? 'Box' : 'Boxes'}`} is hidden
 				</button>
 			)}
 			<button
 				className='header__button schema'
-				onClick={() => setIsCreateSchemaModalOpen(true)}
-			>
+				onClick={() => setIsCreateSchemaModalOpen(true)}>
 				<i className='header__button-icon' />
 				Create schema
 			</button>
@@ -120,8 +117,7 @@ const Header = () => {
 			</button>
 			<button
 				className='header__button dictionary'
-				onClick={() => setIsCreateDictionaryModalOpen(true)}
-			>
+				onClick={() => setIsCreateDictionaryModalOpen(true)}>
 				<i className='header__button-icon' />
 				Create dictionary
 			</button>
@@ -131,8 +127,7 @@ const Header = () => {
 				onClick={() => {
 					setIsChangeLogOpen(false);
 					setIsElementListOpen(!isElementListOpen);
-				}}
-			>
+				}}>
 				<i className='header__button-icon' />
 				Elements list
 			</button>
@@ -141,8 +136,7 @@ const Header = () => {
 				onClick={() => {
 					setIsElementListOpen(false);
 					setIsChangeLogOpen(!isChangeLogOpen);
-				}}
-			>
+				}}>
 				<i className='header__button-icon' />
 				Change log
 			</button>
@@ -156,8 +150,7 @@ const Header = () => {
 			</ModalPortal>
 			<ModalPortal
 				isOpen={isCreateBoxModalOpen}
-				closeModal={() => setIsCreateBoxModalOpen(false)}
-			>
+				closeModal={() => setIsCreateBoxModalOpen(false)}>
 				<CreateBoxModal
 					createBox={schemasStore.createBox}
 					checkBoxExistingByName={schemasStore.checkBoxExistingByName}
@@ -167,14 +160,12 @@ const Header = () => {
 			</ModalPortal>
 			<ModalPortal
 				isOpen={isCreateDictionaryModalOpen}
-				closeModal={() => setIsCreateDictionaryModalOpen(false)}
-			>
+				closeModal={() => setIsCreateDictionaryModalOpen(false)}>
 				<DictionaryModal onClose={() => setIsCreateDictionaryModalOpen(false)} />
 			</ModalPortal>
 			<ModalPortal
 				isOpen={isElementListOpen}
-				closeModal={() => setIsCreateDictionaryModalOpen(false)}
-			>
+				closeModal={() => setIsCreateDictionaryModalOpen(false)}>
 				<ElementsListModal
 					top={headerRef.current?.clientHeight}
 					left={elementsListButtonRef.current?.getBoundingClientRect().left}

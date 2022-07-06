@@ -36,14 +36,12 @@ const PinsList = ({ pins, removePinFromBox, setEditablePin }: PinsListProps) => 
 							onClick={() => {
 								setEditablePin(pin);
 							}}
-							className='modal__elements-item-button edit'
-						>
+							className='modal__elements-item-button edit'>
 							<i className='modal__elements-item-button-icon' />
 						</button>
 						<button
 							onClick={() => removePinFromBox(pin)}
-							className='modal__elements-item-button delete'
-						>
+							className='modal__elements-item-button delete'>
 							<i className='modal__elements-item-button-icon' />
 						</button>
 					</div>

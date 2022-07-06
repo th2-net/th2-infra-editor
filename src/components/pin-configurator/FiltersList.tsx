@@ -105,8 +105,7 @@ const FiltersList = ({
 									${filter.metadata[0]['expected-value']}
 									${filter.metadata[0].operation}
 								`}
-						className='modal__elements-item'
-					>
+						className='modal__elements-item'>
 						<div className='modal__elements-item-info'>
 							<span className='modal__elements-item-info-name'>
 								{filter.metadata[0]['field-name']}
@@ -118,14 +117,12 @@ const FiltersList = ({
 									setEditableFilter(filter);
 									toggleAddForm(true);
 								}}
-								className='modal__elements-item-button edit'
-							>
+								className='modal__elements-item-button edit'>
 								<i className='modal__elements-item-button-icon' />
 							</button>
 							<button
 								onClick={() => removeFilter(filter)}
-								className='modal__elements-item-button delete'
-							>
+								className='modal__elements-item-button delete'>
 								<i className='modal__elements-item-button-icon' />
 							</button>
 						</div>

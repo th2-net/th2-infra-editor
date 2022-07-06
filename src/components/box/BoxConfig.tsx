@@ -37,8 +37,7 @@ const BoxConfig = ({
 		className='modal__elements-list'
 		style={{
 			maxHeight: 600,
-		}}
-	>
+		}}>
 		{Object.entries(inputConfigs).map(([key, config]) => (
 			<Input key={key} inputConfig={config} />
 		))}

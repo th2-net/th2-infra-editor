@@ -148,14 +148,12 @@ const Box = (
 						schemasStore.setActiveBox(null);
 						setIsBoxActive(false);
 					}
-				}}
-			>
+				}}>
 				<div
 					style={{
 						backgroundColor: color,
 					}}
-					className='box__header'
-				>
+					className='box__header'>
 					{subscriptionStore.isSubscriptionSuccessfull && (
 						<div className={boxStatusClass} />
 					)}
@@ -175,8 +173,7 @@ const Box = (
 							onClick={e => {
 								e.stopPropagation();
 								setIsModalOpen(!isModalOpen);
-							}}
-						>
+							}}>
 							<i className='box__button-icon' />
 						</button>
 					</div>
@@ -186,8 +183,7 @@ const Box = (
 						<div className='box__info'>
 							<div
 								className='box__info-value type'
-								style={{ backgroundColor: color }}
-							>
+								style={{ backgroundColor: color }}>
 								{type}
 							</div>
 							<div className={`box__info-value image-name`} title={imageName}>

@@ -171,16 +171,14 @@ const PinConfigurator = ({
 					</div>
 					<div
 						onClick={() => setCurrentSection('attributes')}
-						className={attributesButtonClass}
-					>
+						className={attributesButtonClass}>
 						{`${attributes.length} ${
 							attributes.length === 1 ? 'attribute' : 'attributes'
 						}`}
 					</div>
 					<div
 						onClick={() => setCurrentSection('filters')}
-						className={filtersButtonClass}
-					>
+						className={filtersButtonClass}>
 						{`${filters.length} ${filters.length === 1 ? 'filter' : 'filters'}`}
 					</div>
 				</div>
@@ -220,8 +218,7 @@ const PinConfigurator = ({
 				{currentSection === 'attributes' && (
 					<button
 						onClick={() => setIsAttributeFormOpen(true)}
-						className='modal__button add'
-					>
+						className='modal__button add'>
 						<i className='modal__button-icon' />
 						Add attribute
 					</button>

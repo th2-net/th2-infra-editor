@@ -62,8 +62,7 @@ const Group = ({ title, boxes, groupsTopOffset, color }: Props) => {
 						className='group__items-scroller'
 						style={{
 							maxHeight: `${window.innerHeight - GROUP_OFFSET}px`,
-						}}
-					>
+						}}>
 						{boxes.map((box, index) => (
 							<Box
 								key={`${box.name}-${index}`}
