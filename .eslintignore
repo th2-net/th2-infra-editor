@@ -19,3 +19,4 @@ webpack/*
 jest.config.js
 build
 postcss.config.js
+vs
