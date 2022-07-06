@@ -311,8 +311,43 @@ export default class SchemasStore {
 		this.selectedSchema = schema;
 	};
 
+	private clearNonExistingLinks = () => {
+		this.connectionsStore.links
+			.filter(
+				link =>
+					!(
+						(link.from && this.checkBoxExistingByName(link.from?.box)) ||
+						this.dictionaryList.find(dictionary => dictionary.name === link.from?.box)
+					) ||
+					!(
+						(link.to && this.checkBoxExistingByName(link.to?.box)) ||
+						this.dictionaryList.find(dictionary => dictionary.name === link.to?.box)
+					),
+			)
+			.forEach(link => this.connectionsStore.deleteLink(link));
+		if (this.dictionaryLinksEntity)
+			this.saveEntityChanges(
+				{
+					...this.dictionaryLinksEntity,
+					spec: {
+						'dictionaries-relation': this.dictionaryLinksEntity.spec[
+							'dictionaries-relation'
+						].filter(
+							link =>
+								this.checkBoxExistingByName(link.box) ||
+								this.dictionaryList.find(
+									dictionary => dictionary.name === link.box,
+								),
+						),
+					},
+				},
+				'update',
+			);
+	};
+
 	@action
 	public saveChanges = async () => {
+		this.clearNonExistingLinks();
 		if (!this.selectedSchema || this.preparedRequests.length === 0) return;
 		try {
 			this.isSaving = true;
