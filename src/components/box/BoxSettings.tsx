@@ -161,9 +161,8 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		id: 'dictionary-type',
 	});
 
-	const [relatedDictionaryList, setRelatedDictionaryList] = React.useState<DictionaryRelation[]>(
-		relatedDictionary,
-	);
+	const [relatedDictionaryList, setRelatedDictionaryList] =
+		React.useState<DictionaryRelation[]>(relatedDictionary);
 
 	const [pinsList, setPinList] = React.useState(editableBox.spec.pins ?? []);
 
@@ -351,7 +350,8 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 					style={{
 						maxHeight: 500,
 						overflow: 'auto',
-					}}>
+					}}
+				>
 					{isUpdated && (
 						<div className='modal__update'>
 							<button onClick={updateChanges} className='modal__update-button'>
@@ -363,7 +363,8 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 					<div className='modal__content-switcher'>
 						<div
 							onClick={() => setCurrentSection('config')}
-							className={configButtonClass}>
+							className={configButtonClass}
+						>
 							Box config
 						</div>
 						<div onClick={() => setCurrentSection('pins')} className={pinsButtonClass}>
@@ -372,7 +373,8 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 						</div>
 						<div
 							onClick={() => setCurrentSection('dictionary')}
-							className={dictionaryButtonClass}>
+							className={dictionaryButtonClass}
+						>
 							{`${relatedDictionaryList.length} ${
 								pinsList.length === 1 ? 'dictionary' : 'dictionaries'
 							}`}
@@ -416,7 +418,8 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 					{currentSection === 'pins' && (
 						<button
 							onClick={() => setIsAddPinFormOpen(true)}
-							className='modal__button add'>
+							className='modal__button add'
+						>
 							<i className='modal__button-icon' />
 							Add pin
 						</button>
@@ -424,7 +427,8 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 					{currentSection === 'dictionary' && (
 						<button
 							onClick={() => setIsAddDictionaryFormOpen(true)}
-							className='modal__button add'>
+							className='modal__button add'
+						>
 							<i className='modal__button-icon' />
 							Add dictionary
 						</button>

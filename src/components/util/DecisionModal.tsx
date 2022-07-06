@@ -60,12 +60,14 @@ const DecisionModal = ({ text, mainVariant, variants, onClose }: DecisionModalPr
 				style={{
 					justifyContent: preparedVariants.length === 1 ? 'center' : 'space-between',
 				}}
-				className='modal__buttons'>
+				className='modal__buttons'
+			>
 				{preparedVariants.map((variant, index) => (
 					<button
 						key={index}
 						onClick={() => makeDecision(variant.func)}
-						className='modal__button'>
+						className='modal__button'
+					>
 						{variant.title}
 					</button>
 				))}

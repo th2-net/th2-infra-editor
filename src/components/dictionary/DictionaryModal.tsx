@@ -156,7 +156,8 @@ const DictionaryModal = ({ dictionary, onClose }: DictionaryModalProps) => {
 			style={{
 				width: 'auto',
 			}}
-			className='modal'>
+			className='modal'
+		>
 			<div className='modal__header'>
 				<h3 className='modal__header-title'>
 					{dictionary ? dictionary.name : 'Create dictionary'}
@@ -184,7 +185,8 @@ const DictionaryModal = ({ dictionary, onClose }: DictionaryModalProps) => {
 					<div
 						onDrop={dropDictionaryHandler}
 						className='modal__dragndrop-area'
-						draggable='true'>
+						draggable='true'
+					>
 						<i className='modal__dragndrop-area-icon'></i>
 						<span className='modal__dragndrop-area-text'>
 							Choose a file or drag it here.

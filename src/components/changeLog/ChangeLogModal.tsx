@@ -56,7 +56,8 @@ const ChangeLogModal = ({ top, left, width, onClose }: ChangeLogModalProps) => {
 				top: `${top ?? 0}px`,
 				width: `${width ?? 0}px`,
 			}}
-			className='modal header__modal'>
+			className='modal header__modal'
+		>
 			{historyStore.history.length > 0 ? (
 				<div className='modal__elements-list long'>
 					{historyStore.history.map((snapshot, index) => {

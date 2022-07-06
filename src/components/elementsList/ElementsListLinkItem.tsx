@@ -42,7 +42,8 @@ const ElementsListLinkItem = ({
 		<div
 			className={elementClassName}
 			onMouseEnter={() => connectionsStore.setOutlinerSelectedLink(link)}
-			onMouseLeave={() => connectionsStore.setOutlinerSelectedLink(null)}>
+			onMouseLeave={() => connectionsStore.setOutlinerSelectedLink(null)}
+		>
 			<div className='element__header'>
 				<span className='element__title'>{link.name}</span>
 				<div className='element__buttons-wrapper'>
@@ -57,7 +58,8 @@ const ElementsListLinkItem = ({
 								deleteConnection(link);
 							}
 						}}
-						className='element__button remove'>
+						className='element__button remove'
+					>
 						<i className='element__button-icon' />
 					</button>
 				</div>
@@ -68,7 +70,8 @@ const ElementsListLinkItem = ({
 						style={{
 							borderColor: link.from && getBoxBorderColor(link.from.box),
 						}}
-						className='element__link-state'>
+						className='element__link-state'
+					>
 						<div className='element__info'>
 							<i className='element__info-icon boxes' />
 							<div className='element__info-value short'>{link.from?.box}</div>
@@ -110,7 +113,8 @@ const ElementsListLinkItem = ({
 						style={{
 							borderColor: link.to && getBoxBorderColor(link.to.box),
 						}}
-						className='element__link-state'>
+						className='element__link-state'
+					>
 						<div className='element__info'>
 							<i className='element__info-icon boxes' />
 							<div className='element__info-value short'>{link.to?.box}</div>

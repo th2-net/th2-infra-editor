@@ -57,12 +57,14 @@ const ElementsListDictionaryItem = ({
 			<div className='modal__elements-item-buttons-wrapper'>
 				<button
 					onClick={() => setEditableDictionary(dictionary)}
-					className='modal__elements-item-button edit'>
+					className='modal__elements-item-button edit'
+				>
 					<i className='modal__elements-item-button-icon' />
 				</button>
 				<button
 					onClick={() => downloadFile(dictionary.spec.data, dictionary.name, 'text/xml')}
-					className='modal__elements-item-button download'>
+					className='modal__elements-item-button download'
+				>
 					<i className='modal__elements-item-button-icon' />
 				</button>
 				<button onClick={onRemove} className='modal__elements-item-button delete'>

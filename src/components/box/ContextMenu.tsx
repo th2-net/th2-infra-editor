@@ -39,7 +39,8 @@ const ContextMenu = ({
 					togglePinConfigurator();
 					closeContextMenu();
 				}}
-				className='pin__menu-button'>
+				className='pin__menu-button'
+			>
 				<i className='pin__menu-button-icon edit' />
 			</button>
 			<div className='pin__menu-separator' />
@@ -48,7 +49,8 @@ const ContextMenu = ({
 					deletePinConnections();
 					closeContextMenu();
 				}}
-				className='pin__menu-button'>
+				className='pin__menu-button'
+			>
 				<i className='pin__menu-button-icon delete' />
 			</button>
 		</div>

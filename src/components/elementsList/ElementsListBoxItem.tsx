@@ -60,7 +60,8 @@ const ElementsListBoxItem = ({
 		<div
 			onMouseOver={() => setOutlinerSelectedBox(box)}
 			onMouseLeave={() => setOutlinerSelectedBox(null)}
-			className={elementClassName}>
+			className={elementClassName}
+		>
 			<div className='element__header' style={{ backgroundColor: color }}>
 				<span className='element__title'>{box.name}</span>
 				<div className='element__buttons-wrapper'>

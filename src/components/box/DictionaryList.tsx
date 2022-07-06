@@ -59,17 +59,20 @@ const DictionaryList = ({
 						<div className='element__buttons-wrapper'>
 							<button
 								onClick={() => editDictionary(relation)}
-								className='element__button settings'>
+								className='element__button settings'
+							>
 								<i className='element__button-icon' />
 							</button>
 							<button
 								onClick={() => downloadDictionary(relation)}
-								className='element__button download'>
+								className='element__button download'
+							>
 								<i className='element__button-icon' />
 							</button>
 							<button
 								onClick={() => removeDictionaryRelation(relation)}
-								className='element__button remove'>
+								className='element__button remove'
+							>
 								<i className='element__button-icon' />
 							</button>
 						</div>

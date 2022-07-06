@@ -176,7 +176,8 @@ const ElementsListModal = ({ top, left, width, onClose }: ElementsListModalProps
 					top: `${top ?? 0}px`,
 					width: `${width ?? 0}px`,
 				}}
-				className='modal header__modal'>
+				className='modal header__modal'
+			>
 				<div className='modal__content'>
 					<div className='modal__content-switcher'>
 						<div onClick={() => setCurrentSection('boxes')} className={boxButtonClass}>
@@ -193,7 +194,8 @@ const ElementsListModal = ({ top, left, width, onClose }: ElementsListModalProps
 						</div>
 						<div
 							onClick={() => setCurrentSection('dictionaries')}
-							className={dictionaryButtonClass}>
+							className={dictionaryButtonClass}
+						>
 							<i className='modal__content-switcher-button-icon' />
 							{`${schemasStore.dictionaryList.length} ${
 								schemasStore.dictionaryList.length === 1
@@ -204,7 +206,8 @@ const ElementsListModal = ({ top, left, width, onClose }: ElementsListModalProps
 					</div>
 					<button
 						onClick={() => setSortDicrection(sortDirection === 'asc' ? 'desc' : 'asc')}
-						className={sortButtonClass}>
+						className={sortButtonClass}
+					>
 						<i className='modal__button-icon' />
 						Sort by {currentSection === 'boxes' ? 'Type' : 'Name'}
 					</button>
