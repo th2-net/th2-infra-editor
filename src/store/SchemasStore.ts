@@ -336,7 +336,7 @@ export default class SchemasStore {
 							link =>
 								this.checkBoxExistingByName(link.box) ||
 								this.dictionaryList.find(
-									dictionary => dictionary.name === link.box,
+									dictionary => dictionary.name === link.dictionary.name,
 								),
 						),
 					},
