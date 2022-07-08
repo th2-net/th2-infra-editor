@@ -60,10 +60,18 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 	const relatedDictionary = React.useMemo(
 		() =>
 			schemasStore.dictionaryLinksEntity
-				? schemasStore.dictionaryLinksEntity.spec['dictionaries-relation'].filter(
+				? schemasStore.dictionaryLinksEntity.spec['dictionaries-relation'].find(
 						link => link.box === editableBox.name,
-				  )
-				: [],
+				  ) || {
+						box: editableBox.name,
+						name: `${editableBox.name}-dictionary`,
+						dictionaries: [],
+				  }
+				: {
+						box: editableBox.name,
+						name: `${editableBox.name}-dictionary`,
+						dictionaries: [],
+				  },
 		[schemasStore.dictionaryLinksEntity],
 	);
 
@@ -161,7 +169,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		id: 'dictionary-type',
 	});
 
-	const [relatedDictionaryList, setRelatedDictionaryList] = React.useState<DictionaryRelation[]>(
+	const [relatedDictionaryList, setRelatedDictionaryList] = React.useState<DictionaryRelation>(
 		relatedDictionary,
 	);
 
@@ -229,19 +237,15 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 
 	const addDictionaryToList = () => {
 		if (
-			!relatedDictionaryList.find(dictionary => dictionary.name === relationNameInput.value)
+			!relatedDictionaryList.dictionaries.find(
+				dictionary => dictionary.name === relationNameInput.value,
+			)
 		) {
-			setRelatedDictionaryList([
-				...relatedDictionaryList,
-				{
-					name: relationNameInput.value,
-					box: editableBox.name,
-					dictionary: {
-						name: dictionaryNameInput.value,
-						type: dictionaryTypeInput.value,
-					},
-				},
-			]);
+			relatedDictionaryList.dictionaries.push({
+				name: dictionaryNameInput.value,
+				alias: dictionaryTypeInput.value,
+			});
+
 			[relationNameInput, dictionaryNameInput, dictionaryTypeInput].forEach(input =>
 				input.reset(),
 			);
@@ -373,7 +377,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 						<div
 							onClick={() => setCurrentSection('dictionary')}
 							className={dictionaryButtonClass}>
-							{`${relatedDictionaryList.length} ${
+							{`${relatedDictionaryList.dictionaries.length} ${
 								pinsList.length === 1 ? 'dictionary' : 'dictionaries'
 							}`}
 						</div>
@@ -400,13 +404,14 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 				)}
 				{currentSection === 'dictionary' && (
 					<DictionaryList
-						dictionaryRelations={relatedDictionaryList}
+						dictionaryRelations={relatedDictionaryList.dictionaries}
 						removeDictionaryRelation={deletedRelation =>
-							setRelatedDictionaryList(
-								relatedDictionaryList.filter(
+							setRelatedDictionaryList({
+								...relatedDictionaryList,
+								dictionaries: relatedDictionaryList.dictionaries.filter(
 									relation => relation.name !== deletedRelation.name,
 								),
-							)
+							})
 						}
 						dictionaryList={schemasStore.dictionaryList}
 						setEditableDictionary={dictionary => setEditableDictionary(dictionary)}

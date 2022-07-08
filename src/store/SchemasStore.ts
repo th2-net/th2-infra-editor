@@ -460,7 +460,7 @@ export default class SchemasStore {
 		oldBox: BoxEntity,
 		updatedBox: BoxEntity,
 		options?: {
-			dictionaryRelations?: DictionaryRelation[];
+			dictionaryRelations?: DictionaryRelation;
 			createSnapshot?: boolean;
 		},
 	) => {
@@ -562,20 +562,24 @@ export default class SchemasStore {
 
 	@action
 	public configurateBoxDictionaryRelations = (
-		dictionaryRelations: DictionaryRelation[],
+		dictionaryRelations: DictionaryRelation,
 		boxName: string,
 	): Change[] => {
 		if (!this.dictionaryLinksEntity) return [];
 
-		const boxRelations = this.dictionaryLinksEntity.spec['dictionaries-relation'].filter(
+		const boxRelations = this.dictionaryLinksEntity.spec['dictionaries-relation'].find(
 			link => link.box === boxName,
-		);
+		) || {
+			box: boxName,
+			name: dictionaryRelations.name,
+			dictionaries: [],
+		};
 
 		let operation: 'add' | 'remove' = 'add';
 
-		let relations = rightJoin(boxRelations, dictionaryRelations);
+		let relations = rightJoin(boxRelations.dictionaries, dictionaryRelations.dictionaries);
 		if (!relations.length) {
-			relations = rightJoin(dictionaryRelations, boxRelations);
+			relations = rightJoin(dictionaryRelations.dictionaries, boxRelations.dictionaries);
 			if (!relations.length) return [];
 
 			operation = 'remove';
@@ -583,20 +587,36 @@ export default class SchemasStore {
 
 		const oldValue = JSON.parse(JSON.stringify(this.dictionaryLinksEntity));
 		if (operation === 'add') {
-			this.dictionaryLinksEntity.spec['dictionaries-relation'].push(...relations);
+			this.dictionaryLinksEntity.spec['dictionaries-relation'].map(link => {
+				if (link.box === boxName && link.name === dictionaryRelations.name) {
+					return {
+						box: link.box,
+						name: link.name,
+						dictionaries: [...link.dictionaries, ...relations],
+					};
+				}
+				return link;
+			});
 		} else {
 			this.dictionaryLinksEntity.spec[
 				'dictionaries-relation'
-			] = this.dictionaryLinksEntity.spec['dictionaries-relation'].filter(
-				dictionaryRelation =>
-					!relations.find(
-						relation =>
-							relation.box === dictionaryRelation.box &&
-							relation.name === dictionaryRelation.name &&
-							relation.dictionary.name === dictionaryRelation.dictionary.name &&
-							relation.dictionary.type === dictionaryRelation.dictionary.type,
-					),
-			);
+			] = this.dictionaryLinksEntity.spec['dictionaries-relation'].map(link => {
+				if (link.box === boxName && link.name === dictionaryRelations.name) {
+					return {
+						box: link.box,
+						name: link.name,
+						dictionaries: link.dictionaries.filter(
+							dictionaryRelation =>
+								!relations.find(
+									relation =>
+										relation.name === dictionaryRelation.name &&
+										relation.alias === dictionaryRelation.alias,
+								),
+						),
+					};
+				}
+				return link;
+			});
 		}
 		const newValue = JSON.parse(JSON.stringify(this.dictionaryLinksEntity));
 
@@ -659,20 +679,31 @@ export default class SchemasStore {
 
 		if (dictionaryEntity.name !== oldDictionary.name && this.dictionaryLinksEntity) {
 			const changedRelationsIndices = this.dictionaryLinksEntity.spec['dictionaries-relation']
-				.filter(relation => relation.dictionary.name === oldDictionary.name)
-				.map(targetRelation =>
-					this.dictionaryLinksEntity
-						? this.dictionaryLinksEntity.spec['dictionaries-relation'].findIndex(
-								relation => relation.name === targetRelation.name,
-						  )
-						: -1,
-				);
+				.filter(relation =>
+					relation.dictionaries.find(
+						dictionary => dictionary.name === oldDictionary.name,
+					),
+				)
+				.map(targetRelation => {
+					if (!this.dictionaryLinksEntity) return [-1, -1];
+					const relInd = this.dictionaryLinksEntity.spec[
+						'dictionaries-relation'
+					].findIndex(relation => relation.name === targetRelation.name);
+					return [
+						relInd,
+						this.dictionaryLinksEntity.spec['dictionaries-relation'][
+							relInd
+						].dictionaries.findIndex(
+							dictionary => dictionary.name === oldDictionary.name,
+						),
+					];
+				});
 
 			changedRelationsIndices.forEach(index => {
-				if (this.dictionaryLinksEntity && index !== -1) {
-					this.dictionaryLinksEntity.spec['dictionaries-relation'][
-						index
-					].dictionary.name = dictionaryEntity.name;
+				if (this.dictionaryLinksEntity && index[0] !== -1 && index[1] !== -1) {
+					this.dictionaryLinksEntity.spec['dictionaries-relation'][index[0]].dictionaries[
+						index[1]
+					].name = dictionaryEntity.name;
 				}
 			});
 
