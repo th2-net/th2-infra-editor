@@ -598,9 +598,8 @@ export default class SchemasStore {
 				return link;
 			});
 		} else {
-			this.dictionaryLinksEntity.spec[
-				'dictionaries-relation'
-			] = this.dictionaryLinksEntity.spec['dictionaries-relation'].map(link => {
+			const k = 'dictionaries-relation';
+			this.dictionaryLinksEntity.spec[k] = this.dictionaryLinksEntity.spec[k].map(link => {
 				if (link.box === boxName && link.name === dictionaryRelations.name) {
 					return {
 						box: link.box,
@@ -729,17 +728,14 @@ export default class SchemasStore {
 
 	@action
 	public deletePinConnections = async (pin: Pin, boxName: string) => {
+		const connectionTypes = ['router-grpc', 'router-mq'] as const;
 		if (this.selectedSchema && this.connectionsStore.linkBoxes) {
 			this.connectionsStore.linkBoxes.forEach(linkBox => {
 				if (
-					['router-grpc', 'router-mq'].some(connectionType => {
+					connectionTypes.some(connectionType => {
 						return (
-							linkBox.spec['boxes-relation']?.[
-								connectionType as 'router-grpc' | 'router-mq'
-							] &&
-							linkBox.spec['boxes-relation']?.[
-								connectionType as 'router-grpc' | 'router-mq'
-							].some(
+							linkBox.spec['boxes-relation']?.[connectionType] &&
+							linkBox.spec['boxes-relation']?.[connectionType].some(
 								link =>
 									(link.from?.box === boxName && link.from?.pin === pin.name) ||
 									(link.to?.box === boxName && link.to?.pin === pin.name),

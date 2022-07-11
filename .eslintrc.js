@@ -94,7 +94,7 @@ module.exports = {
 		'react-hooks/rules-of-hooks': 'error',
 		'prefer-destructuring': 'off',
 		'no-useless-constructor': 'off',
-		'prettier/prettier': ['error'],
+		'prettier/prettier': ['warn'],
 		'no-continue': 'off',
 		'no-alert': 'off',
 	},
