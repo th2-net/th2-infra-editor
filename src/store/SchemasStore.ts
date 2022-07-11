@@ -317,11 +317,11 @@ export default class SchemasStore {
 			.filter(
 				link =>
 					!(
-						(link.from && findBoxByName(link.from?.box)) ||
+						(link.from && findBoxByName(link.from.box)) ||
 						this.dictionaryList.find(dictionary => dictionary.name === link.from?.box)
 					) ||
 					!(
-						(link.to && findBoxByName(link.to?.box)) ||
+						(link.to && findBoxByName(link.to.box)) ||
 						this.dictionaryList.find(dictionary => dictionary.name === link.to?.box)
 					),
 			)
@@ -333,16 +333,13 @@ export default class SchemasStore {
 					spec: {
 						'dictionaries-relation': this.dictionaryLinksEntity.spec[
 							'dictionaries-relation'
-						]
-							.filter(link => findBoxByName(link.box))
-							.map(dictRel => ({
-								...dictRel,
-								dictionaries: dictRel.dictionaries.filter(dict =>
-									this.dictionaryList.find(
-										({ name: dictName }) => dictName === dict.name,
-									),
+						].filter(
+							link =>
+								this.checkBoxExistingByName(link.box) ||
+								this.dictionaryList.find(
+									dictionary => dictionary.name === link.box,
 								),
-							})),
+						),
 					},
 				},
 				'update',
