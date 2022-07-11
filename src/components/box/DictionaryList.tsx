@@ -16,11 +16,16 @@
 
 import React from 'react';
 import { downloadFile } from '../../helpers/files';
-import { DictionaryEntity, DictionaryRelation } from '../../models/Dictionary';
+import { DictionaryEntity } from '../../models/Dictionary';
+
+interface Relation {
+	name: string;
+	alias: string;
+}
 
 interface PinsListProps {
-	dictionaryRelations: DictionaryRelation[];
-	removeDictionaryRelation: (relation: DictionaryRelation) => void;
+	dictionaryRelations: Relation[];
+	removeDictionaryRelation: (relation: Relation) => void;
 	dictionaryList: DictionaryEntity[];
 	setEditableDictionary: (dictionary: DictionaryEntity) => void;
 }
@@ -31,18 +36,18 @@ const DictionaryList = ({
 	dictionaryList,
 	setEditableDictionary,
 }: PinsListProps) => {
-	const downloadDictionary = (relation: DictionaryRelation) => {
+	const downloadDictionary = (relation: Relation) => {
 		const targetDictionary = dictionaryList.find(
-			dictionary => dictionary.name === relation.dictionary.name,
+			dictionary => dictionary.name === relation.name,
 		);
 		if (targetDictionary) {
 			downloadFile(targetDictionary.spec.data, targetDictionary.name, 'text/xml');
 		}
 	};
 
-	const editDictionary = (relation: DictionaryRelation) => {
+	const editDictionary = (relation: Relation) => {
 		const targetDictionary = dictionaryList.find(
-			dictionary => dictionary.name === relation.dictionary.name,
+			dictionary => dictionary.name === relation.name,
 		);
 		if (targetDictionary) {
 			setEditableDictionary(targetDictionary);
@@ -78,15 +83,11 @@ const DictionaryList = ({
 						<div className='element__info-list'>
 							<div className='element__info'>
 								<div className='element__info-name'>Dictionary name</div>
-								<div className='element__info-value'>
-									{relation.dictionary.name}
-								</div>
+								<div className='element__info-value'> {relation.name} </div>
 							</div>
 							<div className='element__info'>
-								<div className='element__info-name'>Dictionary type</div>
-								<div className='element__info-value'>
-									{relation.dictionary.type}
-								</div>
+								<div className='element__info-name'>Dictionary alias</div>
+								<div className='element__info-value'>{relation.alias}</div>
 							</div>
 						</div>
 					</div>
