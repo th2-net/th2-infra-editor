@@ -311,8 +311,44 @@ export default class SchemasStore {
 		this.selectedSchema = schema;
 	};
 
+	private clearNonExistingLinks = () => {
+		const findBoxByName = this.checkBoxExistingByName;
+		this.connectionsStore.links
+			.filter(
+				link =>
+					!(
+						(link.from && findBoxByName(link.from.box)) ||
+						this.dictionaryList.find(dictionary => dictionary.name === link.from?.box)
+					) ||
+					!(
+						(link.to && findBoxByName(link.to.box)) ||
+						this.dictionaryList.find(dictionary => dictionary.name === link.to?.box)
+					),
+			)
+			.forEach(link => this.connectionsStore.deleteLink(link));
+		if (this.dictionaryLinksEntity)
+			this.saveEntityChanges(
+				{
+					...this.dictionaryLinksEntity,
+					spec: {
+						'dictionaries-relation': this.dictionaryLinksEntity.spec[
+							'dictionaries-relation'
+						].filter(
+							link =>
+								this.checkBoxExistingByName(link.box) ||
+								this.dictionaryList.find(
+									dictionary => dictionary.name === link.box,
+								),
+						),
+					},
+				},
+				'update',
+			);
+	};
+
 	@action
 	public saveChanges = async () => {
+		this.clearNonExistingLinks();
 		if (!this.selectedSchema || this.preparedRequests.length === 0) return;
 		try {
 			this.isSaving = true;
@@ -598,24 +634,24 @@ export default class SchemasStore {
 				return link;
 			});
 		} else {
-			const k = 'dictionaries-relation';
-			this.dictionaryLinksEntity.spec[k] = this.dictionaryLinksEntity.spec[k].map(link => {
-				if (link.box === boxName && link.name === dictionaryRelations.name) {
-					return {
-						box: link.box,
-						name: link.name,
-						dictionaries: link.dictionaries.filter(
-							dictionaryRelation =>
-								!relations.find(
-									relation =>
-										relation.name === dictionaryRelation.name &&
-										relation.alias === dictionaryRelation.alias,
-								),
-						),
-					};
-				}
-				return link;
-			});
+			this.dictionaryLinksEntity.spec['dictionaries-relation'] =
+				this.dictionaryLinksEntity.spec['dictionaries-relation'].map(link => {
+					if (link.box === boxName && link.name === dictionaryRelations.name) {
+						return {
+							box: link.box,
+							name: link.name,
+							dictionaries: link.dictionaries.filter(
+								dictionaryRelation =>
+									!relations.find(
+										relation =>
+											relation.name === dictionaryRelation.name &&
+											relation.alias === dictionaryRelation.alias,
+									),
+							),
+						};
+					}
+					return link;
+				});
 		}
 		const newValue = JSON.parse(JSON.stringify(this.dictionaryLinksEntity));
 
