@@ -16,7 +16,7 @@
 
 import FileBase from './FileBase';
 import { ConnectionCoord, ConnectionOwner, ExtendedConnectionOwner } from './Box';
-import { DictionaryRelation } from './Dictionary';
+import { DictionaryRelation, MultiDictionaryRelation } from './Dictionary';
 
 export default interface LinksDefinition extends FileBase {
 	spec: {
@@ -25,6 +25,7 @@ export default interface LinksDefinition extends FileBase {
 			['router-grpc']: Link<ConnectionOwner>[];
 		};
 		['dictionaries-relation']?: DictionaryRelation[];
+		['multi-dictionaries-relation']?: MultiDictionaryRelation[];
 	};
 }
 

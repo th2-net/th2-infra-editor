@@ -115,24 +115,40 @@ const ChangeLogBoxItem = ({ snapshot }: ChangeLogBoxItemProps) => {
 				(delta.added || delta.deleted) &&
 				(delta.added.spec || delta.deleted.spec) &&
 				((delta.added as DictionaryLinksEntity).spec['dictionaries-relation'] ||
-					(delta.added as DictionaryLinksEntity).spec['dictionaries-relation'])
+					(delta.added as DictionaryLinksEntity).spec['dictionaries-relation']) &&
+				((delta.added as DictionaryLinksEntity).spec['multi-dictionaries-relation'] ||
+					(delta.added as DictionaryLinksEntity).spec['multi-dictionaries-relation'])
 			) {
 				return {
 					added:
 						(delta.added as DictionaryLinksEntity).spec &&
-						(delta.added as DictionaryLinksEntity).spec['dictionaries-relation']
+						((delta.added as DictionaryLinksEntity).spec['dictionaries-relation']
 							? Object.entries(
 									(delta.added as DictionaryLinksEntity).spec[
 										'dictionaries-relation'
 									],
 							  ).length
+							: 0) &&
+						(delta.added as DictionaryLinksEntity).spec['multi-dictionaries-relation']
+							? Object.entries(
+									(delta.added as DictionaryLinksEntity).spec[
+										'multi-dictionaries-relation'
+									],
+							  ).length
 							: 0,
 					deleted:
 						(delta.deleted as DictionaryLinksEntity).spec &&
-						(delta.deleted as DictionaryLinksEntity).spec['dictionaries-relation']
+						((delta.deleted as DictionaryLinksEntity).spec['dictionaries-relation']
 							? Object.entries(
 									(delta.deleted as DictionaryLinksEntity).spec[
 										'dictionaries-relation'
+									],
+							  ).length
+							: 0) &&
+						(delta.deleted as DictionaryLinksEntity).spec['multi-dictionaries-relation']
+							? Object.entries(
+									(delta.deleted as DictionaryLinksEntity).spec[
+										'multi-dictionaries-relation'
 									],
 							  ).length
 							: 0,

@@ -16,85 +16,113 @@
 
 import React from 'react';
 import { downloadFile } from '../../helpers/files';
-import { DictionaryEntity } from '../../models/Dictionary';
+import {
+	DictionaryEntity,
+	DictionaryRelation,
+	MultiDictionary,
+	MultiDictionaryRelation,
+} from '../../models/Dictionary';
 
-interface Relation {
-	name: string;
-	alias: string;
-}
 interface PinsListProps {
-	dictionaryRelations: Relation[];
-	removeDictionaryRelation: (relation: Relation) => void;
+	dictionaryRelations: DictionaryRelation[];
+	multiDictionaryRelation: MultiDictionaryRelation;
+	removeDictionaryRelation: (relation: string) => void;
 	dictionaryList: DictionaryEntity[];
 	setEditableDictionary: (dictionary: DictionaryEntity) => void;
 }
 
 const DictionaryList = ({
 	dictionaryRelations,
+	multiDictionaryRelation,
 	removeDictionaryRelation,
 	dictionaryList,
 	setEditableDictionary,
 }: PinsListProps) => {
-	const downloadDictionary = (relation: Relation) => {
-		const targetDictionary = dictionaryList.find(
-			dictionary => dictionary.name === relation.name,
-		);
+	const downloadDictionary = (relation: DictionaryRelation | MultiDictionary) => {
+		const targetDictionary =
+			'alias' in relation
+				? dictionaryList.find(dictionary => dictionary.name === relation.name)
+				: dictionaryList.find(dictionary => dictionary.name === relation.dictionary.name);
 		if (targetDictionary) {
 			downloadFile(targetDictionary.spec.data, targetDictionary.name, 'text/xml');
 		}
 	};
 
-	const editDictionary = (relation: Relation) => {
-		const targetDictionary = dictionaryList.find(
-			dictionary => dictionary.name === relation.name,
-		);
+	const editDictionary = (relation: DictionaryRelation | MultiDictionary) => {
+		const targetDictionary =
+			'alias' in relation
+				? dictionaryList.find(dictionary => dictionary.name === relation.name)
+				: dictionaryList.find(dictionary => dictionary.name === relation.dictionary.name);
 		if (targetDictionary) {
 			setEditableDictionary(targetDictionary);
 		}
 	};
 
-	return (
-		<div className='modal__elements-list'>
-			{dictionaryRelations.map(relation => (
-				<div key={relation.name} className='element'>
-					<div className='element__header'>
-						<i className='element__header-icon dictionary' />
-						<h3 className='element__title'>{relation.name}</h3>
-						<div className='element__buttons-wrapper'>
-							<button
-								onClick={() => editDictionary(relation)}
-								className='element__button settings'>
-								<i className='element__button-icon' />
-							</button>
-							<button
-								onClick={() => downloadDictionary(relation)}
-								className='element__button download'>
-								<i className='element__button-icon' />
-							</button>
-							<button
-								onClick={() => removeDictionaryRelation(relation)}
-								className='element__button remove'>
-								<i className='element__button-icon' />
-							</button>
-						</div>
+	const renderDictionaryElement = (relation: DictionaryRelation | MultiDictionary) => {
+		return (
+			<div key={relation.name} className='element'>
+				<div className='element__header'>
+					<i className='element__header-icon dictionary' />
+					<h3 className='element__title'>{relation.name}</h3>
+					<div className='element__buttons-wrapper'>
+						<button
+							onClick={() => editDictionary(relation)}
+							className='element__button settings'>
+							<i className='element__button-icon' />
+						</button>
+						<button
+							onClick={() => downloadDictionary(relation)}
+							className='element__button download'>
+							<i className='element__button-icon' />
+						</button>
+						<button
+							onClick={() =>
+								removeDictionaryRelation(
+									'alias' in relation ? relation.name : relation.dictionary.name,
+								)
+							}
+							className='element__button remove'>
+							<i className='element__button-icon' />
+						</button>
 					</div>
-					<div className='element__body'>
-						<div className='element__info-list'>
-							<div className='element__info'>
-								<div className='element__info-name'>Dictionary name</div>
-								<div className='element__info-value'> {relation.name} </div>
+				</div>
+				<div className='element__body'>
+					<div className='element__info-list'>
+						<div className='element__info'>
+							<div className='element__info-name'>Dictionary name</div>
+							<div className='element__info-value'>
+								{'alias' in relation ? relation.name : relation.dictionary.name}
 							</div>
-							<div className='element__info'>
-								<div className='element__info-name'>Dictionary alias</div>
-								<div className='element__info-value'>{relation.alias}</div>
+						</div>
+						<div className='element__info'>
+							<div className='element__info-name'>
+								Dictionary {'alias' in relation ? 'alias' : 'type'}
+							</div>
+							<div className='element__info-value'>
+								{'alias' in relation ? relation.alias : relation.dictionary.type}
 							</div>
 						</div>
 					</div>
 				</div>
-			))}
-			{dictionaryRelations.length === 0 && (
-				<div className='modal__empty'>Dictionary list is empty</div>
-			)}
+			</div>
+		);
+	};
+
+	return (
+		<div className='modal__elements-list'>
+			{multiDictionaryRelation.dictionaries.map(renderDictionaryElement)}
+			{dictionaryRelations
+				.filter(
+					relation =>
+						!multiDictionaryRelation.dictionaries.find(
+							dictionary => relation.dictionary.name === dictionary.name,
+						),
+				)
+				.map(renderDictionaryElement)}
+			{dictionaryRelations.length === 0 &&
+				multiDictionaryRelation.dictionaries.length === 0 && (
+					<div className='modal__empty'>Dictionary list is empty</div>
+				)}
 		</div>
 	);
 };

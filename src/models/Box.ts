@@ -15,7 +15,7 @@
  ***************************************************************************** */
 
 import FileBase from './FileBase';
-import { DictionaryRelation } from './Dictionary';
+import { DictionaryRelation, MultiDictionaryRelation } from './Dictionary';
 
 export interface BoxEntity extends FileBase {
 	spec: {
@@ -46,6 +46,7 @@ export interface BoxEntity extends FileBase {
 		['image-version']: string;
 		['node-port']?: number;
 		['dictionaries-relation']?: Array<DictionaryRelation>;
+		['multi-dictionaries-relation']?: Array<MultiDictionaryRelation>;
 		data?: string;
 		pins?: Array<Pin>;
 		type: string;
