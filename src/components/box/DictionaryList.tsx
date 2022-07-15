@@ -26,7 +26,7 @@ import {
 interface PinsListProps {
 	dictionaryRelations: DictionaryRelation[];
 	multiDictionaryRelation: MultiDictionaryRelation;
-	removeDictionaryRelation: (relation: DictionaryRelation | MultiDictionary) => void;
+	removeDictionaryRelation: (relation: string) => void;
 	dictionaryList: DictionaryEntity[];
 	setEditableDictionary: (dictionary: DictionaryEntity) => void;
 }
@@ -76,7 +76,11 @@ const DictionaryList = ({
 							<i className='element__button-icon' />
 						</button>
 						<button
-							onClick={() => removeDictionaryRelation(relation)}
+							onClick={() =>
+								removeDictionaryRelation(
+									'alias' in relation ? relation.name : relation.dictionary.name,
+								)
+							}
 							className='element__button remove'>
 							<i className='element__button-icon' />
 						</button>

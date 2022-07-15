@@ -446,16 +446,16 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 					<DictionaryList
 						dictionaryRelations={relatedDictionaryList}
 						multiDictionaryRelation={relatedMultiDictionaryList}
-						removeDictionaryRelation={deletedRelation => {
+						removeDictionaryRelation={dictName => {
 							setRelatedDictionaryList(
 								relatedDictionaryList.filter(
-									relation => relation.name !== deletedRelation.name,
+									relation => relation.dictionary.name !== dictName,
 								),
 							);
 							setRelatedMultiDictionaryList({
 								...relatedMultiDictionaryList,
 								dictionaries: relatedMultiDictionaryList.dictionaries.filter(
-									relation => relation.name !== deletedRelation.name,
+									relation => relation.name !== dictName,
 								),
 							});
 						}}

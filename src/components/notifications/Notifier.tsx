@@ -14,15 +14,15 @@
  * limitations under the License.
  ***************************************************************************** */
 
+import { reaction } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect } from 'react';
 import { useToasts } from 'react-toast-notifications';
 import { complement } from '../../helpers/array';
 import { isResponseError } from '../../helpers/errors';
 import { useNotificationsStore } from '../../hooks/useNotificationsStore';
-import { usePrevious } from '../../hooks/usePrevious';
-
 import FetchErrorToast from './FetchErrorToast';
+import { NotificationError } from '../../store/NotificationsStore';
 
 function Notifier() {
 	const { addToast, removeToast } = useToasts();
@@ -33,33 +33,34 @@ function Notifier() {
 
 	const notificiationStore = useNotificationsStore();
 
-	const prevResponseErrors = usePrevious(notificiationStore.errors);
+	const prevResponseErrors = React.useRef<NotificationError[]>([]);
 
 	useEffect(() => {
-		const currentResponseErrors = !prevResponseErrors
-			? notificiationStore.errors
-			: complement(notificiationStore.errors, prevResponseErrors);
+		function onNotificationsUpdate(notifications: NotificationError[]) {
+			const currentResponseErrors = complement(notifications, prevResponseErrors.current);
 
-		const removedErrors = prevResponseErrors
-			? prevResponseErrors.filter(error => !notificiationStore.errors.includes(error))
-			: [];
+			const removedErrors =
+				prevResponseErrors.current.filter(error => !notifications.includes(error)) || [];
 
-		// We need this to be able to delete toast from outside of toast component
-		removedErrors.forEach(error => removeToast(idsMap.current[error.id]));
+			// We need this to be able to delete toast from outside of toast component
+			removedErrors.forEach(error => removeToast(idsMap.current[error.id]));
 
-		currentResponseErrors.forEach(notificationError => {
-			const options = {
-				appearance: notificationError.type,
-				onDismiss: () => notificiationStore.deleteMessage(notificationError),
-			};
+			currentResponseErrors.forEach(notificationError => {
+				const options = {
+					appearance: notificationError.type,
+					onDismiss: () => notificiationStore.deleteMessage(notificationError),
+				};
 
-			const registerId = (id: string) => (idsMap.current[notificationError.id] = id);
+				const registerId = (id: string) => (idsMap.current[notificationError.id] = id);
 
-			if (isResponseError(notificationError)) {
-				addToast(<FetchErrorToast {...notificationError} />, options, registerId);
-			}
-		});
-	}, [notificiationStore.errors]);
+				if (isResponseError(notificationError)) {
+					addToast(<FetchErrorToast {...notificationError} />, options, registerId);
+				}
+			});
+		}
+
+		reaction(() => notificiationStore.errors, onNotificationsUpdate, { fireImmediately: true });
+	}, []);
 
 	return null;
 }
