@@ -27,6 +27,7 @@ import {
 	DictionaryRelation,
 	isDictionaryEntity,
 	isDictionaryLinksEntity,
+	MultiDictionaryRelation,
 } from '../models/Dictionary';
 import { RequestModel } from '../models/FileBase';
 import { Change } from '../models/History';
@@ -312,6 +313,7 @@ export default class SchemasStore {
 	};
 
 	private clearNonExistingLinks = () => {
+		const oldValue = JSON.parse(JSON.stringify(this.dictionaryLinksEntity));
 		this.connectionsStore.links
 			.filter(
 				link =>
@@ -325,24 +327,44 @@ export default class SchemasStore {
 					),
 			)
 			.forEach(link => this.connectionsStore.deleteLink(link));
-		if (this.dictionaryLinksEntity)
-			this.saveEntityChanges(
-				{
-					...this.dictionaryLinksEntity,
-					spec: {
-						'dictionaries-relation': this.dictionaryLinksEntity.spec[
-							'dictionaries-relation'
-						].filter(
+		if (this.dictionaryLinksEntity) {
+			this.dictionaryLinksEntity = {
+				...this.dictionaryLinksEntity,
+				spec: {
+					'dictionaries-relation':
+						this.dictionaryLinksEntity.spec['dictionaries-relation'] &&
+						this.dictionaryLinksEntity.spec['dictionaries-relation'].filter(
 							link =>
 								this.checkBoxExistingByName(link.box) ||
 								this.dictionaryList.find(
 									dictionary => dictionary.name === link.dictionary.name,
 								),
 						),
-					},
+					'multi-dictionaries-relation':
+						this.dictionaryLinksEntity.spec['multi-dictionaries-relation'] &&
+						this.dictionaryLinksEntity.spec['multi-dictionaries-relation']
+							.filter(link => this.checkBoxExistingByName(link.box))
+							.map(link => {
+								return {
+									...link,
+									dictionaries: link.dictionaries.filter(linkDictionary =>
+										this.dictionaryList.find(
+											dictionary => dictionary.name === linkDictionary.name,
+										),
+									),
+								};
+							}),
 				},
-				'update',
-			);
+			};
+
+			const newValue = JSON.parse(JSON.stringify(this.dictionaryLinksEntity));
+			if (Object.entries(diff(oldValue, newValue)).length !== 0) {
+				this.preparedRequests = this.preparedRequests.filter(
+					req => req.payload.name !== this.dictionaryLinksEntity?.name,
+				);
+				this.saveEntityChanges(this.dictionaryLinksEntity, 'update');
+			}
+		}
 	};
 
 	@action
@@ -496,6 +518,7 @@ export default class SchemasStore {
 		updatedBox: BoxEntity,
 		options?: {
 			dictionaryRelations?: DictionaryRelation[];
+			multiDictionaryRelation?: MultiDictionaryRelation;
 			createSnapshot?: boolean;
 		},
 	) => {
@@ -533,6 +556,13 @@ export default class SchemasStore {
 		if (options?.dictionaryRelations) {
 			changeList = this.configurateBoxDictionaryRelations(
 				options.dictionaryRelations,
+				updatedBox.name,
+			);
+		}
+
+		if (options?.multiDictionaryRelation) {
+			changeList = this.configurateBoxMultiDictionaryRelations(
+				options.multiDictionaryRelation,
 				updatedBox.name,
 			);
 		}
@@ -580,6 +610,15 @@ export default class SchemasStore {
 					}
 					return tempDictionary;
 				}),
+				'multi-dictionaries-relation': this.dictionaryLinksEntity.spec[
+					'multi-dictionaries-relation'
+				].map(dictionaryLink => {
+					const tempDictionary = dictionaryLink;
+					if (tempDictionary.box === oldBoxName) {
+						tempDictionary.box = newBoxName;
+					}
+					return tempDictionary;
+				}),
 			},
 		};
 
@@ -593,6 +632,76 @@ export default class SchemasStore {
 				to: newValue,
 			},
 		];
+	};
+
+	@action
+	public configurateBoxMultiDictionaryRelations = (
+		dictionaryRelation: MultiDictionaryRelation,
+		boxName: string,
+	): Change[] => {
+		if (!this.dictionaryLinksEntity) return [];
+
+		if (!this.dictionaryLinksEntity.spec['multi-dictionaries-relation']) {
+			const oldValue = JSON.parse(JSON.stringify(this.dictionaryLinksEntity));
+			this.dictionaryLinksEntity.spec['multi-dictionaries-relation'] = [dictionaryRelation];
+			const newValue = JSON.parse(JSON.stringify(this.dictionaryLinksEntity));
+			if (Object.entries(diff(oldValue, newValue)).length !== 0) {
+				this.saveEntityChanges(this.dictionaryLinksEntity, 'update');
+				return [
+					{
+						object: this.dictionaryLinksEntity.name,
+						from: oldValue,
+						to: newValue,
+					},
+				];
+			}
+		}
+
+		const oldRelation = this.dictionaryLinksEntity.spec['multi-dictionaries-relation'].find(
+			relation => relation.box === boxName,
+		);
+
+		if (!oldRelation) {
+			const oldValue = JSON.parse(JSON.stringify(this.dictionaryLinksEntity));
+			this.dictionaryLinksEntity.spec['multi-dictionaries-relation'].push(dictionaryRelation);
+			const newValue = JSON.parse(JSON.stringify(this.dictionaryLinksEntity));
+			if (Object.entries(diff(oldValue, newValue)).length !== 0) {
+				this.saveEntityChanges(this.dictionaryLinksEntity, 'update');
+				return [
+					{
+						object: this.dictionaryLinksEntity.name,
+						from: oldValue,
+						to: newValue,
+					},
+				];
+			}
+		} else {
+			let relations = rightJoin(oldRelation.dictionaries, dictionaryRelation.dictionaries);
+			if (!relations.length) {
+				relations = rightJoin(dictionaryRelation.dictionaries, oldRelation.dictionaries);
+				if (!relations.length) return [];
+			}
+
+			const oldValue = JSON.parse(JSON.stringify(this.dictionaryLinksEntity));
+			this.dictionaryLinksEntity.spec['multi-dictionaries-relation'] = [
+				...this.dictionaryLinksEntity.spec['multi-dictionaries-relation'].filter(
+					relation => relation.box !== boxName,
+				),
+				dictionaryRelation,
+			];
+			const newValue = JSON.parse(JSON.stringify(this.dictionaryLinksEntity));
+			if (Object.entries(diff(oldValue, newValue)).length !== 0) {
+				this.saveEntityChanges(this.dictionaryLinksEntity, 'update');
+				return [
+					{
+						object: this.dictionaryLinksEntity.name,
+						from: oldValue,
+						to: newValue,
+					},
+				];
+			}
+		}
+		return [];
 	};
 
 	@action

@@ -28,7 +28,11 @@ import { openDecisionModal } from '../../helpers/modal';
 import { createBemElement, createStyleSelector } from '../../helpers/styleCreators';
 import { copyObject, isEqual } from '../../helpers/object';
 import { BoxEntity, Pin } from '../../models/Box';
-import { DictionaryEntity, DictionaryRelation } from '../../models/Dictionary';
+import {
+	DictionaryEntity,
+	DictionaryRelation,
+	MultiDictionaryRelation,
+} from '../../models/Dictionary';
 import { isValidJSONObject } from '../../helpers/forms';
 import '../../styles/modal.scss';
 import { isJSONValid } from '../../helpers/files';
@@ -64,6 +68,20 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 						link => link.box === editableBox.name,
 				  )
 				: [],
+		[schemasStore.dictionaryLinksEntity],
+	);
+
+	const relatedMultiDictionary = React.useMemo(
+		() =>
+			(schemasStore.dictionaryLinksEntity &&
+				schemasStore.dictionaryLinksEntity.spec['multi-dictionaries-relation'] &&
+				schemasStore.dictionaryLinksEntity.spec['multi-dictionaries-relation'].find(
+					link => link.box === editableBox.name,
+				)) || {
+				box: editableBox.name,
+				name: `${editableBox.name}-dict`,
+				dictionaries: [],
+			},
 		[schemasStore.dictionaryLinksEntity],
 	);
 
@@ -164,6 +182,9 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 	const [relatedDictionaryList, setRelatedDictionaryList] =
 		React.useState<DictionaryRelation[]>(relatedDictionary);
 
+	const [relatedMultiDictionaryList, setRelatedMultiDictionaryList] =
+		React.useState<MultiDictionaryRelation>(relatedMultiDictionary);
+
 	const [pinsList, setPinList] = React.useState(editableBox.spec.pins ?? []);
 
 	useEffect(() => {
@@ -228,7 +249,12 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 
 	const addDictionaryToList = () => {
 		if (
-			!relatedDictionaryList.find(dictionary => dictionary.name === relationNameInput.value)
+			!relatedDictionaryList.find(
+				dictionary => dictionary.name === relationNameInput.value,
+			) ||
+			!relatedMultiDictionaryList.dictionaries.find(
+				dictionary => dictionary.name === relationNameInput.value,
+			)
 		) {
 			setRelatedDictionaryList([
 				...relatedDictionaryList,
@@ -241,6 +267,17 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 					},
 				},
 			]);
+			setRelatedMultiDictionaryList({
+				...relatedMultiDictionaryList,
+				dictionaries: [
+					...relatedMultiDictionaryList.dictionaries,
+					{
+						name: dictionaryNameInput.value,
+						alias: dictionaryTypeInput.value,
+					},
+				],
+			});
+
 			[relationNameInput, dictionaryNameInput, dictionaryTypeInput].forEach(input =>
 				input.reset(),
 			);
@@ -312,6 +349,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 
 		schemasStore.configurateBox(editableBox, copyBox, {
 			dictionaryRelations: relatedDictionaryList,
+			multiDictionaryRelation: relatedMultiDictionaryList,
 			createSnapshot: true,
 		});
 	};
@@ -372,8 +410,15 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 						<div
 							onClick={() => setCurrentSection('dictionary')}
 							className={dictionaryButtonClass}>
-							{`${relatedDictionaryList.length} ${
-								pinsList.length === 1 ? 'dictionary' : 'dictionaries'
+							{`${
+								relatedDictionaryList.length +
+								relatedMultiDictionary.dictionaries.length
+							} ${
+								relatedDictionaryList.length +
+									relatedMultiDictionary.dictionaries.length ===
+								1
+									? 'dictionary'
+									: 'dictionaries'
 							}`}
 						</div>
 					</div>
@@ -400,13 +445,20 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 				{currentSection === 'dictionary' && (
 					<DictionaryList
 						dictionaryRelations={relatedDictionaryList}
-						removeDictionaryRelation={deletedRelation =>
+						multiDictionaryRelation={relatedMultiDictionaryList}
+						removeDictionaryRelation={deletedRelation => {
 							setRelatedDictionaryList(
 								relatedDictionaryList.filter(
 									relation => relation.name !== deletedRelation.name,
 								),
-							)
-						}
+							);
+							setRelatedMultiDictionaryList({
+								...relatedMultiDictionaryList,
+								dictionaries: relatedMultiDictionaryList.dictionaries.filter(
+									relation => relation.name !== deletedRelation.name,
+								),
+							});
+						}}
 						dictionaryList={schemasStore.dictionaryList}
 						setEditableDictionary={dictionary => setEditableDictionary(dictionary)}
 					/>
