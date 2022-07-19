@@ -373,6 +373,15 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 			: null,
 	);
 
+	const dictAmount = React.useMemo(
+		() =>
+			[...relatedDictionaryList, ...relatedMultiDictionary.dictionaries].filter(
+				(dict, ind, self) =>
+					ind === self.findIndex(dictSearch => dictSearch.name === dict.name),
+			).length,
+		[relatedDictionaryList, relatedMultiDictionary],
+	);
+
 	return (
 		<>
 			<div ref={modalRef} className='modal'>
@@ -410,16 +419,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 						<div
 							onClick={() => setCurrentSection('dictionary')}
 							className={dictionaryButtonClass}>
-							{`${
-								relatedDictionaryList.length +
-								relatedMultiDictionary.dictionaries.length
-							} ${
-								relatedDictionaryList.length +
-									relatedMultiDictionary.dictionaries.length ===
-								1
-									? 'dictionary'
-									: 'dictionaries'
-							}`}
+							{`${dictAmount} ${dictAmount === 1 ? 'dictionary' : 'dictionaries'}`}
 						</div>
 					</div>
 				</div>
