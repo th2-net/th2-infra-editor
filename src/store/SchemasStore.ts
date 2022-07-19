@@ -335,7 +335,7 @@ export default class SchemasStore {
 						this.dictionaryLinksEntity.spec['dictionaries-relation'] &&
 						this.dictionaryLinksEntity.spec['dictionaries-relation'].filter(
 							link =>
-								this.checkBoxExistingByName(link.box) ||
+								this.checkBoxExistingByName(link.box) &&
 								this.dictionaryList.find(
 									dictionary => dictionary.name === link.dictionary.name,
 								),
