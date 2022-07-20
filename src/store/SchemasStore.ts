@@ -729,17 +729,18 @@ export default class SchemasStore {
 		if (operation === 'add') {
 			this.dictionaryLinksEntity.spec['dictionaries-relation'].push(...relations);
 		} else {
-			this.dictionaryLinksEntity.spec['dictionaries-relation'] =
-				this.dictionaryLinksEntity.spec['dictionaries-relation'].filter(
-					dictionaryRelation =>
-						!relations.find(
-							relation =>
-								relation.box === dictionaryRelation.box &&
-								relation.name === dictionaryRelation.name &&
-								relation.dictionary.name === dictionaryRelation.dictionary.name &&
-								relation.dictionary.type === dictionaryRelation.dictionary.type,
-						),
-				);
+			this.dictionaryLinksEntity.spec[
+				'dictionaries-relation'
+			] = this.dictionaryLinksEntity.spec['dictionaries-relation'].filter(
+				dictionaryRelation =>
+					!relations.find(
+						relation =>
+							relation.box === dictionaryRelation.box &&
+							relation.name === dictionaryRelation.name &&
+							relation.dictionary.name === dictionaryRelation.dictionary.name &&
+							relation.dictionary.type === dictionaryRelation.dictionary.type,
+					),
+			);
 		}
 		const newValue = JSON.parse(JSON.stringify(this.dictionaryLinksEntity));
 

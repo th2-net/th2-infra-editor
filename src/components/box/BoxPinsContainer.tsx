@@ -272,14 +272,18 @@ const BoxPinsContainer = (
 		[pinsAreaRef, connectionsStore.links, connectionsStore.connections],
 	);
 
-	const leftBoxLinksAmount = React.useMemo(
-		() => getBoxLinksAmount('left'),
-		[groupsTopOffset, isContainerExpanded, connectionsStore.links, pinsRefs],
-	);
-	const rightBoxConnectionsAmount = React.useMemo(
-		() => getBoxLinksAmount('right'),
-		[groupsTopOffset, isContainerExpanded, connectionsStore.links, pinsRefs],
-	);
+	const leftBoxLinksAmount = React.useMemo(() => getBoxLinksAmount('left'), [
+		groupsTopOffset,
+		isContainerExpanded,
+		connectionsStore.links,
+		pinsRefs,
+	]);
+	const rightBoxConnectionsAmount = React.useMemo(() => getBoxLinksAmount('right'), [
+		groupsTopOffset,
+		isContainerExpanded,
+		connectionsStore.links,
+		pinsRefs,
+	]);
 
 	React.useEffect(() => {
 		if (!isBoxActive) {

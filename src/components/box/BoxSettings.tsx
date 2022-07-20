@@ -179,11 +179,13 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		id: 'dictionary-type',
 	});
 
-	const [relatedDictionaryList, setRelatedDictionaryList] =
-		React.useState<DictionaryRelation[]>(relatedDictionary);
+	const [relatedDictionaryList, setRelatedDictionaryList] = React.useState<DictionaryRelation[]>(
+		relatedDictionary,
+	);
 
-	const [relatedMultiDictionaryList, setRelatedMultiDictionaryList] =
-		React.useState<MultiDictionaryRelation>(relatedMultiDictionary);
+	const [relatedMultiDictionaryList, setRelatedMultiDictionaryList] = React.useState<
+		MultiDictionaryRelation
+	>(relatedMultiDictionary);
 
 	const [pinsList, setPinList] = React.useState(editableBox.spec.pins ?? []);
 
