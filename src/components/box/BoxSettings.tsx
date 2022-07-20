@@ -179,13 +179,11 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		id: 'dictionary-type',
 	});
 
-	const [relatedDictionaryList, setRelatedDictionaryList] = React.useState<DictionaryRelation[]>(
-		relatedDictionary,
-	);
+	const [relatedDictionaryList, setRelatedDictionaryList] =
+		React.useState<DictionaryRelation[]>(relatedDictionary);
 
-	const [relatedMultiDictionaryList, setRelatedMultiDictionaryList] = React.useState<
-		MultiDictionaryRelation
-	>(relatedMultiDictionary);
+	const [relatedMultiDictionaryList, setRelatedMultiDictionaryList] =
+		React.useState<MultiDictionaryRelation>(relatedMultiDictionary);
 
 	const [pinsList, setPinList] = React.useState(editableBox.spec.pins ?? []);
 
@@ -251,24 +249,10 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 
 	const addDictionaryToList = () => {
 		if (
-			!relatedDictionaryList.find(
-				dictionary => dictionary.name === relationNameInput.value,
-			) ||
 			!relatedMultiDictionaryList.dictionaries.find(
 				dictionary => dictionary.name === relationNameInput.value,
 			)
 		) {
-			setRelatedDictionaryList([
-				...relatedDictionaryList,
-				{
-					name: relationNameInput.value,
-					box: editableBox.name,
-					dictionary: {
-						name: dictionaryNameInput.value,
-						type: dictionaryTypeInput.value,
-					},
-				},
-			]);
 			setRelatedMultiDictionaryList({
 				...relatedMultiDictionaryList,
 				dictionaries: [
@@ -377,7 +361,10 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 
 	const dictAmount = React.useMemo(
 		() =>
-			[...relatedDictionaryList, ...relatedMultiDictionary.dictionaries].filter(
+			[
+				...relatedDictionaryList.map(relation => relation.dictionary),
+				...relatedMultiDictionary.dictionaries,
+			].filter(
 				(dict, ind, self) =>
 					ind === self.findIndex(dictSearch => dictSearch.name === dict.name),
 			).length,
