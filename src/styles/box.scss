@@ -40,8 +40,11 @@
 		filter: blur(0.5px);
 	}
 
+	&.disabled {
+		opacity: 0.5;
+	}
+
 	&__header {
-		min-height: 25px;
 		width: 100%;
 		display: flex;
 		flex-wrap: wrap;
@@ -125,6 +128,7 @@
 	}
 
 	&__buttons-wrapper {
+		min-height: 25px;
 		margin-left: auto;
 		display: flex;
 		gap: 7.5px;

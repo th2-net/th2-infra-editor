@@ -550,23 +550,13 @@ export default class SchemasStore {
 		entity: BoxEntity | LinksDefinition | DictionaryLinksEntity | DictionaryEntity,
 		operation: 'add' | 'update' | 'remove',
 	) => {
-		if (
-			!this.preparedRequests.some(
-				request =>
-					request.payload.name === entity.name &&
-					request.operation === operation &&
-					!hasChanges(request.payload, entity),
-			)
-		) {
-			this.preparedRequests.push({
+		this.preparedRequests = [
+			...this.preparedRequests.filter(req => req.payload.name !== entity.name),
+			{
 				operation,
 				payload: entity,
-			});
-		}
-
-		function hasChanges<T extends object>(obj1: T, obj2: T) {
-			return Object.keys(diff(obj1, obj2)).length > 0;
-		}
+			},
+		];
 	};
 
 	@action

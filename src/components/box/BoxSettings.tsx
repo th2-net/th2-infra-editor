@@ -191,10 +191,6 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		savePins(pinsList);
 	}, [pinsList]);
 
-	useEffect(() => {
-		saveConfig(boxConfigInput.value);
-	}, [boxConfigInput.value]);
-
 	useOutsideClickListener(modalRef, (e: MouseEvent) => {
 		if (
 			!e
@@ -273,6 +269,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 	};
 
 	const submit = async () => {
+		saveConfig(boxConfigInput.value);
 		if (
 			[
 				imageNameInput,

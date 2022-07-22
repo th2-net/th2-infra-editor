@@ -31,6 +31,7 @@ import { openConfirmModal } from '../../helpers/modal';
 import { copyObject, isEqual } from '../../helpers/object';
 import { DictionaryEntity } from '../../models/Dictionary';
 import '../../styles/box.scss';
+import '../../styles/toggler.scss';
 
 interface Props {
 	box: BoxEntity;
@@ -61,6 +62,7 @@ const Box = (
 		'box',
 		isBoxActive ? 'active' : null,
 		isHidden ? 'hidden' : null,
+		box.spec.disabled ? 'disabled' : null,
 	);
 
 	React.useEffect(() => {
@@ -132,6 +134,22 @@ const Box = (
 	const splitedImageName = imageName.split('/');
 	const slicedImageName = splitedImageName.slice(-(splitedImageName.length - 1)).join('/');
 
+	const toggleDisabled = () => {
+		const copyBox = copyObject(box);
+		if (box.spec.disabled) {
+			copyBox.spec.disabled = undefined;
+		} else {
+			copyBox.spec.disabled = true;
+		}
+		const temp = schemasStore.boxes
+			.map((value, index) => {
+				return { value, index };
+			})
+			.find(b => b.value.name === copyBox.name);
+		if (temp) schemasStore.boxes[temp.index].spec.disabled = copyBox.spec.disabled;
+		schemasStore.saveEntityChanges(copyBox, 'update');
+	};
+
 	return (
 		<>
 			<div
@@ -159,6 +177,12 @@ const Box = (
 					)}
 					<span className='box__title'>{box.name}</span>
 					<div className='box__buttons-wrapper'>
+						<div className='toggler'>
+							<div
+								className={`toggler__bar ${box.spec.disabled ? 'off' : 'on'}`}
+								onClick={toggleDisabled}
+							/>
+						</div>
 						<button className='box__button filter' onClick={filterRelatedBoxes}>
 							<i className='box__button-icon' />
 						</button>

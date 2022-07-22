@@ -19,6 +19,7 @@ import { DictionaryRelation, MultiDictionaryRelation } from './Dictionary';
 
 export interface BoxEntity extends FileBase {
 	spec: {
+		['disabled']?: true | undefined;
 		['custom-config']?: {
 			[prop: string]: string;
 		};
