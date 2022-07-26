@@ -49,6 +49,11 @@ export class NotificationsStore {
 			this.errors = this.errors.filter(e => e !== error);
 		}
 	};
+
+	@action
+	public clearAll = () => {
+		this.errors = [];
+	};
 }
 
 const notificationsStore = new NotificationsStore();

@@ -57,6 +57,7 @@ function Notifier() {
 					addToast(<FetchErrorToast {...notificationError} />, options, registerId);
 				}
 			});
+			prevResponseErrors.current = notifications;
 		}
 
 		reaction(() => notificiationStore.errors, onNotificationsUpdate, { fireImmediately: true });
