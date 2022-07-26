@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { reaction, toJS } from 'mobx';
+import { reaction } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect } from 'react';
 import { useToasts } from 'react-toast-notifications';
