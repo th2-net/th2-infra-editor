@@ -14,7 +14,7 @@
  * limitations under the License.
  ***************************************************************************** */
 
-import { reaction } from 'mobx';
+import { reaction, toJS } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect } from 'react';
 import { useToasts } from 'react-toast-notifications';
@@ -37,15 +37,22 @@ function Notifier() {
 
 	useEffect(() => {
 		function onNotificationsUpdate(notifications: NotificationError[]) {
+			console.log(notifications.map(val => toJS(val)));
 			const currentResponseErrors = complement(notifications, prevResponseErrors.current);
 
 			const removedErrors =
 				prevResponseErrors.current.filter(error => !notifications.includes(error)) || [];
 
+			console.log(
+				prevResponseErrors.current.map(val => toJS(val)),
+				currentResponseErrors.map(val => toJS(val)),
+				removedErrors.map(val => toJS(val)),
+			);
 			// We need this to be able to delete toast from outside of toast component
 			removedErrors.forEach(error => removeToast(idsMap.current[error.id]));
 
 			currentResponseErrors.forEach(notificationError => {
+				console.log(notificationError);
 				const options = {
 					appearance: notificationError.type,
 					onDismiss: () => notificiationStore.deleteMessage(notificationError),
@@ -57,6 +64,7 @@ function Notifier() {
 					addToast(<FetchErrorToast {...notificationError} />, options, registerId);
 				}
 			});
+			prevResponseErrors.current = notifications;
 		}
 
 		reaction(() => notificiationStore.errors, onNotificationsUpdate, { fireImmediately: true });
