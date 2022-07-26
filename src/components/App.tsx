@@ -20,6 +20,7 @@ import React from 'react';
 import loader from '@monaco-editor/loader';
 import { ToastProvider } from 'react-toast-notifications';
 import Toast from './notifications/Toast';
+import ToastContainer from './notifications/ToastContainer';
 import Header from './Header';
 import Groups from './groups/Groups';
 import SplashScreen from './SplashScreen';
@@ -38,7 +39,10 @@ function App() {
 
 	return (
 		<div className='root'>
-			<ToastProvider placement='top-right' components={{ Toast }} transitionDuration={400}>
+			<ToastProvider
+				placement='top-right'
+				components={{ Toast, ToastContainer }}
+				transitionDuration={400}>
 				<History />
 				<Header />
 				{rootStore.schemasStore.isLoading ? (
