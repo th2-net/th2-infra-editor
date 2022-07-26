@@ -38,7 +38,15 @@ export class NotificationsStore {
 
 	@action
 	public addMessage = (error: NotificationError) => {
-		this.errors = [...this.errors, error];
+		if (
+			!this.errors.find(
+				err =>
+					err.header === error.header &&
+					err.responseCode === error.responseCode &&
+					err.responseBody === error.responseBody,
+			)
+		)
+			this.errors = [...this.errors, error];
 	};
 
 	@action
