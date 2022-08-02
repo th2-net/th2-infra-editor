@@ -242,6 +242,9 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		if (
 			!relatedMultiDictionaryList.dictionaries.find(
 				dictionary => dictionary.name === dictionaryNameInput.value,
+			) &&
+			!relatedDictionaryList.find(
+				dictionary => dictionary.dictionary.name === dictionaryNameInput.value,
 			)
 		) {
 			setRelatedMultiDictionaryList({
