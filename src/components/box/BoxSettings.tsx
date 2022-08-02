@@ -121,7 +121,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		label: 'node-port',
 		name: 'node-port',
 		id: 'node-port',
-		validate: value => (value.trim().length === 0 ? true : /^\d+$/.test(value)),
+		validate: value => /^\d{0,5}$/.test(value),
 	});
 
 	const boxConfigInput = useInput({
