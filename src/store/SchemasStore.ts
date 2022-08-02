@@ -391,7 +391,7 @@ export default class SchemasStore {
 								'multi-dictionaries-relation': [
 									{
 										box: boxName,
-										name: `${boxName}-dict`,
+										name: `${boxName}-mullti-dict`,
 										dictionaries: dictionariesByBox[boxName] || [],
 									},
 								],
