@@ -94,7 +94,7 @@ const AttributesList = ({
 					<FormModal
 						title={editableAttribute ?? 'Create attribute'}
 						configList={[attributeInput]}
-						onSubmit={() => submitForm()}
+						onSubmit={submitForm}
 						onClose={() => {
 							toggleAddForm(false);
 							setEditableAttribute(null);
