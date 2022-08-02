@@ -154,7 +154,7 @@ const DictionaryModal = ({ dictionary, onClose }: DictionaryModalProps) => {
 			onDragExit={() => setIsFileDragging(false)}
 			ref={modalRef}
 			style={{
-				width: 'auto',
+				width: '500px',
 			}}
 			className='modal'>
 			<div className='modal__header'>
