@@ -79,7 +79,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 					link => link.box === editableBox.name,
 				)) || {
 				box: editableBox.name,
-				name: `${editableBox.name}-dict`,
+				name: `${editableBox.name}-mullti-dict`,
 				dictionaries: [],
 			},
 		[schemasStore.dictionaryLinksEntity],
@@ -159,11 +159,6 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		validate: value => schemasStore.connectionTypes.includes(value),
 	});
 
-	const relationNameInput = useInput({
-		label: 'Name',
-		id: 'relation-name',
-	});
-
 	const dictionaryNameInput = useInput({
 		label: 'Dictionary name',
 		id: 'dictionary-name',
@@ -174,9 +169,9 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		},
 	});
 
-	const dictionaryTypeInput = useInput({
-		label: 'Dictionary type',
-		id: 'dictionary-type',
+	const dictionaryAliasInput = useInput({
+		label: 'Dictionary alias',
+		id: 'dictionary-alias',
 	});
 
 	const [relatedDictionaryList, setRelatedDictionaryList] =
@@ -246,7 +241,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 	const addDictionaryToList = () => {
 		if (
 			!relatedMultiDictionaryList.dictionaries.find(
-				dictionary => dictionary.name === relationNameInput.value,
+				dictionary => dictionary.name === dictionaryNameInput.value,
 			)
 		) {
 			setRelatedMultiDictionaryList({
@@ -255,16 +250,14 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 					...relatedMultiDictionaryList.dictionaries,
 					{
 						name: dictionaryNameInput.value,
-						alias: dictionaryTypeInput.value,
+						alias: dictionaryAliasInput.value,
 					},
 				],
 			});
 
-			[relationNameInput, dictionaryNameInput, dictionaryTypeInput].forEach(input =>
-				input.reset(),
-			);
+			[dictionaryNameInput, dictionaryAliasInput].forEach(input => input.reset());
 		} else {
-			window.alert(`Dictionary ${relationNameInput.value} already exists`);
+			window.alert(`Dictionary ${dictionaryNameInput.value} already exists`);
 		}
 	};
 
@@ -477,7 +470,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 			<ModalPortal isOpen={isAddDictionaryFormOpen}>
 				<FormModal
 					title='Add dictionary'
-					configList={[relationNameInput, dictionaryNameInput, dictionaryTypeInput]}
+					configList={[dictionaryNameInput, dictionaryAliasInput]}
 					onSubmit={addDictionaryToList}
 					onClose={() => setIsAddDictionaryFormOpen(false)}
 				/>
