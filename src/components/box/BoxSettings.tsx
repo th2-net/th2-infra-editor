@@ -191,10 +191,6 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		savePins(pinsList);
 	}, [pinsList]);
 
-	useEffect(() => {
-		saveConfig(boxConfigInput.value);
-	}, [boxConfigInput.value]);
-
 	useOutsideClickListener(modalRef, (e: MouseEvent) => {
 		if (
 			!e
@@ -311,19 +307,14 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		schemasStore.configurateBox(editableBox, copyBox, { createSnapshot: true });
 	};
 
-	const saveConfig = (value: string) => {
-		const copyBox = copyObject(box);
-		const customConfig = value ? JSON.parse(value) : undefined;
-		if (customConfig) copyBox.spec['custom-config'] = customConfig;
-		schemasStore.configurateBox(editableBox, copyBox, { createSnapshot: true });
-	};
-
 	const saveChanges = () => {
 		const copyBox = copyObject(box);
 		copyBox.name = boxNameInput.value;
 		copyBox.spec['image-name'] = imageNameInput.value;
 		copyBox.spec['image-version'] = imageVersionInput.value;
-		copyBox.spec.type = editableBox.spec.type;
+
+		const customConfig = boxConfigInput.value ? JSON.parse(boxConfigInput.value) : undefined;
+		if (customConfig) copyBox.spec['custom-config'] = customConfig;
 
 		const port = nodePortInput.value ? parseInt(nodePortInput.value) : undefined;
 		if (port) copyBox.spec['node-port'] = port;
