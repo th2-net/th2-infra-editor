@@ -79,7 +79,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 					link => link.box === editableBox.name,
 				)) || {
 				box: editableBox.name,
-				name: `${editableBox.name}-dict`,
+				name: `${editableBox.name}-mullti-dict`,
 				dictionaries: [],
 			},
 		[schemasStore.dictionaryLinksEntity],
@@ -159,11 +159,6 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		validate: value => schemasStore.connectionTypes.includes(value),
 	});
 
-	const relationNameInput = useInput({
-		label: 'Name',
-		id: 'relation-name',
-	});
-
 	const dictionaryNameInput = useInput({
 		label: 'Dictionary name',
 		id: 'dictionary-name',
@@ -174,9 +169,9 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		},
 	});
 
-	const dictionaryTypeInput = useInput({
-		label: 'Dictionary type',
-		id: 'dictionary-type',
+	const dictionaryAliasInput = useInput({
+		label: 'Dictionary alias',
+		id: 'dictionary-alias',
 	});
 
 	const [relatedDictionaryList, setRelatedDictionaryList] =
@@ -190,10 +185,6 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 	useEffect(() => {
 		savePins(pinsList);
 	}, [pinsList]);
-
-	useEffect(() => {
-		saveConfig(boxConfigInput.value);
-	}, [boxConfigInput.value]);
 
 	useOutsideClickListener(modalRef, (e: MouseEvent) => {
 		if (
@@ -262,16 +253,14 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 					...relatedMultiDictionaryList.dictionaries,
 					{
 						name: dictionaryNameInput.value,
-						alias: dictionaryTypeInput.value,
+						alias: dictionaryAliasInput.value,
 					},
 				],
 			});
 
-			[relationNameInput, dictionaryNameInput, dictionaryTypeInput].forEach(input =>
-				input.reset(),
-			);
+			[dictionaryNameInput, dictionaryAliasInput].forEach(input => input.reset());
 		} else {
-			window.alert(`Dictionary ${relationNameInput.value} already exists`);
+			window.alert(`Dictionary ${dictionaryNameInput.value} already exists`);
 		}
 	};
 
@@ -314,19 +303,14 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		schemasStore.configurateBox(editableBox, copyBox, { createSnapshot: true });
 	};
 
-	const saveConfig = (value: string) => {
-		const copyBox = copyObject(box);
-		const customConfig = value ? JSON.parse(value) : undefined;
-		if (customConfig) copyBox.spec['custom-config'] = customConfig;
-		schemasStore.configurateBox(editableBox, copyBox, { createSnapshot: true });
-	};
-
 	const saveChanges = () => {
 		const copyBox = copyObject(box);
 		copyBox.name = boxNameInput.value;
 		copyBox.spec['image-name'] = imageNameInput.value;
 		copyBox.spec['image-version'] = imageVersionInput.value;
-		copyBox.spec.type = editableBox.spec.type;
+
+		const customConfig = boxConfigInput.value ? JSON.parse(boxConfigInput.value) : undefined;
+		if (customConfig) copyBox.spec['custom-config'] = customConfig;
 
 		const port = nodePortInput.value ? parseInt(nodePortInput.value) : undefined;
 		if (port) copyBox.spec['node-port'] = port;
@@ -489,7 +473,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 			<ModalPortal isOpen={isAddDictionaryFormOpen}>
 				<FormModal
 					title='Add dictionary'
-					configList={[relationNameInput, dictionaryNameInput, dictionaryTypeInput]}
+					configList={[dictionaryNameInput, dictionaryAliasInput]}
 					onSubmit={addDictionaryToList}
 					onClose={() => setIsAddDictionaryFormOpen(false)}
 				/>

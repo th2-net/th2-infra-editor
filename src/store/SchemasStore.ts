@@ -391,7 +391,7 @@ export default class SchemasStore {
 								'multi-dictionaries-relation': [
 									{
 										box: boxName,
-										name: `${boxName}-dict`,
+										name: `${boxName}-mullti-dict`,
 										dictionaries: dictionariesByBox[boxName] || [],
 									},
 								],
@@ -558,10 +558,13 @@ export default class SchemasStore {
 					!hasChanges(request.payload, entity),
 			)
 		) {
-			this.preparedRequests.push({
-				operation,
-				payload: entity,
-			});
+			this.preparedRequests = [
+				...this.preparedRequests.filter(request => request.payload.name !== entity.name),
+				{
+					operation,
+					payload: entity,
+				},
+			];
 		}
 
 		function hasChanges<T extends object>(obj1: T, obj2: T) {
