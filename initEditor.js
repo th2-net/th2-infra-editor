@@ -35,7 +35,7 @@ Promise.all([
 	}),
 	fs.copy('./node_modules/monaco-editor/min/vs/language/json', './build/out/vs/language/json'),
 	fs.copy(
-		'./node_modules/monaco-editor/min/vs/basic-languages/xml', 
+		'./node_modules/monaco-editor/min/vs/basic-languages/xml',
 		'./build/out/vs/basic-languages/xml',
 	),
 	fs.copy(
