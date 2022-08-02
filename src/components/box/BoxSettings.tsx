@@ -241,7 +241,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 	const addDictionaryToList = () => {
 		if (
 			!relatedMultiDictionaryList.dictionaries.find(
-				dictionary => dictionary.name === relationNameInput.value,
+				dictionary => dictionary.name === dictionaryNameInput.value,
 			) &&
 			!relatedDictionaryList.find(
 				dictionary => dictionary.dictionary.name === dictionaryNameInput.value,
