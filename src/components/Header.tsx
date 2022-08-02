@@ -48,7 +48,7 @@ const Header = () => {
 				Boolean(trimmedValue) &&
 				!trimmedValue.includes(' ') &&
 				!trimmedValue.includes('_') &&
-				!/[A-Z]/g.test(trimmedValue) &&
+				!/[A-Z`!@#$%^&*()+\-=[\]{};':"\\|,.<>/?~]/g.test(trimmedValue) &&
 				!schemasStore.checkSchemaExistingByName(value)
 			);
 		},
