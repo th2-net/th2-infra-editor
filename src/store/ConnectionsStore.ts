@@ -215,7 +215,12 @@ export default class ConnectionsStore {
 		if (editorGeneratedLinksBox && editorGeneratedLinksBox.spec['boxes-relation']) {
 			editorGeneratedLinksBox.spec['boxes-relation'][
 				`router-${link.from?.connectionType}` as 'router-mq' | 'router-grpc'
-			].push(convertedLink);
+			] = [
+				...(editorGeneratedLinksBox.spec['boxes-relation'][
+					`router-${link.from?.connectionType}` as 'router-mq' | 'router-grpc'
+				] || []),
+				convertedLink,
+			];
 			this.schemasStore.saveEntityChanges(editorGeneratedLinksBox, 'update');
 		} else {
 			editorGeneratedLinksBox = {
