@@ -63,6 +63,11 @@ const DictionaryModal = ({ dictionary, onClose }: DictionaryModalProps) => {
 		initialValue: dictionary?.name,
 		label: 'Dictionary name',
 		id: 'dicionary-modal__dictionary-name',
+		validate: dictionaryName =>
+			Boolean(dictionary) ||
+			schemasStore.dictionaryList.findIndex(
+				existingDict => existingDict.name === dictionaryName,
+			) === -1,
 	});
 
 	const downloadDictionary = () => {
@@ -94,6 +99,9 @@ const DictionaryModal = ({ dictionary, onClose }: DictionaryModalProps) => {
 	};
 
 	const submit = async () => {
+		if (!dictionaryNameInput.isValid) {
+			window.alert(`Dictionary ${dictionaryNameInput.value} already exists`);
+		}
 		if (dictionary && dictionaryData.isValid) {
 			if (!isUpdated) {
 				saveChanges();
