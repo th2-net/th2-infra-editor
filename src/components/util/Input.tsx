@@ -30,7 +30,7 @@ const Input = ({ inputConfig }: InputProps) => {
 
 	return (
 		<div className='input-wrapper'>
-			<label htmlFor={inputConfig.bind.id} className='input-label'>
+			<label htmlFor={inputConfig.bind.id} className='input-label' title={inputConfig.hint}>
 				{inputConfig.label}
 			</label>
 			<input
