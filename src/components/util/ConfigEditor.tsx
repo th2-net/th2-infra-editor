@@ -33,7 +33,7 @@ const ConfigEditor = ({ configInput }: ConfigEditor) => {
 				{configInput.label}
 			</label>
 			<Editor
-				height={300}
+				height='90%'
 				width='auto'
 				language={defineFileFormat(configInput.value)}
 				value={configInput.value}

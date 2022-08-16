@@ -1,7 +1,15 @@
 @import './common/vars';
 
 .modal {
-	width: 360px;
+	resize: both;
+	overflow: auto;
+	display: flex;
+	justify-content: stretch;
+	flex-direction: column;
+	min-width: 300px;
+	min-height: 350px;
+	width: auto;
+	height: auto;
 	position: absolute;
 	top: 50%;
 	left: 50%;
@@ -51,6 +59,10 @@
 	&__content {
 		padding: 10px 15px 0 15px;
 		overflow: visible;
+		flex-grow: 10;
+		display: flex;
+		flex-direction: column;
+		min-height: 55px;
 
 		&-switcher {
 			display: flex;
@@ -144,6 +156,7 @@
 	}
 
 	&__buttons {
+		justify-self: end;
 		display: flex;
 		gap: 15px;
 		margin: 20px 15px 0 15px;
@@ -258,10 +271,11 @@
 			@include scrollbar;
 
 			min-height: 150px;
-			max-height: 350px;
+			max-height: 700px;
 			overflow-y: scroll;
 			padding: 2px 15px 5px 15px;
 			margin-top: 10px;
+			flex-grow: 10;
 
 			&.long {
 				max-height: calc(100vh - 200px);
