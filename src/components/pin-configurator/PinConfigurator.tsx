@@ -80,6 +80,7 @@ const PinConfigurator = ({
 			datalistKey: 'pin-configurator__connection-type',
 			variants: connectionTypes,
 		},
+		hint: `Connection type should be one of valid types: ${connectionTypes}.`,
 	});
 
 	const configButtonClass = createBemElement(

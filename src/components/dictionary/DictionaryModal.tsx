@@ -68,6 +68,7 @@ const DictionaryModal = ({ dictionary, onClose }: DictionaryModalProps) => {
 			schemasStore.dictionaryList.findIndex(
 				existingDict => existingDict.name === dictionaryName,
 			) === -1,
+		hint: 'Dictionary name should be new.',
 	});
 
 	const downloadDictionary = () => {

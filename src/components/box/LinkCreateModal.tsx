@@ -24,6 +24,7 @@ const LinkCreateModal = ({ defaultName, from, to, extended, close }: LinkCreateM
 		id: 'link-name',
 		label: 'name',
 		validate: linkName => !connectionsStore.links.find(link => link.name === linkName),
+		hint: 'Link name should be new.',
 	});
 
 	const linkFromStrategySelect = useSelect({
