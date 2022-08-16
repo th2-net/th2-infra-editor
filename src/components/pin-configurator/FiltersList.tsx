@@ -133,7 +133,7 @@ const FiltersList = ({
 			)}
 			<ModalPortal isOpen={isFormOpen}>
 				<FormModal
-					title={'Edit filter'}
+					title={editableFilter ? 'Edit filter' : 'Create filter'}
 					configList={inputs}
 					onSubmit={submitForm}
 					onClose={() => toggleAddForm(false)}

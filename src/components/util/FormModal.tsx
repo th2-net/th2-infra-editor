@@ -16,6 +16,7 @@
 
 import React from 'react';
 import { isInputConfig } from '../../helpers/forms';
+import { createStyleSelector } from '../../helpers/styleCreators';
 import { InputConfig } from '../../hooks/useInput';
 import useOutsideClickListener from '../../hooks/useOutsideClickListener';
 import { SelectConfig } from '../../hooks/useSelect';
@@ -47,6 +48,14 @@ const FormModal = ({ title, configList, onSubmit, onClose }: FormModalProps) => 
 		onClose();
 	});
 
+	const submitButtonClassname = createStyleSelector(
+		'modal__button',
+		'submit',
+		configList.filter(isInputConfig).some(inputConfig => !inputConfig.isValid)
+			? 'disable'
+			: null,
+	);
+
 	return (
 		<div ref={modalRef} className='modal'>
 			<div className='modal__header'>
@@ -65,7 +74,7 @@ const FormModal = ({ title, configList, onSubmit, onClose }: FormModalProps) => 
 				)}
 			</div>
 			<div className='modal__buttons'>
-				<button onClick={submit} className='modal__button submit'>
+				<button onClick={submit} className={submitButtonClassname}>
 					<i className='modal__button-icon' />
 					Submit
 				</button>

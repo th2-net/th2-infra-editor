@@ -38,12 +38,6 @@ const AttributesList = ({
 }: AttributesListProps) => {
 	const [editableAttribute, setEditableAttribute] = React.useState<string | null>(null);
 
-	React.useEffect(() => {
-		if (isFormOpen) {
-			setEditableAttribute(null);
-		}
-	}, [isFormOpen]);
-
 	const attributeInput = useInput({
 		initialValue: editableAttribute ?? undefined,
 		id: 'attribute-name',
