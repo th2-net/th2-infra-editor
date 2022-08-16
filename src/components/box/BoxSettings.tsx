@@ -98,6 +98,8 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		validate: name =>
 			name.trim().length > 0 &&
 			/^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/gm.test(name),
+		hint:
+			`Box name should include only lower case letters or digits and '-' and '.' as delimeters.`,
 	});
 
 	const imageNameInput = useInput({
@@ -106,6 +108,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		name: 'image-name',
 		id: 'image-name',
 		validate: name => name.length > 0,
+		hint: 'Image name field should not be empty.',
 	});
 
 	const imageVersionInput = useInput({
@@ -114,6 +117,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		name: 'image-version',
 		id: 'image-version',
 		validate: version => version.length > 0,
+		hint: 'Image version field should not be empty.',
 	});
 
 	const nodePortInput = useInput({
@@ -121,7 +125,8 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		label: 'node-port',
 		name: 'node-port',
 		id: 'node-port',
-		validate: value => /^\d{0,5}$/.test(value),
+		validate: value => /^\d{0,5}$/.test(value) && parseInt(value) <= 65535,
+		hint: 'Node port should be empty or number that no more than 65535.',
 	});
 
 	const boxConfigInput = useInput({
@@ -132,6 +137,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		validate: isJSONValid,
 		name: 'config',
 		id: 'config',
+		hint: 'Config should be valid JSON.',
 	});
 
 	const extendedSettingsInput = useInput({
@@ -142,6 +148,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 		validate: isValidJSONObject,
 		name: 'extended-settings',
 		id: 'extended-settings',
+		hint: 'Extended settings should be valid JSON object.',
 	});
 
 	const pinNameConfigInput = useInput({
@@ -157,6 +164,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 			variants: schemasStore.connectionTypes,
 		},
 		validate: value => schemasStore.connectionTypes.includes(value),
+		hint: `Connection type should be one of valid types: ${schemasStore.connectionTypes}.`,
 	});
 
 	const dictionaryNameInput = useInput({
@@ -167,6 +175,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 			datalistKey: 'dictionary-name__datalist-key',
 			variants: dictionaryNamesList,
 		},
+		hint: 'Dictionary name should be existing dictionary.',
 	});
 
 	const dictionaryAliasInput = useInput({

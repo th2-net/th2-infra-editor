@@ -49,7 +49,8 @@ const BoxImageInfo = ({ spec, setImageName, setImageVersion, setNodePort }: BoxI
 		label: 'node-port',
 		name: 'node-port',
 		id: 'node-port',
-		validate: value => /^\d+$/.test(value),
+		validate: value => /^\d{0,5}$/.test(value) && parseInt(value) <= 65535,
+		hint: 'Node port should be empty or number that no more than 65535.',
 	});
 
 	React.useEffect(() => {

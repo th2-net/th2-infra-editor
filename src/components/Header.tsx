@@ -47,11 +47,11 @@ const Header = () => {
 			return (
 				Boolean(trimmedValue) &&
 				!trimmedValue.includes(' ') &&
-				!trimmedValue.includes('_') &&
-				!/[A-Z`!@#$%^&*()+\-=[\]{};':"\\|,.<>/?~]/g.test(trimmedValue) &&
+				!/[A-Z`!@#$%^&*()+\-=[\]_{};':"\\|,.<>/?~]/g.test(trimmedValue) &&
 				!schemasStore.checkSchemaExistingByName(value)
 			);
 		},
+		hint: 'Schema name should include only lower case letters or digits.',
 	});
 
 	const saveButtonClass = createBemElement(

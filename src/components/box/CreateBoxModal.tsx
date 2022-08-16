@@ -44,6 +44,8 @@ const CreateBoxModal = ({
 			name.trim().length > 0 &&
 			/^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/gm.test(name) &&
 			!checkBoxExistingByName(name),
+		hint:
+			`Box name should include only lower case letters or digits and '-' and '.' as delimeters.`,
 	});
 
 	const typeInput = useInput({
@@ -54,6 +56,7 @@ const CreateBoxModal = ({
 			variants: typeVariants,
 			datalistKey: 'create-box-modal__box-type',
 		},
+		hint: `Box type should be one of valid types: ${typeVariants}.`,
 	});
 
 	const imageNameInput = useInput({
@@ -61,6 +64,7 @@ const CreateBoxModal = ({
 		id: 'image-name',
 		name: 'image-name',
 		validate: imageName => imageName.trim().length > 0,
+		hint: 'Image name field should not be empty.',
 	});
 
 	const imageVersionInput = useInput({
@@ -68,14 +72,15 @@ const CreateBoxModal = ({
 		id: 'image-version',
 		name: 'image-version',
 		validate: imageVersion => imageVersion.trim().length > 0,
+		hint: 'Image version field should not be empty.',
 	});
 
 	const nodePortInput = useInput({
 		label: 'Node-port',
 		id: 'node-port',
 		name: 'node-port',
-		validate: (value: string) =>
-			value.trim().length > 0 ? /^\d+$/.test(value) && parseInt(value) <= 65535 : true,
+		validate: (value: string) => /^\d{1,5}$/.test(value) && parseInt(value) <= 65535,
+		hint: 'Node port should be number that no more than 65535.',
 	});
 
 	const inputs = [nameInput, typeInput, imageNameInput, imageVersionInput, nodePortInput];
