@@ -373,6 +373,7 @@ const BoxSettings = ({ box, onClose, setEditablePin, setEditableDictionary }: Bo
 					style={{
 						maxHeight: 500,
 						overflow: 'auto',
+						flexGrow: 0,
 					}}>
 					{isUpdated && (
 						<div className='modal__update'>
